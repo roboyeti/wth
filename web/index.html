@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>What The Hash (WTH) - BeRogue -</title>
+    <script>
+    var current_page = "page_1.html"
+    
+    function LoadFile(FileName,RespType,FileType,RunMe) {
+        var AJAXFileReader=new XMLHttpRequest();
+
+        AJAXFileReader.addEventListener("error",function FRFailed()
+            {   // This will be executed if an error occurs.
+                console.log("Error:",this.status);
+            });
+
+        AJAXFileReader.addEventListener("timeout",function FRTimeOut()
+            {   // This will be executed if the reading times out.
+                console.log("File reading timed out!");
+            });
+
+        AJAXFileReader.addEventListener("abort",
+            function FRCancel()
+            {   // This will confirm reading was aborted.
+                console.log("File reading cancelled by user!");
+            });
+
+        AJAXFileReader.addEventListener("load",
+            function Finished() {
+            // When reading is finished, send data to external function.
+            if ((this.readyState==4)&&(this.status==200)) {
+                RunMe(this.response);
+            }
+        },
+        false);
+
+        AJAXFileReader.open("GET",FileName,true);
+        //AJAXFileReader.overrideMimeType(FileType);
+        AJAXFileReader.responseType=RespType;
+        AJAXFileReader.timeout=10000; // Setting time-out to 10 s.
+    
+        AJAXFileReader.send();
+    }
+
+    // This will be executed after the file is completely loaded.
+    function TracerOn(X) {
+      document.getElementById("fileDisplayArea").innerHTML=X;
+      setTimeout("LoadPage();", 12000);
+    }
+
+    // Run after the Page is loaded.
+    function LoadPage(file=current_page) {
+      LoadFile(file,"html","text/plain;charset=utf-8",TracerOn);
+    }
+    </script>
+    <link rel="stylesheet" href="terminal.css">
+  </head>
+  <body onLoad="LoadPage();" style="transform: scale(0.9);transform-origin: 0 0; width: `${100 * (1 / 0.9)}%`;font-size:12;background-color: black;">
+    <div style="font-size:12px;background-color: black; color: white;">
+    <pre class="term-outer">
+    <pre class="term-container" id="fileDisplayArea"></pre>
+    </pre>      
+    </div>
+  </body>
+</html>
