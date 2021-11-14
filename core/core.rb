@@ -11,6 +11,7 @@ require 'yaml'
 require 'json'
 require 'socket'
 require 'os'
+require 'sys/cpu'
 
 require 'pastel'
 load './utils/ext/io.rb'
@@ -20,7 +21,7 @@ load './core/web_server_basic.rb'
 
 [ 'base', 'gpu_base',
   'claymore','phoenix','excavator','t_rex',
-  'xmrig',
+  'xmrig','cpuminer',
   'signum_pool_miner','signum_pool_view',
   'unmineable'
 ].each{|mod|
@@ -32,6 +33,8 @@ using DynamicHash
 
 # Config related methods
 class Core
+  include Sys
+
   attr_reader :config_file, :cfg, :modules
 
   VERSION = "0.09"
@@ -76,6 +79,8 @@ class Core
     't_rex' => TRex,
     'unmineable' => Unmineable,
     'xmrig' => Xmrig,
+    'raptoreum' => Cpuminer,
+    'cpuminer' => Cpuminer,
   }
 
   def initialize(p={})
@@ -83,7 +88,8 @@ class Core
     @config_type = "json"
     @log = {}
     @modules = {}
-    prep_windows if OS.windows?
+    @os = OS
+    os_init
   end
 
   def version ; VERSION ; end  
@@ -258,10 +264,38 @@ class Core
     ff.write(Terminal.render(out.join("\n")))
     ff.close
   end
-  
-  def prep_windows
-  #  `$host.ui.RawUI.WindowTitle = “WTH”`
+
+  def os_init
+    if @os.windows?
+      windows_init
+    end
   end
+  
+  def windows_init
+    # using power shell gem doesn't seem to work here
+    `PowerShell -Command $host.ui.RawUI.WindowTitle = “WTH”`
+  end
+
+  def cpu_details
+    if @os.windows?
+      windows_cpu
+    end    
+  end
+  
+  # Example of windows CPU info dump...for future use
+  def windows_cpu
+    puts "Architecture: " + CPU.architecture.to_s
+    puts "CPU Speed (Frequency): " + CPU.freq.to_s
+    puts "Load Average: " + CPU.load_avg.to_s
+    puts "Model: " + CPU.model.to_s
+    puts "Type: " + CPU.cpu_type.to_s
+    puts "Num CPU: " + CPU.num_cpu.to_s
+    
+    CPU.processors{ |cpu|
+       pp cpu
+    }    
+  end
+  
 end
 
 

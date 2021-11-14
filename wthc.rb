@@ -70,8 +70,9 @@ thread = Thread.new {
     #page = (v.page || 1) - 1
     #  page_out[page] ||= []
     #  c.each {|l| page_out[page] << l }
+    Thread.current["events"] = v.events
     #  v.events.each {|event| $app.add_log('events',event) }
-    #  v.clear_events
+    v.clear_events
 }
 thread.abort_on_exception = true
 threads << thread
@@ -81,7 +82,9 @@ threads.each {|t|
   t.join;
   page = (t["me"].page || 1) - 1
   page_out[page] ||= []
-  t["mypage"].each {|l| page_out[page] << l }
+  t["mypage"].each {|l| page_out[page] << l }    
+  t["events"].each {|event| $app.add_log('events',event) }
+
 }
 
     #run_mods.each_pair {|k,v|

@@ -93,6 +93,15 @@ def init_key_reader
       clear
       @loop_int = true
     end
+    if event.value == "v"
+      clear
+      puts "System Information:\n"
+      $app.cpu_details
+      reader.read_line(" < Hit Return/Enter to continue >")
+      clear
+      @loop_int = true
+    end
+
   end
   return reader
 end

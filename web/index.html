@@ -5,7 +5,7 @@
     <script>
     var current_page = "page_1.html"
     
-    function LoadFile(FileName,RespType,FileType,RunMe) {
+    function load_file(FileName,RespType,FileType,RunMe) {
         var AJAXFileReader=new XMLHttpRequest();
 
         AJAXFileReader.addEventListener("error",function FRFailed()
@@ -42,19 +42,34 @@
     }
 
     // This will be executed after the file is completely loaded.
-    function TracerOn(X) {
+    function auto_refresh(X) {
       document.getElementById("fileDisplayArea").innerHTML=X;
-      setTimeout("LoadPage();", 12000);
+      setTimeout("set_page();", 12000);
     }
 
-    // Run after the Page is loaded.
-    function LoadPage(file=current_page) {
-      LoadFile(file,"html","text/plain;charset=utf-8",TracerOn);
+    function listen_keypress() {
+      event.preventDefault();
+      document.addEventListener('keydown', function (event) {
+        num_keys = ['1','2','3','4','5','6','7','8','9','0'];
+        if (num_keys.indexOf(event.key) >= 0) {
+          set_page("page_" + event.key + ".html");
+        }
+      });
+    }
+
+    function set_page(page=current_page) {
+      current_page = page;
+      load_file(current_page,"html","text/plain;charset=utf-8",auto_refresh);
+    }
+
+    function setup_app() {
+      listen_keypress();
+      set_page();
     }
     </script>
     <link rel="stylesheet" href="terminal.css">
   </head>
-  <body onLoad="LoadPage();" style="transform: scale(0.9);transform-origin: 0 0; width: `${100 * (1 / 0.9)}%`;font-size:12;background-color: black;">
+  <body onLoad="setup_app();" style="transform: scale(0.9);transform-origin: 0 0; width: `${100 * (1 / 0.9)}%`;font-size:12;background-color: black;">
     <div style="font-size:12px;background-color: black; color: white;">
     <pre class="term-outer">
     <pre class="term-container" id="fileDisplayArea"></pre>

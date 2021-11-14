@@ -23,7 +23,16 @@ gem 'pastel'
 gem 'terminal-table'
 # Convert ansi to html 
 gem 'terminal'
+
 gem 'os'
+gem 'sys-cpu'
+gem 'ruby-pwsh'
+#gem 'httpclient'
+#gem "http"
+#gem 'excon'
+gem "typhoeus"
+
+gem 'concurrent-ruby', require: 'concurrent'
 
 # Web server (wthd)
 gem 'webrick'
