@@ -48,9 +48,10 @@ $page = 1
 # - iterate thru the modules
 puts "Loading data into modules..."
 #reposition
+threaded = true
 
 while 1
-  page_out = 10.times.map{|| []}
+  
   if TTY::Screen.cols != numcols
     numcols = TTY::Screen.cols
     clear
@@ -60,42 +61,7 @@ while 1
     
     app.load_templates
 
-threads = []
-    run_mods.each_pair {|k,v|
-thread = Thread.new {    
-    Thread.current["me"] = v
-    a = v.console_out(v.check_all)
-    c = a.is_a?(Array) ? a : a.split("\n")
-    Thread.current["mypage"] = c
-    #page = (v.page || 1) - 1
-    #  page_out[page] ||= []
-    #  c.each {|l| page_out[page] << l }
-    Thread.current["events"] = v.events
-    #  v.events.each {|event| $app.add_log('events',event) }
-    v.clear_events
-}
-thread.abort_on_exception = true
-threads << thread
-    }
-#pp threads
-threads.each {|t|
-  t.join;
-  page = (t["me"].page || 1) - 1
-  page_out[page] ||= []
-  t["mypage"].each {|l| page_out[page] << l }    
-  t["events"].each {|event| $app.add_log('events',event) }
-
-}
-
-    #run_mods.each_pair {|k,v|
-    #  a = v.console_out(v.check_all)
-    #  c = a.is_a?(Array) ? a : a.split("\n")
-    #  page = (v.page || 1) - 1
-    #  page_out[page] ||= []
-    #  c.each {|l| page_out[page] << l }
-    #  v.events.each {|event| $app.add_log('events',event) }
-    #  v.clear_events
-    #}
+		page_out = threaded ? app.thread_wth_modules : app.run_wth_modules
 
     reposition
     cursor_hide

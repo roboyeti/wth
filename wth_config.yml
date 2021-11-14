@@ -99,7 +99,7 @@ modules:
   signum_pool_view:
     every: 180
     port: 0
-    record_count: 50
+    record_count: 25
     show_block_winners: true
     api: signum_pool_view
     page: 2
