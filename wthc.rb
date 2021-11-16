@@ -47,9 +47,10 @@ $page = 1
 # - setup screen stuff
 # - iterate thru the modules
 puts "Loading data into modules..."
-#reposition
 threaded = true
+app.load_templates
 
+last_run = Time.now - 10
 while 1
   
   if TTY::Screen.cols != numcols
@@ -58,27 +59,25 @@ while 1
   end
   
   begin
-    
-    app.load_templates
-
-		page_out = threaded ? app.thread_wth_modules : app.run_wth_modules
-
-    reposition
-    cursor_hide
-    console_header().each {|o| clear_line; puts o; }
- 
-    out = page_out[$page - 1] || ['Nothing to show']
-    out.each {|o|
-      clear_line
-      puts o
-    }
-    clear_screen_down
-
-    app.webserver_pulse(page_out)
-    
-    # =~ 6 seconds
-    24.times { break if keypress_pulse(0.25) }
-    
+    if Time.now - last_run > 6  
+      page_out = threaded ? app.thread_wth_modules : app.run_wth_modules
+  
+      reposition
+      cursor_hide
+      console_header().each {|o| clear_line; puts o; }
+   
+      out = page_out[$page - 1] || ['Nothing to show']
+      out.each {|o|
+        clear_line
+        puts o
+      }
+      clear_screen_down
+  
+      app.webserver_pulse(page_out)
+    end
+  end    
+  # =~ 6 seconds
+  24.times { break if keypress_pulse(0.25) }  
   #rescue => e
   #  puts "Error: #{e}."
   #  puts e.backtrace[0..10]
@@ -88,7 +87,6 @@ while 1
   #    error_retry++
   #  end
   #  clear
-  end
 end
-
+puts "????"
 

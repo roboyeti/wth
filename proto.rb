@@ -3,20 +3,23 @@ require 'socket'
 host = '192.168.0.113'
 port = 4048
 
-s = TCPSocket.open host, port
-s.puts "GET /summary HTTP/1.1\n"
-s.puts "Host: Firefox\n"
-s.puts "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n"
-s.puts "\n\n"
+#s = TCPSocket.open host, port
+s = Socket.tcp(host, port, connect_timeout: 5)
+s.puts %Q[GET /summary HTTP/1.1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
+
+]
+#s.puts Host: Firefox
 
 line = ""
-begin
-while l= s.getc
-  line << l if l
-end
-#rescue
-end
-puts line.chomp
+		begin
+		while l= s.getc
+			line << l if l
+		end
+    rescue
+    end
+		#return line
+		puts line.chomp
 
 s.close
 exit

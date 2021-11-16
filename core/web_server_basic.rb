@@ -55,23 +55,36 @@ class WebServerBasic
   end
   
   def read_io_nonblock
-	io_read.readline_nonblock
-  rescue
+    r = @io_read.readline_nonblock
+  rescue => e
+#    puts e
+#    exit
   end
   
   def write_html(pages)
       web_hdr_out = console_header(false)
       fill = 10 - pages.length
-	  idx = pages.length
+      idx = pages.length
       fill.times{|p|
-		pages[p + idx] = ["Nothing to show for this page"]
-	  }
+        pages[p + idx] = ["Nothing to show for this page"]
+      }
       pages.each_with_index {|e,i|
         ff = File.open("./web/page_#{i+1}.html", 'w')
         ff.write(Terminal.render((web_hdr_out + e).join("\n")))
-#        ff.write(html_basic_page(TTY::Screen.cols,web_hdr_out + e))
         ff.close
       }
-#      `copy ./web/page_#{$page}.html ./output.html`
+  end
+end
+
+class IO
+  def readline_nonblock
+    buffer = ""
+    buffer << read_nonblock(1) while buffer[-1] != "\n"
+
+    buffer
+  rescue IO::WaitReadable => blocking
+    raise blocking if buffer.empty?
+
+    buffer
   end
 end

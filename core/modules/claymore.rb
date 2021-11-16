@@ -8,27 +8,47 @@ require 'socket'
 
 class Claymore < GpuBase
   using DynamicHash
- 
+
+  CMDS = {
+#   'getstats1': '{"id":0,"jsonrpc":"2.0","method":"miner_getstat1"}',
+    'getstats2': "miner_getstat2"
+  }
+
   def initialize(p={})
     super
     @title = p[:title] || 'Claymore'    
   end
 
-  def check(ip,name)
-    host,port = ip.split(':')
-    port = port ? port : @port     
-    s = Socket.tcp(host, port, connect_timeout: 5)
-#    s.puts '{"id":0,"jsonrpc":"2.0","method":"miner_getstat1"}'
-    s.puts '{"id":0,"jsonrpc":"2.0","method":"miner_getstat2"}'
-    res = JSON.parse(s.gets)
+  def send_command(ip,port,cmd)
+    s = Socket.tcp(ip, port, connect_timeout: 5)
+    s.puts %Q[{"id":0,"jsonrpc":"2.0","method":"#{cmd}"}]
+    res = s.gets
     begin
       s.closed
     rescue => e
     end
-    format(name,res)
+    return res
+  end
+  
+  def check(addr,host)
+    ip,port = addr.split(':')
+    port = port ? port : @port
+    @responses["#{host}:#{port}"] = {}
+
+#    begin
+    CMDS.each_pair{|k,v|
+  		@responses["#{host}:#{port}"]["#{k}"] = JSON.parse(send_command(ip,port,v))
+    }
+#    rescue => e
+#      puts e
+#      puts e.backtrace[0..5]
+#    end
+    
+		format(host,@responses["#{host}:#{port}"])
   end
 
-  def format(name,res)
+  def format(name,responses)
+    res = responses["getstats2"]
     base = res["result"]
     group = base[2].split(';')
     pci = base[15].split(';')    

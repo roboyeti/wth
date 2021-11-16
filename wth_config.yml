@@ -20,8 +20,7 @@ modules:
     coin: ETH
     gpu_row: 5
     nodes:
-      helter: 192.168.0.111:33440
-      helios: 192.168.0.116
+      helios: 192.168.0.116:33440
       pedxing: 192.168.0.106
       nefarious: 192.168.0.120
       serenity: 192.168.0.104
@@ -41,6 +40,7 @@ modules:
     coin: ETH
     api: excavator
     nodes:
+      helter: 192.168.0.111
       skelter: 192.168.0.112
   phoenix_unm2:
     port: 33433
@@ -52,6 +52,16 @@ modules:
     page: 3
     nodes:
       vendetta: 192.168.0.122
+  #xmrig_st:
+  #  port: 8989
+  #  extra: XMR
+  #  coin: XMR
+  #  every: 12
+  #  api: xmrig
+  #  standalone: true
+  #  page: 3
+  #  nodes:
+  #    vendetta: 192.168.0.122
   xmrig:
     port: 8989
     extra: XMR

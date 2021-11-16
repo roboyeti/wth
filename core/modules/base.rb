@@ -12,7 +12,7 @@ using DynamicHash
 
 class Base
   attr_accessor :title
-  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page
+  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses
  
   def initialize(p={})
     @config = p[:config]
@@ -24,6 +24,7 @@ class Base
     @down = {}
     @data = {}
     @events = []
+    @responses = {}
   end
 
   [:check, :console_out, :format].each {|m|

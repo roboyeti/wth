@@ -30,7 +30,7 @@ gem 'ruby-pwsh'
 #gem 'httpclient'
 #gem "http"
 #gem 'excon'
-gem "typhoeus"
+#gem "typhoeus"
 
 gem 'concurrent-ruby', require: 'concurrent'
 

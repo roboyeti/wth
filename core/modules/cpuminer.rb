@@ -9,35 +9,51 @@ require 'socket'
 class Cpuminer < Base
   using DynamicHash
 
+  CMDS = {
+    'summary': '/summary',
+    'threads': '/threads'
+  }
+  
   def initialize(p={})
     super
     @title = p[:title] || 'Cpuminer'    
   end
 
 	def send_command(host,port,cmd)
-		@socket = TCPSocket.open host, port
-		@socket.puts "GET /#{cmd} HTTP/1.1\n"
-		@socket.puts "Host: BeRogue\n"
-		@socket.puts "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n"
-		@socket.puts "\n\n"
+		@socket = Socket.tcp(host, port, connect_timeout: 5)
+		@socket.puts %Q[GET #{cmd} HTTP/1.1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
+
+]
 		line = ""
 		while l= @socket.getc
 			line << l if l
 		end
-		@socket.close
+
+    begin
+  		@socket.close
+    rescue => e
+    end
+		line.chomp!
 		return line
   end
 
   def check(addr,host)
 		(ip,port) = addr.split(':')
 		port = port ? port : @port 
-		res = send_command(ip,port,'summary')
-		res2 = send_command(ip,port,'threads')
-		format(res,res2,host)
+    @responses["#{host}:#{port}"] = {}
+
+    CMDS.each_pair{|k,v|
+  		@responses["#{host}:#{port}"]["#{k}"] = send_command(ip,port,v)
+    }
+		format(host,@responses["#{host}:#{port}"])
   end
 
   # 
-  def format(res,res2,host)
+  def format(host,responses)
+    res = responses["summary"]
+    res2 = responses["threads"]
+
 		s = res.split(/\;/)
 		summary = {}
 			s.each{|r|
@@ -55,7 +71,6 @@ class Cpuminer < Base
     h.address = host
     h.name = host
     h.combined_speed = h["hashrate"] = summary["HS"]
-#    h["hashrate_60s"] = res["hashrate"]["total"][1].to_f || 0.0
     h.algo = summary['ALGO']    
     h.pool   = summary["URL"]
     h["difficulty"] = summary["DIFF"].to_f.round(4)
@@ -64,6 +79,7 @@ class Cpuminer < Base
     h.rejected_shares= summary["REJ"].to_i
     h.failed_shared  = summary["SOL"]
       
+#    h["hashrate_60s"] = res["hashrate"]["total"][1].to_f || 0.0
 #    h["avg_time"] = res["connection"]["avg_time"].to_f
 #    h["avg_time_ms"] = res["connection"]["avg_time_ms"].to_f   
 #    h["hashes_total"] = res["connection"]["hashes_total"].to_i
@@ -87,13 +103,19 @@ class Cpuminer < Base
 #"Max H/s","Total KH",
     hash.keys.sort.map{|addr|
       h = hash[addr]
+      uptime = "down"
       if h["down"] == true
-        @events << sprintf("%15s - %s",addr,h["message"])
-        next
+        n = worker_structure
+        n.name = addr
+        n.uptime = colorize("down",$color_alert)
+        n.combined_speed = 0
+        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h["message"]))
+        n.cpu = cpu_structure
+        h = n
+      else
+        uptime = uptime_seconds(h.uptime) if h.uptime != "down"
       end
-
-      uptime = uptime_seconds(h["uptime"])
-
+      
       rows << [
         h.name, uptime, h.algo,
         h["difficulty"], h.total_shares,h.rejected_shares,h.failed_shared,
