@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>What The Hash (WTH) - BeRogue -</title>
     <script>
-    var current_page = "page_1.html"
+    var current_page = "page_1.html";
+    var refresh_timer = null;
     
     function load_file(FileName,RespType,FileType,RunMe) {
         var AJAXFileReader=new XMLHttpRequest();
@@ -44,15 +46,27 @@
     // This will be executed after the file is completely loaded.
     function auto_refresh(X) {
       document.getElementById("fileDisplayArea").innerHTML=X;
-      setTimeout("set_page();", 12000);
+      if (refresh_timer != null) {
+        clearTimeout(refresh_timer);
+      }
+      refresh_timer = setTimeout(function() { set_page(); }, 12000);
     }
 
     function listen_keypress() {
       event.preventDefault();
       document.addEventListener('keydown', function (event) {
-        num_keys = ['1','2','3','4','5','6','7','8','9','0'];
-        if (num_keys.indexOf(event.key) >= 0) {
-          set_page("page_" + event.key + ".html");
+        num_keys = ['10','1','2','3','4','5','6','7','8','9'];
+        if (isFinite(event.key)) {
+          set_page("page_" + num_keys[event.key] + ".html");
+        }
+        if (event.key == 'e') {
+          set_page("command_list.html");
+        }
+        if (event.key == 'l') {
+          set_page("events.html");
+        }
+        if (event.key == 'w') {
+          set_page("web_log.html");
         }
       });
     }

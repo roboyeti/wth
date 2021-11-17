@@ -15,7 +15,7 @@ class Base
   attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses
  
   def initialize(p={})
-    @config = p[:config]
+    @config = p[:config] || {}
     @frequency = @config["every"] || 12
     @port = @config["port"] || 0
     @page = @config["page"] || 1
@@ -268,6 +268,53 @@ class Base
       t.gsub("│",colorize("│",$color_divider))
     }
     tout = tarr.join("\n") << "\n \n"    
+  end
+
+  # Color and style the speed value
+  #
+  def speed_style(speed)
+    str = sprintf("%2s","#{speed}#{$speed_sym}")
+    #sprintf("%3s#{$speed_sym}",speed)
+    if (speed <= 0)
+      colorize(str,$color_speed_alert)
+    else
+      colorize(str,$color_speed_ok)      
+    end     
+  end
+
+  # Color and style the power value
+  #
+  def format_power(v)
+    "#{v.to_f.round}w"
+  end
+
+  # Color and style the fan value
+  #
+  def fan_style(fan)
+    fan_str = sprintf("%2s","#{fan}#{$fan_sym}")
+    #sprintf("%3s#{$fan_sym}",fan)
+    
+    if (fan > $fan_alert) || (fan <= 0)
+      colorize(fan_str,$color_fan_alert)
+    elsif fan > $fan_warn
+      colorize(fan_str,$color_fan_warn)          
+    else
+      colorize(fan_str,$color_fan_ok)      
+    end     
+  end
+
+  # Color and style the temp value
+  #
+  def temp_style(temp)
+    temp_str = sprintf("%2s","#{temp}#{$temp_sym}")
+    #sprintf("%3s#{$temp_sym}",temp)
+    if ( temp > $temp_alert ) || (temp <= 0)
+      temp = colorize(temp_str,$color_temp_alert)
+    elsif temp > $temp_warn
+      temp = colorize(temp_str,$color_temp_warn)
+    else
+      temp = colorize(temp_str,$color_temp_ok)
+    end
   end
 
   def colorize(val,colors)

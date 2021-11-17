@@ -12,6 +12,7 @@ require 'json'
 require 'socket'
 require 'os'
 require 'sys/cpu'
+require 'lucky_case/string'
 
 require 'pastel'
 load './utils/ext/io.rb'
@@ -20,12 +21,12 @@ load './utils/ext/dynamic_hash.rb'
 load './core/web_server_basic.rb'
 
 [ 'base', 'gpu_base',
-  'claymore','phoenix','excavator','t_rex',
-  'xmrig','cpuminer',
-  'signum_pool_miner','signum_pool_view',
-  'unmineable'
+#  'claymore','phoenix','excavator','t_rex',
+#  'xmrig','cpuminer',
+#  'signum_pool_miner','signum_pool_view',
+#  'unmineable'
 ].each{|mod|
-  puts "Loading Module: #{mod}.rb"
+#  puts "Loading Module: #{mod}.rb"
   load "./core/modules/#{mod}.rb"
 }
 
@@ -37,7 +38,7 @@ class Core
 
   attr_reader :config_file, :cfg, :modules
 
-  VERSION = "0.09"
+  VERSION = "0.14"
   CONFIG_VERSION = 20211103
 
   DEFAULT_CONFIG = {
@@ -72,23 +73,37 @@ class Core
 
   # Module map form config to Module
   MODULES = {
-    'excavator' => Excavator,
-    'phoenix' => Phoenix,
-    'signum_pool_miner' => SignumPoolMiner,
-    'signum_pool_view' => SignumPoolView,
-    't_rex' => TRex,
-    'unmineable' => Unmineable,
-    'xmrig' => Xmrig,
-    'raptoreum' => Cpuminer,
-    'cpuminer' => Cpuminer,
+    'excavator' => "Excavator",
+    'nice_hash' => "Excavator",
+    'phoenix' => "Phoenix",
+    'signum_pool_miner' => "SignumPoolMiner",
+    'signum_pool_view' => "SignumPoolView",
+    't_rex' => "TRex",
+    'unmineable' => "Unmineable",
+    'xmrig' => "Xmrig",
+    'raptoreum' => "Cpuminer",
+    'cpuminer' => "Cpuminer",
   }
 
+  PLUGINS = {
+    'conemu' => 'ConEmu',
+    'con_emu' => 'ConEmu',
+  }
+  
   def initialize(p={})
     @config_file = p["config"] || p["config_file"] || "wth_config.yml"
     @config_type = "json"
+    @page_titles = []
+    if config["pages"]
+      config["pages"].each_pair{|pn,pt|
+        @page_titles[pn.to_i - 1] = pt
+      }
+    end
     @log = {}
     @modules = {}
     @os = OS
+    @plugins = {}
+    init_plugins(config["plugins"])
     os_init
   end
 
@@ -219,9 +234,25 @@ class Core
     @log[type] ||= []
     @log[type] << val
     @log[type].shift( @log[type].length - 30 ) if @log[type].length > 30
+    if @webserver
+      @webserver.write_html_file(type,type.downcase.capitalize,@log[type].join("\n"))
+    end
   end
   def get_log(type)
     @log[type] ||= []    
+  end
+
+  def init_plugins(cfg)
+    @plugins = cfg.each_pair{|k,v|
+      next if !PLUGINS[k]
+      p = v || {}
+      file = PLUGINS[k].snake_case
+      puts "Loading Plugin: #{k} => #{file}"
+      load "./core/plugins/#{file}.rb"
+      obj = PLUGINS[k].constantize
+      puts "Init Plugin: #{k} => #{obj.name}"
+      @plugins[k] = obj.new(p)
+    }
   end
   
   def check_wth_module?(name,cfg)
@@ -231,12 +262,16 @@ class Core
   
   def init_wth_module(name,cfg)
     api = cfg['api']
-    @modules[name] = MODULES[api].new(config: cfg)
+    file = MODULES[api].snake_case
+    puts "Loading Module: #{name} => #{file}"
+    load "./core/modules/#{file}.rb"
+    obj = MODULES[api].constantize
+    puts "Init Module: #{name} => #{obj.name}"
+    @modules[name] = obj.new(config: cfg)
   end
   
   def init_wth_modules(h_mods)
     h_mods.each_pair {|m,p|
-      puts "Init #{m} => #{p['api']}"
       init_wth_module(m,p) if check_wth_module?(m,p)  
     }
     @modules
@@ -277,6 +312,7 @@ class Core
 			page_out[page] ||= []
 			t["mypage"].each {|l| page_out[page] << l }    
 			t["events"].each {|event| add_log('events',event) }
+      t.exit
 		}
 		page_out
 	end
@@ -287,11 +323,11 @@ class Core
   end
   
   def webserver_pulse(pages)
-      # Non blocking read on webserver output to web access log
-      io = @webserver.read_io_nonblock
-      add_log('web',io) if io
+    # Non blocking read on webserver output to web access log
+    io = @webserver.read_io_nonblock
+    add_log('web_log',io) if io
     Thread.new{
-      @webserver.write_html(pages)
+      @webserver.write_html(page_titles,pages)
     }
   end
   
@@ -301,6 +337,16 @@ class Core
     ff.close
   end
 
+  def page_title(idx)
+    @page_titles[idx] || "Page #{idx + 1}"
+  end
+
+  def page_titles()
+    10.times.map{|idx|
+      @page_titles[idx] || "Page #{idx + 1}"
+    }
+  end
+  
   def os_init
     if @os.windows?
       windows_init

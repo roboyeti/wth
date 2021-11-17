@@ -1,9 +1,24 @@
 ---
 version: 20211103
-settings:
-  html_out: true
-  console_out: true
-  gpu_view: true
+html_out: true
+#  console_out: true
+#  gpu_view: true
+base_line_frequency: 8
+pages:
+  1: Overview
+  2: Signum Pool
+  3: Standalone Test
+  4: Pools
+  5: GPUs
+plugins:
+  conemu: # Enables (hopefully) several auto conemu features.
+    standalone_fontsize: 20
+  smi_rest_start:
+    port: 30999
+  gpu_caps_viewer:
+    path: ./
+    frequency: 12
+#  nvidia-smi: # Enables parsing of local nvidia-smi file for local machines
 modules:
   t_rex_unm:
     port: 4067
@@ -82,6 +97,14 @@ modules:
     page: 1
     nodes:
       valhalla: 192.168.0.113
+  smi_rest1:
+    port: 30999
+    extra:
+    every: 12
+    api: smi_rest
+    page: 5
+    nodes:
+      valhalla: 192.168.0.113
   signum_pool_miner:
     every: 180
     actual: 
@@ -95,17 +118,17 @@ modules:
     nodes:
       S-39C7-CS43-QPMM-FXMJ3: https://signapool.notallmine.net
       S-CJFF-3JYH-GMBY-D2DRX: https://signapool.notallmine.net
-    thresholds:
-      S-39C7-CS43-QPMM-FXMJ3:
-        physical_capacity:
-        - "<"
-        - yellow
-        - 90.7341
-      S-CJFF-3JYH-GMBY-D2DRX:
-        physical_capacity:
-        - "<"
-        - yellow
-        - 3.6383
+    #thresholds:
+    #  S-39C7-CS43-QPMM-FXMJ3:
+    #    physical_capacity:
+    #    - "<"
+    #    - yellow
+    #    - 90.7341
+    #  S-CJFF-3JYH-GMBY-D2DRX:
+    #    physical_capacity:
+    #    - "<"
+    #    - yellow
+    #    - 3.6383
   signum_pool_view:
     every: 180
     port: 0
@@ -119,3 +142,7 @@ modules:
     highlight_nodes:
       S-39C7-CS43-QPMM-FXMJ3
       S-CJFF-3JYH-GMBY-D2DRX 
+#  unmineable:
+#      every: 600
+#      api: unmineable
+#      nodes:      

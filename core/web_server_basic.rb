@@ -22,6 +22,8 @@ class WebServerBasic
 	@config = p
     @port = @config["port"] || 8000
     @host = @config["host"] || 'localhost'
+    write_html_file('events','events',"Nothing to show")
+    write_html_file('web_logs','web_logs',"Nothing to show")    
   end  
   
   # Spin up the server in a thread and connect
@@ -60,16 +62,28 @@ class WebServerBasic
 #    puts e
 #    exit
   end
+
+  def write_html_file(file,name,content)
+    if content.is_a?(String)
+      content = content.split("\n")
+    end
+    web_hdr_out = console_header(name)
+    ff = File.open("./web/#{file}.html", 'w')
+    ff.write(Terminal.render((web_hdr_out + content).join("\n")))
+    ff.close    
+  end
   
-  def write_html(pages)
-      web_hdr_out = console_header(false)
+  def write_html(titles,pages)
       fill = 10 - pages.length
       idx = pages.length
       fill.times{|p|
         pages[p + idx] = ["Nothing to show for this page"]
       }
       pages.each_with_index {|e,i|
-        ff = File.open("./web/page_#{i+1}.html", 'w')
+        idx = i + 1
+        web_hdr_out = console_header(titles[i])
+        
+        ff = File.open("./web/page_#{idx}.html", 'w')
         ff.write(Terminal.render((web_hdr_out + e).join("\n")))
         ff.close
       }

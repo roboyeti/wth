@@ -153,22 +153,23 @@ class SignumPoolMiner < Base
       h = hash[addr]
 
       if h["down"] == true
-        @events << sprintf("%15s - %s",addr,h["message"])
-        next
+        h["name"] = addr
+        h[:uptime] = colorize("down",$color_alert)
+        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h["message"]))
       end
       
       nconf = h["confirmations"].to_i
       nconf_str = nconf < 100 ? $pastel.red.bold(nconf) : $pastel.green.bold(nconf)
       nconf_str = nconf < 115 ? $pastel.yellow.bold(nconf) : $pastel.green.bold(nconf)
       
-      phycap = (h["physical_capacity"]).ceil(2)
+      phycap = (h["physical_capacity"]).to_f.ceil(2)
       phycap_str = ""
       phycap_str = @config["capacity"] && @config["capacity"][addr] && (phycap < @config["capacity"][addr]) ? $pastel.yellow.bold(phycap) : $pastel.green.bold(phycap)
 
-      effcap = (h["effective_capacity"]).ceil(2)
+      effcap = (h["effective_capacity"]).to_f.ceil(2)
       effcap_str = phycap > effcap ? $pastel.yellow.bold(effcap) : $pastel.green.bold(effcap)
       
-      boost = h["boost_pool"].round(3)
+      boost = h["boost_pool"].to_f.round(3)
       boost_str = boost <= 1 ? $pastel.yellow.bold(boost) : $pastel.green.bold(boost)
       
       deadline = if h["current_best_deadline"].to_f > 0.01
@@ -179,10 +180,10 @@ class SignumPoolMiner < Base
       
       position = "#{h["pool_position"]} / #{h["pool_miner_count"]}"
       rows << [
-        h["name"],h["available_balance"].ceil(4),h["total_commitment"].ceil(4),
-        h["blocks"],h["pool_share"].ceil(4),position,nconf_str,
+        h["name"],h["available_balance"].ceil(4),h["total_commitment"].to_f.ceil(4),
+        h["blocks"],h["pool_share"].to_f.ceil(4),position,nconf_str,
         h["pending_balance"],deadline,
-        boost_str,phycap_str,effcap_str,h["shared_capacity"].ceil(2)
+        boost_str,phycap_str,effcap_str,h["shared_capacity"].to_f.ceil(2)
       ]
       
     }

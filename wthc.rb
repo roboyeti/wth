@@ -31,7 +31,7 @@ if app.newer_config_version?
 end
 
 #clear
-console_header().each {|o| clear_line; puts o; }
+#console_header().each {|o| clear_line; puts o; }
 
 run_mods = app.init_wth_modules(app.config['modules'])
 app.webserver_start
@@ -64,12 +64,12 @@ while 1
   
       reposition
       cursor_hide
-      console_header().each {|o| clear_line; puts o; }
+      console_header(app.page_title($page - 1)).each {|o| clear_line; puts o; }
    
       out = page_out[$page - 1] || ['Nothing to show']
       out.each {|o|
         clear_line
-        puts o
+        puts " #{o}"
       }
       clear_screen_down
   

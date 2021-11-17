@@ -5,9 +5,10 @@
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
 using DynamicHash
+load "./core/modules/claymore.rb"
 
 class Phoenix < Claymore
-
+  
   def initialize(p={})
     super
     @title = p[:title] || 'Phoenix'    
