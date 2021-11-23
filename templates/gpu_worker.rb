@@ -29,3 +29,7 @@ $color_id         = :yellow,:dim
 
 $gpu_host_cols     = [] # Ignored for now
 $gpu_device_cols   = [] # Ignored for now
+
+$color_gpu_ok     = :bright_blue
+$color_gpu_warn   = :bright_yellow
+$color_gpu_alert  = :bright_red

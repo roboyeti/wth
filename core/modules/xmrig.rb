@@ -8,7 +8,7 @@ require 'rest-client'
 require 'json'
 
 class Xmrig < Base
-  using DynamicHash
+  using IndifferentHash  
 
   def initialize(p={})
     super

@@ -1,29 +1,14 @@
 ---
 version: 20211103
-html_out: true
-#  console_out: true
-#  gpu_view: true
-base_line_frequency: 8
-pages:
-  1: Overview
-  2: Signum Pool
-  3: Standalone Test
-  4: Pools
-  5: GPUs
-plugins:
-  conemu: # Enables (hopefully) several auto conemu features.
-    standalone_fontsize: 20
-  smi_rest_start:
-    port: 30999
-  gpu_caps_viewer:
-    path: ./
-    frequency: 12
-#  nvidia-smi: # Enables parsing of local nvidia-smi file for local machines
+settings:
+  html_out: true
+  console_out: true
+  gpu_view: true
 modules:
   t_rex_unm:
     port: 4067
     extra: ETH>BTT
-    coin: ETC
+    coin: ETH
     api: t_rex
     gpu_row: 4
     nodes:
@@ -41,8 +26,8 @@ modules:
       serenity: 192.168.0.104
   phoenix_unm:
     port: 33433
-    extra: ETH>ETC
-    coin: SHIB
+    extra: ETH>HOT
+    coin: ETH
     api: phoenix
     gpu_row: 3
     standalone: false
@@ -57,26 +42,6 @@ modules:
     nodes:
       helter: 192.168.0.111
       skelter: 192.168.0.112
-  phoenix_unm2:
-    port: 33433
-    extra: ETH>SHIB
-    coin: SHIB
-    api: phoenix
-    gpu_row: 3
-    standalone: true
-    page: 3
-    nodes:
-      vendetta: 192.168.0.122
-  #xmrig_st:
-  #  port: 8989
-  #  extra: XMR
-  #  coin: XMR
-  #  every: 12
-  #  api: xmrig
-  #  standalone: true
-  #  page: 3
-  #  nodes:
-  #    vendetta: 192.168.0.122
   xmrig:
     port: 8989
     extra: XMR
@@ -85,7 +50,6 @@ modules:
     api: xmrig
     page: 1
     nodes:
-#      valhalla: 192.168.0.113
       pedxing: 192.168.0.106
       vendetta: 192.168.0.122
   raptoreum:
@@ -107,42 +71,57 @@ modules:
       valhalla: 192.168.0.113
   signum_pool_miner:
     every: 180
-    actual: 
+    actual:
     port: 0
     page: 1
     api: signum_pool_miner
     extra: signapool.notallmine.net
     capacity:
       S-39C7-CS43-QPMM-FXMJ3: 94.3727
-      S-CJFF-3JYH-GMBY-D2DRX: 5.4575 
+      S-CJFF-3JYH-GMBY-D2DRX: 5.4575
     nodes:
       S-39C7-CS43-QPMM-FXMJ3: https://signapool.notallmine.net
       S-CJFF-3JYH-GMBY-D2DRX: https://signapool.notallmine.net
-    #thresholds:
-    #  S-39C7-CS43-QPMM-FXMJ3:
-    #    physical_capacity:
-    #    - "<"
-    #    - yellow
-    #    - 90.7341
-    #  S-CJFF-3JYH-GMBY-D2DRX:
-    #    physical_capacity:
-    #    - "<"
-    #    - yellow
-    #    - 3.6383
   signum_pool_view:
     every: 180
     port: 0
-    record_count: 25
+    record_count: 15
     show_block_winners: true
     api: signum_pool_view
     page: 2
     extra:
     nodes:
       Signapool NotAllMine: https://signapool.notallmine.net
-    highlight_nodes:
-      S-39C7-CS43-QPMM-FXMJ3
-      S-CJFF-3JYH-GMBY-D2DRX 
-#  unmineable:
-#      every: 600
-#      api: unmineable
-#      nodes:      
+    highlight_nodes: S-39C7-CS43-QPMM-FXMJ3 S-CJFF-3JYH-GMBY-D2DRX
+  unmineable:
+    every: 300
+    api: unmineable
+    page: 2
+    nodes:
+      BTT: TPMFKMtUYsEDdqEvLhZtGCNNXJX2Hbp5W5:BTT
+      HOT: 0xBf8f8F0d781DeEA687544dECb7f422066686d075:HOT
+      XMR: 83waEwQgGsVeZfkavB8PBa6rtQBx6pgEuYx2BzYwj5LYRxpr4nir4RzTkAq2zDK2BLbWVfk1bd6NMMGUQeGuWoz37tWNEsg:XMR
+  flock_pool:
+    every: 300
+    api: flock_pool
+    page: 2
+    nodes:
+      RTM: RKH9fDmKabTowQhYoQQHbwe8cppXDi6Qrm
+html_out: true
+base_line_frequency: 8
+pages:
+    1: Overview
+    2: Pools
+    3: Standalone Test
+    4: Pools
+    5: GPUs
+plugins:
+  conemu:
+    standalone_fontsize: 20
+  smi_rest_start:
+    port: 30999
+  gpu_caps_viewer:
+    path: "./"
+    frequency: 12
+  what_to_mine:
+    lifespan: 300

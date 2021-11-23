@@ -9,22 +9,23 @@
 # TODO: Threads optional?
 # TODO: logs
 #
-require 'sinatra'
+#require 'sinatra'
 require 'webrick'
 require 'webrick/https'
 require "terminal"
 
 class WebServerBasic
-  using DynamicHash
-  attr_reader :config, :io_read, :io_write, :web_thread , :port, :host
+  using IndifferentHash  
+  include ConsoleInit
+  
+  attr_reader :config, :io_read, :io_write, :web_thread , :port, :host, :version
   
   def initialize(p={})
-	@config = p
+  	@config = p
+  	@version = @config["version"] || ''
     @port = @config["port"] || 8000
     @host = @config["host"] || 'localhost'
-    write_html_file('events','events',"Nothing to show")
-    write_html_file('web_logs','web_logs',"Nothing to show")    
-  end  
+  end
   
   # Spin up the server in a thread and connect
   # IO handlers to service IO.
@@ -70,7 +71,7 @@ class WebServerBasic
     web_hdr_out = console_header(name)
     ff = File.open("./web/#{file}.html", 'w')
     ff.write(Terminal.render((web_hdr_out + content).join("\n")))
-    ff.close    
+    ff.close
   end
   
   def write_html(titles,pages)
@@ -90,15 +91,15 @@ class WebServerBasic
   end
 end
 
-class IO
-  def readline_nonblock
-    buffer = ""
-    buffer << read_nonblock(1) while buffer[-1] != "\n"
-
-    buffer
-  rescue IO::WaitReadable => blocking
-    raise blocking if buffer.empty?
-
-    buffer
-  end
-end
+#class IO
+#  def readline_nonblock
+#    buffer = ""
+#    buffer << read_nonblock(1) while buffer[-1] != "\n"
+#
+#    buffer
+#  rescue IO::WaitReadable => blocking
+#    raise blocking if buffer.empty?
+#
+#    buffer
+#  end
+#end

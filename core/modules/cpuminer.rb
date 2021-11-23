@@ -4,10 +4,22 @@
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
+# http://192.168.0.113:4048/summary
+# NAME=cpuminer-opt-gr;VER=1.2.4.1;API=1.0;ALGO=gr;CPUS=6;URL=/us-west.flockpool.com:5555;HS=266.99;KHS=0.27;ACC=2263;REJ=0;SOL=0;ACCMN=1.180;DIFF=6.465386;TEMP=0.0;FAN=0;FREQ=0;UPTIME=115058;TS=1637223717|
+#
+# Cpuminer is annoying.  It slams the socket shut on any incorrect input and also sometimes seems to slam it shut
+# after a short amount of time.  Worst API so far...
+# Due to this, there is an unusual handler around the socket comm.  A minimal request is made, to escape the timing issue
+# and a no-op rescue to let the system keep working.  This will have the effect of making the node appear to be down
+# until the next check (which is delayed for downed nodes).
+#
 require 'socket'
 
 class Cpuminer < Base
-  using DynamicHash
+  using IndifferentHash  
+
+  VERSION = "1.2.4.1"
+  URL = "https://github.com/WyvernTKC/cpuminer-gr-avx2/releases"
 
   CMDS = {
     'summary': '/summary',
@@ -79,10 +91,6 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
     h.rejected_shares= summary["REJ"].to_i
     h.failed_shared  = summary["SOL"]
       
-#    h["hashrate_60s"] = res["hashrate"]["total"][1].to_f || 0.0
-#    h["avg_time"] = res["connection"]["avg_time"].to_f
-#    h["avg_time_ms"] = res["connection"]["avg_time_ms"].to_f   
-#    h["hashes_total"] = res["connection"]["hashes_total"].to_i
     h.uptime = summary["UPTIME"].to_i
     h.cpu = cpu_structure
 #    h.cpu.name = cpu_clean(res["cpu"]["brand"])
@@ -97,10 +105,9 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
     rows = []
     
     headers = [
-      nice_title, "Uptime","Algo","Diff","Accpt","Rjct","Fail",
-      "Avg H/s","Pool","Th#","CPU"
+      nice_title, "Uptime","Algo","Diff","Accpt","Rjct","Sol?",
+      "Avg H/s","Accept/Min","Pool","Th#","CPU"
     ]
-#"Max H/s","Total KH",
     hash.keys.sort.map{|addr|
       h = hash[addr]
       uptime = "down"
@@ -119,7 +126,7 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
       rows << [
         h.name, uptime, h.algo,
         h["difficulty"], h.total_shares,h.rejected_shares,h.failed_shared,
-        h.combined_speed,
+        h.combined_speed, h.rate,
         h.pool, h.cpu.threads_used, ''
       ]
         #h["hashrate_max"],h["hashes_total"]/1000.0,

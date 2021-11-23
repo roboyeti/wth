@@ -1,3 +1,6 @@
+# Monkey patch some useful stuff on to string.
+#
+# 
 class String
   def strip_control_characters()
     chars.each_with_object("") do |char, str|

@@ -18,7 +18,7 @@
 
 $WINDOWS_EXE = "nvidia-smi.exe"
 
-class NvidiaSmi
+class NvidiaSmi < PluginBase
 
   def initialize(p={})
     @exe = $WINDOWS_EXE

@@ -21,7 +21,7 @@ require 'rest-client'
 require 'json'
 
 class SignumPoolView < Base
-  using DynamicHash
+  using IndifferentHash  
 
   attr_accessor :signum_network, :pool_records
 
@@ -58,7 +58,7 @@ class SignumPoolView < Base
 
     pos = 1
     res["miners"].each{|m|
-      mh = {}
+      mh = structure
       mh["address"] = m["address"]
       mh["address_rs"] = m["addressRS"]      
       mh["pending_balance"] = m["pendingBalance"].split(' ')[0].to_f    
@@ -83,7 +83,30 @@ class SignumPoolView < Base
   end
 
   def structure
-    {}
+    OpenStruct.new({
+      "address"           => "",
+      "address_rs"        => "",      
+      "balance"           => 0.0,
+      "available_balance" => 0.0,
+      "pending_balance"   => 0.0,    
+      "physical_capacity" => 0.0,                   
+      "effective_capacity" => 0.0,         
+      "shared_capacity"    => 0.0,                 
+      "tib_commitment"    => 0.0,        
+      "total_commitment"  => 0.0,  
+      "share_percent"     => 0.0,                         
+      "donation_percent"  => 0.0,                      
+      "confirmations"     => 0,                                
+      "pool_share"        => 0.0,              
+      "payout"            => 0.0,
+      "boost_pool"        => 0.0,
+      "current_best_deadline" => 0.0,         
+      "name"              => "",             
+      "agent"             => "",
+      "blocks"            => 0,
+      "pool_position"     => 0,
+      "pool_miner_count"  => 0
+    })   
   end
 
   # TODO: rework to be generic table to be rendered in console or html
@@ -128,10 +151,15 @@ class SignumPoolView < Base
         next
       end
       ah["miners"][0..pool_records-1].each_with_index{|m,i|        
-        nconf = m["confirmations"].to_i
-        nconf_str = nconf < 115 ? $pastel.yellow.bold(nconf) : $pastel.green.bold(nconf)
-        nconf_str = nconf < 100 ? $pastel.red.bold(nconf) : $pastel.green.bold(nconf)
-          
+        nconf = m["confirmations"].to_i || 0
+        nconf_str = if nconf < 115
+          $pastel.yellow.bold("#{nconf}")
+        elsif nconf < 100
+          $pastel.red.bold("#{nconf}")
+        else
+          $pastel.green.bold("#{nconf}")
+        end
+        
         phycap = (m["physical_capacity"]).ceil(2)
         phycap_str = phycap
     
@@ -175,6 +203,7 @@ class SignumPoolView < Base
         
       }
     }
+    out << ""
     out
 
   end

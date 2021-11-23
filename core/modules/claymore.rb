@@ -4,14 +4,17 @@
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
+# TODO:
+# Add miner and coin info from response to structure
+#
 require 'socket'
 
 class Claymore < GpuBase
-  using DynamicHash
+  using IndifferentHash  
 
   CMDS = {
-#   'getstats1': '{"id":0,"jsonrpc":"2.0","method":"miner_getstat1"}',
-    'getstats2': "miner_getstat2"
+    'getstats1': 'miner_getstat1', # Unused, here if we need to make a variant for miner without getstats2
+    'getstats2': 'miner_getstat2'
   }
 
   def initialize(p={})
@@ -35,14 +38,9 @@ class Claymore < GpuBase
     port = port ? port : @port
     @responses["#{host}:#{port}"] = {}
 
-#    begin
     CMDS.each_pair{|k,v|
   		@responses["#{host}:#{port}"]["#{k}"] = JSON.parse(send_command(ip,port,v))
     }
-#    rescue => e
-#      puts e
-#      puts e.backtrace[0..5]
-#    end
     
 		format(host,@responses["#{host}:#{port}"])
   end

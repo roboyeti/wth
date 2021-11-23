@@ -14,7 +14,7 @@ require 'rest-client'
 require 'json'
 
 class SignumPoolMiner < Base
-  using DynamicHash
+  using IndifferentHash  
 
   SIGNUM_NETWORK_API = 'https://canada.signum.network'
 
@@ -40,7 +40,7 @@ class SignumPoolMiner < Base
                     "down" => true,
                     "message" => "Service down!  Checked @ #{@down[k]} #{(Time.now - @down[k]).round(2)} seconds ago",
                     "time"  => Time.now,
-                  }
+                  }.merge(structure)
             else
               out << line_err(k,"Rechecking service.")
               @down.delete(k)
@@ -110,7 +110,7 @@ class SignumPoolMiner < Base
   end
 
   def structure
-    {
+    OpenStruct.new({
       "address"           => "",
       "address_rs"        => "",      
       "balance"           => 0.0,
@@ -133,7 +133,7 @@ class SignumPoolMiner < Base
       "blocks"            => 0,
       "pool_position"     => 0,
       "pool_miner_count"  => 0
-    }     
+    })   
   end
   
   def console_out(data)
@@ -153,15 +153,21 @@ class SignumPoolMiner < Base
       h = hash[addr]
 
       if h["down"] == true
+        h.merge!(structure)
         h["name"] = addr
         h[:uptime] = colorize("down",$color_alert)
         @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h["message"]))
       end
       
       nconf = h["confirmations"].to_i
-      nconf_str = nconf < 100 ? $pastel.red.bold(nconf) : $pastel.green.bold(nconf)
-      nconf_str = nconf < 115 ? $pastel.yellow.bold(nconf) : $pastel.green.bold(nconf)
-      
+      nconf_str = if nconf < 115
+        $pastel.yellow.bold(nconf)
+      elsif nconf < 110
+        $pastel.red.bold(nconf)
+      else
+        $pastel.green.bold(nconf)
+      end      
+
       phycap = (h["physical_capacity"]).to_f.ceil(2)
       phycap_str = ""
       phycap_str = @config["capacity"] && @config["capacity"][addr] && (phycap < @config["capacity"][addr]) ? $pastel.yellow.bold(phycap) : $pastel.green.bold(phycap)

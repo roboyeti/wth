@@ -8,7 +8,7 @@ require 'rest-client'
 require 'json'
 
 class TRex < GpuBase
-  using DynamicHash
+  using IndifferentHash  
 
   def initialize(p={})
     super

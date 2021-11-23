@@ -8,7 +8,7 @@ require 'json'
 require 'pastel'
 require 'terminal-table'
 
-using DynamicHash
+using IndifferentHash  
 
 class Base
   attr_accessor :title
@@ -316,7 +316,7 @@ class Base
       temp = colorize(temp_str,$color_temp_ok)
     end
   end
-
+  
   def colorize(val,colors)
     m = $pastel
     arc = *colors

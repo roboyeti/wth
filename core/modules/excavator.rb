@@ -8,7 +8,7 @@ require 'rest-client'
 require 'json'
 
 class Excavator < GpuBase
-  using DynamicHash
+  using IndifferentHash  
 
   def initialize(p={})
     super

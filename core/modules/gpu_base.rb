@@ -4,18 +4,28 @@
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
-
+# Base class for GPU APIs.
+#
 class GpuBase < Base
-  using DynamicHash
+  using IndifferentHash  
   
-  attr_reader :header_length, :gpu_row
+  attr_reader :header_length, :gpu_row, :coin
  
   def initialize(p={})
     super
     @standalone = @config["standalone"]
     @gpu_row    = @config["gpu_row"] || 5
+    @coin    = @config["coin"] || ''
   end
-      
+
+  def mine_profit(*p)
+    self.respond_to?(:mine_profit_hook) ? mine_profit_hook(*p) : 0
+  end
+
+  def mine_revenue(*p)
+    self.respond_to?(:mine_revenue_hook) ? mine_revenue_hook(*p) : 0
+  end
+  
   # General console out creation.
   # See 'templates/gpu_worker.rb' and 'templates/table.rb' for magic global style stuff
   def console_out(data)
@@ -24,7 +34,7 @@ class GpuBase < Base
     max_gpu = 0 # Track largest number of GPU per row
     
     # TODO: Get from confg
-    headers = ["#{title}:#{config['extra']}",'Uptime','Speed','Power','Shares','Rjct']
+    headers = ["#{title}:#{config['extra']}",'Uptime','Est.Rev','Speed','Power','Shares','Rjct']
     
     hosts.keys.sort.each{|addr|
       h = hosts[addr]
@@ -37,13 +47,16 @@ class GpuBase < Base
         h[:gpu] = {}
       end
 
+      reject_str = colorize_percent_of(h[:total_shares],h[:rejected_shares],0.10,0.50)
+
       rows << [
         standalone? ? '' : h["name"].capitalize,
         h[:uptime],
+        sprintf("$%0.2f",mine_revenue(coin,h[:combined_speed]).to_f), # h[:coin] ||  .... erg
         h[:combined_speed].round(0),
         format_power(h[:power_total]),
         h[:total_shares],
-        h[:rejected_shares]
+        reject_str
       ]
     }
 
@@ -108,6 +121,17 @@ class GpuBase < Base
       headers.concat ['Id','Spd','Tmp','Fan']
     }
     return headers,rows
+  end
+
+  # Colors s2
+  def colorize_percent_of(s1,s2,pwarn,palert)
+    my_str = if s2 > (s1 * palert)
+      colorize(s2,$color_gpu_alert)      
+    elsif s2 > (s1 * pwarn)
+      colorize(s2,$color_gpu_warn)      
+    else
+      colorize(s2,$color_gpu_ok)      
+    end  
   end
 
 end
