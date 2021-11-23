@@ -440,7 +440,7 @@ class Core
   def webserver_pulse(pages)
     # Non blocking read on webserver output to web access log
     io = @webserver.read_io_nonblock
-    add_log('web_log',io) if io
+    add_log('web_logs',io) if io
     Thread.new{
       @webserver.write_html(page_titles,pages)
     }

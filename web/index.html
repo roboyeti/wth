@@ -66,14 +66,14 @@
           set_page("events.html");
         }
         if (event.key == 'w') {
-          set_page("web_log.html");
+          set_page("web_logs.html");
         }
       });
     }
 
     function set_page(page=current_page) {
       current_page = page;
-      load_file(current_page,"html","text/plain;charset=utf-8",auto_refresh);
+      load_file("generated/"+current_page,"html","text/plain;charset=utf-8",auto_refresh);
     }
 
     function setup_app() {

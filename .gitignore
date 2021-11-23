@@ -5,3 +5,5 @@ web/page_*
 tmp
 tbd
 marketing
+!web/generated
+web/generated/*.html

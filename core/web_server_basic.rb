@@ -69,7 +69,7 @@ class WebServerBasic
       content = content.split("\n")
     end
     web_hdr_out = console_header(name)
-    ff = File.open("./web/#{file}.html", 'w')
+    ff = File.open("./web/generated/#{file}.html", 'w')
     ff.write(Terminal.render((web_hdr_out + content).join("\n")))
     ff.close
   end
@@ -84,7 +84,7 @@ class WebServerBasic
         idx = i + 1
         web_hdr_out = console_header(titles[i])
         
-        ff = File.open("./web/page_#{idx}.html", 'w')
+        ff = File.open("./web/generated/page_#{idx}.html", 'w')
         ff.write(Terminal.render((web_hdr_out + e).join("\n")))
         ff.close
       }
