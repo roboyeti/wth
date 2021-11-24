@@ -9,13 +9,12 @@
 class GpuBase < Base
   using IndifferentHash  
   
-  attr_reader :header_length, :gpu_row, :coin
+  attr_reader :header_length, :gpu_row, :standalone
  
   def initialize(p={})
     super
     @standalone = @config["standalone"]
     @gpu_row    = @config["gpu_row"] || 5
-    @coin    = @config["coin"] || ''
   end
 
   def mine_profit(*p)
@@ -33,42 +32,46 @@ class GpuBase < Base
     rows = []
     max_gpu = 0 # Track largest number of GPU per row
     
-    # TODO: Get from confg
-    headers = ["#{title}:#{config['extra']}",'Uptime','Est.Rev','Speed','Power','Shares','Rjct']
+    headers = ['Uptime','Est.Rev','Speed','Power','Shares','Rjct']
     
     hosts.keys.sort.each{|addr|
       h = hosts[addr]
 
       if h["down"] == true
-        h["name"] = addr
-        h[:uptime] = colorize("down",$color_alert)
-        h[:combined_speed] = 0
-        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h["message"]))
-        h[:gpu] = {}
+        h.name = addr
+        h.uptime = colorize("down",$color_alert)
+        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h.message))
       end
 
       reject_str = colorize_percent_of(h[:total_shares],h[:rejected_shares],0.10,0.50)
 
-      rows << [
-        standalone? ? '' : h["name"].capitalize,
-        h[:uptime],
-        sprintf("$%0.2f",mine_revenue(coin,h[:combined_speed]).to_f), # h[:coin] ||  .... erg
-        h[:combined_speed].round(0),
-        format_power(h[:power_total]),
-        h[:total_shares],
+      row = [
+        h.uptime,
+        sprintf("$%0.2f",mine_revenue(coin,h.combined_speed).to_f), # h[:coin] ||  .... erg
+        h.combined_speed.round(0),
+        format_power(h.power_total),
+        h.total_shares,
         reject_str
       ]
+      if !standalone?
+        row.unshift(h.name.capitalize)
+      else
+        row.unshift('')
+      end
+      rows << row
     }
 
     if standalone?
+      headers.unshift("")
       k = hosts.keys.sort.first
-      o = table_out(headers,rows,hosts[k]["name"].upcase)
+      o = table_out(headers,rows,"#{hosts[k]["name"].upcase} - #{title} : #{config['extra']}")
       gheaders = []
       grows = []
       gpu_grid(hosts,gheaders,grows)
       o << table_out(gheaders,grows)
       o
     else
+      headers.unshift("#{title}:#{config['extra']}")
       gpu_grid(hosts,headers,rows)
       table_out(headers,rows)    
     end

@@ -7,22 +7,24 @@
 require 'json'
 require 'pastel'
 require 'terminal-table'
-
-using IndifferentHash  
+require 'concurrent'
 
 class Base
+  using IndifferentHash  
+
   attr_accessor :title
-  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses
+  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses, :coin
  
   def initialize(p={})
     @config = p[:config] || {}
     @frequency = @config["every"] || 12
     @port = @config["port"] || 0
     @page = @config["page"] || 1
+    @coin    = @config["coin"] || ''
     @last_check = Time.now - (@frequency*2)
     @title = @config[:title] || 'Undefined???'
     @down = {}
-    @data = {}
+    @data = Concurrent::Hash.new()
     @events = []
     @responses = {}
   end
@@ -58,7 +60,7 @@ class Base
 
     if @data.empty? || tchk > @frequency
       out = []
-      @data = { addresses: {} }    
+      @data = OpenStruct.new({ addresses: {} })
       addresses = @config['nodes'].keys.sort
       
       addresses.each {|k|
@@ -67,11 +69,12 @@ class Base
         begin
           if @down[k]
             if (Time.now - @down[k]) < 180
-                  @data['addresses'][k] = {
-                    "down" => true,
-                    "message" => "Service down!  Checked @ #{@down[k]} #{(Time.now - @down[k]).round(2)} seconds ago",
-                    "time"  => Time.now,
-                  }
+              @data[:addresses][k] = OpenStruct.new(structure.to_hash.merge({
+                "down" => true,
+                "message" => "Service down!  Checked @ #{@down[k]} #{(Time.now - @down[k]).round(2)} seconds ago",
+                "time"  => Time.now,
+              }))
+
             else
               @down.delete(k)
               h = self.check(v,k)
@@ -83,14 +86,14 @@ class Base
           end
         rescue => e
           @down[k] = Time.now
-          @events << "#{Time.now} : #{k} : #{e}"
-          @data['addresses'][k] = {
-            'down' => true,
-            'error' => e,
+          @events << "#{Time.now} : #{k} : #{e} #{e.backtrace[0]}"
+          @data[:addresses][k] = OpenStruct.new(structure.to_hash.merge({
+            "down" => true,
+            "message" => "Service down!  Checked @ #{@down[k]} #{(Time.now - @down[k]).round(2)} seconds ago",
             'backtrace' => e.backtrace[0..4],
-            'time'  => Time.now,
-            'message' => "Service down!  Checked @ #{@down[k]} #{(Time.now - @down[k]).round(2)} seconds ago",
-          }
+            'error' => e,
+            "time"  => Time.now,
+          }))
         end
       }
       @last_check = Time.now
@@ -118,25 +121,35 @@ class Base
   end
 
   # Structure of GPU workers
-  def worker_structure
+  def node_structure
     OpenStruct.new({
-      :name     =>"",
-      :address  =>"",
-      :miner    =>"",
-      :uptime   =>0,
-      :algo     => "",
-      :coin     => "",
-      :pool     => "",
-      :combined_speed =>0,
-      :total_shares   =>0,
-      :rejected_shares=>0,
-      :invalid_shares  =>0,
-      :power_total    =>0,
-      :gpu            =>{},
-      :cpu            =>'',
-      :system         =>{},
+      name: "",
+      address: "",
+      miner: "",
+      uptime: 0,
+      algo: "",
+      coin: "",
+      pool: "",
+      difficulty: 0,
+      combined_speed: 0,
+      total_shares: 0,
+      rejected_shares: 0,
+      invalid_shares: 0,
+      power_total: 0,
+      time: Time.now,
+      gpu: {},
+      cpu: cpu_structure,
+      system: {},
     })
   end
+
+  def worker_structure
+    node_structure
+  end  
+  def structure
+    node_structure
+  end  
+
 
   # Structure of GPU data
   # * GPU power may not be available
@@ -177,11 +190,8 @@ class Base
     })
   end
   
-  def structure
-    worker_structure
-  end  
-
   # Try to clean up CPU text ...
+  #
   def cpu_clean(cpu)
     cpu.gsub!(/\(.+\)|\@|Processor|\s$/,'')
     cpu.gsub!(/\s+/,' ')

@@ -1,5 +1,13 @@
 #Change Log
 
+## VERSION 0.16 - 2021-11-24
+- Added: Simple Web API to request module json data.
+-- localhost:8000/api?module=<your module config name | "list" to get those>
+- Fixed: More fixes and consolidations to OpenStruct format versus hashes
+- Changed: Standalone titles / tables to look slightly better
+- Fixed: What to mine is now more accurate in general and new "fixup" framework added for odd ball miners (ex., Nice Hash!?!?!)
+- Changed: Plugins are no longer auto init'd at class instantiation.  Calling app.init starts plugins and modules (in that order)
+
 ## VERSION 0.15 - 2021-11-21
 - Improved: unmineable output
 - Added: WhatToMine plugin

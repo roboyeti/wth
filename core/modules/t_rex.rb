@@ -12,56 +12,43 @@ class TRex < GpuBase
 
   def initialize(p={})
     super
-    @title = p[:title] || "TRex"    
+    @title = p[:title] || "T-Rex"    
   end
 
   def check(ip,name)
     host,port = ip.split(':')
     port = port ? port : @port    
     res = simple_rest("http://#{host}:#{port}/summary")
-    format(name,res)
+    format(name,ip,res)
   end
 
-  def format(name,res)
+  def format(name,ip,res)
     time = res["uptime"].to_f
     uptime = uptime_seconds(time)
- 
-    hash = {
-      name: name,
-      address: name,
-      miner: "",
-      uptime: uptime,
-      combined_speed: res["hashrate"].to_f / 1000000.0,
-      total_shares: res["accepted_count"].to_i,
-      rejected_shares: res["rejected_count"].to_i,
-      gpu: {},
-    }
- 
-    hash["power_total"] = 0
+    h = node_structure
+    h.name = name
+    h.address = ip
+    h.miner = 'T-Rex'
+    h.uptime = uptime
+    h.combined_speed = res["hashrate"].to_f / 1000000.0
+    h.total_shares = res["accepted_count"].to_i
+    h.rejected_shares = res["rejected_count"].to_i
+    h.coin = self.coin
     
     device_map = {}
     res["gpus"].each {|d|
-      device_map[d["device_id"]] = {
-        pci: d["pci_bus"],
-        temp: d["temperature"].to_i,
-        fan: d["fan_speed"].to_i,
-        power: d["power"].to_f
-      }
-      hash["power_total"] += d["power_avr"].to_f
+      gpu = gpu_structure
+      gpu.pci = d["pci_bus"]
+      gpu.id = d["device_id"]
+      gpu.gpu_speed = d["hashrate"].to_f / 1000000.0
+      gpu.gpu_temp = d["temperature"].to_i
+      gpu.gpu_fan = d["fan_speed"].to_i
+      gpu.gpu_power = d["power"].to_f
+      gpu.speed_unit = 'Mh/s'
+      h.power_total += d["power_avr"].to_f
+      h.gpu[gpu.pci] = gpu
     }
-        
-    res["gpus"].each {|p|
-      device = device_map[p["device_id"]]
-      hash[:gpu][device[:pci]] = {
-        pci: device[:pci],
-        id: p["device_id"],
-        gpu_speed: p["hashrate"].to_f / 1000000.0,
-        gpu_temp: device[:temp],
-        gpu_fan: device[:fan],
-        speed_unit: 'Mh/s',
-      }
-    }
-    hash
+    h
   end
 
 end

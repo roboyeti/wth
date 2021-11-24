@@ -5,6 +5,15 @@ settings:
   console_out: true
   gpu_view: true
 modules:
+  t_rex_unm_stda:
+    port: 4067
+    extra: ETH>BTT
+    api: t_rex
+    coin: ETH
+    standalone: true
+    page: 3
+    nodes:
+      valhalla: 192.168.0.113
   t_rex_unm:
     port: 4067
     extra: ETH>BTT
@@ -37,7 +46,7 @@ modules:
   nice_hash:
     port: 18000
     extra: ETH
-    coin: ETH
+    coin: NICEHASH_ETH
     api: excavator
     nodes:
       helter: 192.168.0.111
@@ -97,6 +106,9 @@ modules:
     every: 300
     api: unmineable
     page: 2
+    keys:
+      KEY: ce3e148f-9805-425a-aac7-325f6aeab1e3
+      SECRET: 1008b5da-a97d-4a57-b022-26b25ee3366765a6389b-1036-4704-863d-55ef067f5c23
     nodes:
       BTT: TPMFKMtUYsEDdqEvLhZtGCNNXJX2Hbp5W5:BTT
       HOT: 0xBf8f8F0d781DeEA687544dECb7f422066686d075:HOT

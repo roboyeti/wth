@@ -15,7 +15,7 @@
 #
 require 'socket'
 
-class Cpuminer < Base
+class Cpuminer < CpuBase
   using IndifferentHash  
 
   VERSION = "1.2.4.1"
@@ -61,7 +61,6 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
 		format(host,@responses["#{host}:#{port}"])
   end
 
-  # 
   def format(host,responses)
     res = responses["summary"]
     res2 = responses["threads"]
@@ -85,8 +84,8 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
     h.combined_speed = h["hashrate"] = summary["HS"]
     h.algo = summary['ALGO']    
     h.pool   = summary["URL"]
-    h["difficulty"] = summary["DIFF"].to_f.round(4)
-    h["rate"] = summary["ACCMN"].to_f.round(4)
+    h.difficulty = summary["DIFF"].to_f.round(4)
+    h.rate = summary["ACCMN"].to_f.round(4)
     h.total_shares   = summary["ACC"].to_i
     h.rejected_shares= summary["REJ"].to_i
     h.failed_shared  = summary["SOL"]
@@ -95,8 +94,6 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
     h.cpu = cpu_structure
 #    h.cpu.name = cpu_clean(res["cpu"]["brand"])
     h.cpu.threads_used = summary["CPUS"].to_i
-#puts h
-#exit
     h
   end
 
@@ -110,22 +107,19 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
     ]
     hash.keys.sort.map{|addr|
       h = hash[addr]
-      uptime = "down"
-      if h["down"] == true
-        n = worker_structure
-        n.name = addr
-        n.uptime = colorize("down",$color_alert)
-        n.combined_speed = 0
-        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h["message"]))
-        n.cpu = cpu_structure
-        h = n
+      uptime = colorize("down",$color_alert)
+
+      if h.down == true
+        h.name = addr
+        h.cpu = cpu_structure
+        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h.message))
       else
         uptime = uptime_seconds(h.uptime) if h.uptime != "down"
       end
       
       rows << [
         h.name, uptime, h.algo,
-        h["difficulty"], h.total_shares,h.rejected_shares,h.failed_shared,
+        h.difficulty, h.total_shares,h.rejected_shares,h.failed_shared,
         h.combined_speed, h.rate,
         h.pool, h.cpu.threads_used, ''
       ]

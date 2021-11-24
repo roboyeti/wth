@@ -4,7 +4,6 @@
 - !!!: Added: smirest interface / module / startup
 - !!!: Added: GPU CAPS XML parser
 - !!!: Added: JSON format web request
-- !!!: Simple Web API ...
 
 ## Easiest / urgent / before release
 - Remove my config

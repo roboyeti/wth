@@ -1,0 +1,25 @@
+[2021-11-24 08:04:16] INFO  WEBrick 1.7.0
+[2021-11-24 08:04:16] INFO  ruby 3.0.2 (2021-07-07) [x64-mingw32]
+[2021-11-24 08:04:16] DEBUG WEBrick::HTTPServlet::FileHandler is mounted on /.
+[2021-11-24 08:04:16] DEBUG CustomServlet is mounted on /hello.
+[2021-11-24 08:04:16] DEBUG WTHBasicServlet is mounted on /api.
+[2021-11-24 08:04:16] INFO  WEBrick::HTTPServer#start: pid=13332 port=8000
+[2021-11-24 08:04:20] DEBUG accept: 192.168.0.113:55127
+[2021-11-24 08:04:20] DEBUG WTHBasicServlet is invoked.
+[2021-11-24 08:04:20] ERROR ArgumentError: wrong number of arguments (given 1, expected 0)
+	C:/Users/roboy/wth/core/utility/ext/open_struct.rb:17:in `to_json'
+	C:/Users/roboy/wth/core/utility/ext/open_struct.rb:18:in `to_json'
+	C:/Users/roboy/wth/core/utility/ext/open_struct.rb:18:in `to_json'
+	C:/Users/roboy/wth/core/web_server_basic.rb:39:in `do_GET'
+	C:/Ruby30-x64/lib/ruby/gems/3.0.0/gems/webrick-1.7.0/lib/webrick/httpservlet/abstract.rb:105:in `service'
+	C:/Ruby30-x64/lib/ruby/gems/3.0.0/gems/webrick-1.7.0/lib/webrick/httpserver.rb:140:in `service'
+	C:/Ruby30-x64/lib/ruby/gems/3.0.0/gems/webrick-1.7.0/lib/webrick/httpserver.rb:96:in `run'
+	C:/Ruby30-x64/lib/ruby/gems/3.0.0/gems/webrick-1.7.0/lib/webrick/server.rb:310:in `block in start_thread'
+[2021-11-24 08:04:20] DEBUG close: 192.168.0.113:55127
+[2021-11-24 08:04:20] DEBUG accept: 192.168.0.113:55128
+[2021-11-24 08:04:20] DEBUG WEBrick::HTTPServlet::FileHandler is invoked.
+[2021-11-24 08:04:50] DEBUG close: 192.168.0.113:55128
+[2021-11-24 08:07:05] DEBUG close TCPSocket(::, 8000)
+[2021-11-24 08:07:05] DEBUG close TCPSocket(0.0.0.0, 8000)
+[2021-11-24 08:07:05] INFO  going to shutdown ...
+[2021-11-24 08:07:05] INFO  WEBrick::HTTPServer#start done.

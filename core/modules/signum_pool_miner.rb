@@ -36,11 +36,11 @@ class SignumPoolMiner < Base
         begin
           if @down[k]
             if (Time.now - @down[k]) < 180
-                  @data[:addresses][k] = {
+                  @data[:addresses][k] = OpenStructure({
                     "down" => true,
                     "message" => "Service down!  Checked @ #{@down[k]} #{(Time.now - @down[k]).round(2)} seconds ago",
                     "time"  => Time.now,
-                  }.merge(structure)
+                  }).merge(structure)
             else
               out << line_err(k,"Rechecking service.")
               @down.delete(k)

@@ -75,10 +75,9 @@ class FlockPool < PoolBase
     hash.keys.sort.map{|addr|
       h = hash[addr]
 
-      if h["down"] == true
-        h.merge!(structure)
-        h["name"] = addr
-        h[:uptime] = colorize("down",$color_alert)
+      if h.down == true
+        h.name = addr
+        h.uptime = colorize("down",$color_alert)
         @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h["message"]))
       end
 

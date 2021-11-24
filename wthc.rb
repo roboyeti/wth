@@ -9,7 +9,7 @@ load './core/common.rb'
 
 threaded = true
 numcols = TTY::Screen.cols
-$page = 1
+$page = last_page = 1
 
 $app = app = Core.new(
   :config_file => $options.config_file
@@ -42,20 +42,23 @@ app.load_templates
 last_run = Time.now - 10
 while 1
   
+  last_page = $page
+  
   if TTY::Screen.cols != numcols
     numcols = TTY::Screen.cols
-    clear
+    app.clear
   end
-  
+    
   begin
-    if Time.now - last_run > 6  
+#    if Time.now - last_run > 6  
       page_out = threaded ? app.thread_wth_modules : app.run_wth_modules
-  
+
       app.reposition
       app.cursor_hide
       app.console_header(app.page_title($page - 1)).each {|o| app.clear_line; puts o; }
    
       out = page_out[$page - 1] || ['Nothing to show']
+
       out.each {|o|
         app.clear_line
         puts " #{o}"
@@ -63,7 +66,7 @@ while 1
       app.clear_screen_down
   
       app.webserver_pulse(page_out)
-    end
+#    end
   end    
 
   24.times { break if app.keypress_pulse(0.25) }  

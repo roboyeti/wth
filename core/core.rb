@@ -16,17 +16,14 @@ require 'lucky_case/string'
 require 'bigdecimal'
 require 'pastel'
 
-#load './core/common.rb'
 load './core/web_server_basic.rb'
-#load './core/console_init.rb'
 
-[ 'base', 'gpu_base', 'pool_base'].each{|mod|
+[ 'base', 'gpu_base', 'cpu_base', 'pool_base'].each{|mod|
   load "./core/modules/#{mod}.rb"
 }
 [ 'plugin_base'].each{|mod|
   load "./core/plugins/#{mod}.rb"
 }
-
 
 # Config related methods
 class Core
@@ -37,7 +34,7 @@ class Core
   attr :verbose
   attr_reader :config_file, :cfg, :modules, :plugins
 
-  VERSION = "0.15"
+  VERSION = "0.16"
   CONFIG_VERSION = 20211103
 
   DEFAULT_CONFIG = {
