@@ -125,7 +125,7 @@
 			<value name="Monospace" type="hex" data="01"/>
 			<value name="CompressLongStrings" type="hex" data="01"/>
 			<value name="BackGround Image show" type="hex" data="01"/>
-			<value name="BackGround Image" type="string" data="C:\Users\roboy\dev\wth\web\wth_back.jpg"/>
+			<value name="BackGround Image" type="string" data=".\web\wth_back.jpg"/>
 			<value name="bgImageDarker" type="hex" data="66"/>
 			<value name="bgImageColors" type="dword" data="00000001"/>
 			<value name="bgOperation" type="hex" data="00"/>
