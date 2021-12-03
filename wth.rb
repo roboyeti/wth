@@ -1,3 +1,5 @@
+#! /usr/bin/ruby
+#
 # Author: BeRogue01
 # Date: 10/12/2021
 #

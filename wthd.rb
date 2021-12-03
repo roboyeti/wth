@@ -1,8 +1,13 @@
 #! /usr/bin/ruby
 #
+# Author: BeRogue01
+# Date: 12/2021
+#
+# Love everybody,but never sell your sword.  ~ Paulo Coelho
+#
 # Only support on machines with fork
 #
-# ruby ./wthd.rb cmd [-- --conf <filename>]
+# ruby ./wthd.rb cmd [-- --conf <filename>] (maybe works...?!?!?)
 #
 # Commands:
 #   start

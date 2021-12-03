@@ -1,3 +1,8 @@
+# Author: BeRogue01
+# Date: 11/2021
+#
+# Love everybody,but never sell your sword.  ~ Paulo Coelho
+#
 require 'optparse'
 require 'ostruct'
 require "zeitwerk"

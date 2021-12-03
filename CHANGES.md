@@ -21,6 +21,7 @@
 - Added: Config documentation pass #1
 - Fixed: Some miner / pool failures on down hosts
 - Added: auto generated API key for WTH when config is missing and generated
+- Added: Config for default checking frequency on modules (default is 12 in code)
 
 ## VERSION 0.16 - 2021-11-24
 - Added: Simple Web API to request module json data.

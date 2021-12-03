@@ -1,26 +1,26 @@
 #Todo List, kind of in order
 
 ## In Progess
-- !!!: Added: smirest interface / module / startup
-- !!!: Added: GPU CAPS XML parser
--- remove events log on other things???
+- !!!: Adding smirest interface / module / startup
+- !!!: Adding GPU CAPS XML parser
+- !!!: Logging of events to file
+- !!!: Adding wonderland support module
+- !!!: Adding coingecko support plugin
 
-## Easiest / urgent / before release
+## Easiest / highest prio
 - Fix standalone ... broken in table_out
+    - Auto font sizing of Single node to user defined size in config
+    - Add single node support to cpu miners
 - Finish converting errors to new methods
-- baseline frequency config option
-- Rainbow miner
-- Remove my config
-- Conemu start script
+- Rainbow miner module
+- Conemu start script (load config xml with background etc)
 - Allow plugins to do something useful (part II)
-- API auth added where easy and doable
 - Document document document
 - Add algo when and where possible
-- Auto font sizing of Single node to user defined size in config
-- Add single node support to cpu miners
 
 ## Medium / important
 - finish universal color
+    - replace color engine?
 - Might consider suppression of title from config
 - Logging - advanced
 - web real certs

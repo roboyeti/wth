@@ -1,5 +1,6 @@
+#! /usr/bin/ruby
+#
 # Author: BeRogue01
-# License: Free yo, like air and water ... so far ...
 # Date: 10/12/2021
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
