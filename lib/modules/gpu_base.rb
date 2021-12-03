@@ -40,7 +40,7 @@ class GpuBase < Base
       if h["down"] == true
         h.name = addr
         h.uptime = colorize("down",$color_alert)
-        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h.message))
+#        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h.message))
       end
 
       reject_str = colorize_percent_of(h[:total_shares],h[:rejected_shares],0.10,0.50)
@@ -61,6 +61,7 @@ class GpuBase < Base
       rows << row
     }
 
+#puts rows
     if standalone?
       headers.unshift("")
       k = hosts.keys.sort.first

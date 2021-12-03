@@ -26,6 +26,7 @@ gem 'rest-client'
 gem 'concurrent-ruby', require: 'concurrent' # Used for thread safe vars
 gem 'symbolized'  # For the love of ... Ruby hash needs help
 gem 'zeitwerk'    # Code auto loader/reloader magic
+gem 'daemon'
 
 # Misc
 gem 'lucky_case'  # Adds various "case" conversions (snake, camel, etc)

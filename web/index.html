@@ -6,6 +6,8 @@
     <script>
     var current_page = "page_1.html";
     var refresh_timer = null;
+    var params = null;
+    var key = '';
     
     function load_file(FileName,RespType,FileType,RunMe) {
         var AJAXFileReader=new XMLHttpRequest();
@@ -73,10 +75,12 @@
 
     function set_page(page=current_page) {
       current_page = page;
-      load_file("generated/"+current_page,"html","text/plain;charset=utf-8",auto_refresh);
+      load_file("generated/"+current_page+"?key="+key,"html","text/plain;charset=utf-8",auto_refresh);
     }
 
     function setup_app() {
+      params = new URLSearchParams(window.location.search);
+      key = params.get('key');
       listen_keypress();
       set_page();
     }

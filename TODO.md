@@ -3,27 +3,27 @@
 ## In Progess
 - !!!: Added: smirest interface / module / startup
 - !!!: Added: GPU CAPS XML parser
-- !!!: Added: JSON format web request
+-- remove events log on other things???
 
 ## Easiest / urgent / before release
-- Remove my config
+- Fix standalone ... broken in table_out
+- Finish converting errors to new methods
 - baseline frequency config option
-- html output config opt
-- Auto font sizing of Single node to user defined size in config
+- Rainbow miner
+- Remove my config
 - Conemu start script
 - Allow plugins to do something useful (part II)
 - API auth added where easy and doable
 - Document document document
-- Example config page
-- Logging
 - Add algo when and where possible
+- Auto font sizing of Single node to user defined size in config
 - Add single node support to cpu miners
--- Might consider suppression of title from config
-- catch errors... and color on downs...
-- finish universal color
-- Rainbow miner
 
 ## Medium / important
+- finish universal color
+- Might consider suppression of title from config
+- Logging - advanced
+- web real certs
 - Consider re-doing header on tables
 - Pager added for logs
 - Diagnose / submit hash rate bug to cpuminer-gr github

@@ -1,11 +1,13 @@
 # Author: BeRogue01
-# License: Free yo, like air and water ... so far ...
 # Date: 10/12/2021
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
 # Core class for WTH.
 #
+# TODO: Move config bits all to module to clean up core code.  Med priority
+# TODO: Make some decisions about how much of this needs to be moved to modules, with the goal
+#       of different cores being possible.  Low priority.
 require 'rest-client'
 require 'yaml'
 require 'json'
@@ -15,52 +17,26 @@ require 'sys/cpu'
 require 'lucky_case/string'
 require 'bigdecimal'
 require 'pastel'
+require 'securerandom'
 
-load './core/web_server_basic.rb'
+load './lib/components/web_server_basic.rb'
 
 [ 'base', 'gpu_base', 'cpu_base', 'pool_base'].each{|mod|
-  load "./core/modules/#{mod}.rb"
+  load "./lib/modules/#{mod}.rb"
 }
 [ 'plugin_base'].each{|mod|
-  load "./core/plugins/#{mod}.rb"
+  load "./lib/plugins/#{mod}.rb"
 }
 
 # Config related methods
 class Core
   using IndifferentHash  
+  include WthConfig
   include ConsoleInit
   include Sys
 
-  attr :verbose
-  attr_reader :config_file, :cfg, :modules, :plugins
-
-  VERSION = "0.16"
+  VERSION = "0.17"
   CONFIG_VERSION = 20211103
-
-  DEFAULT_CONFIG = {
-    "version" => CONFIG_VERSION,
-    "settings" => {
-      "html_out" => true,
-      "console_out" => true,
-    },    
-    "modules" => {
-    }
-  }
-
-  TEMPLATE_CONFIG = DEFAULT_CONFIG.merge({
-    "modules" => {
-      "unique_name_here": {
-        "port": 41413,
-        "api": "module_name",
-        "extra": "Short Note",
-        "coin": "ETH",
-        "nodes": {
-          "smelter": "192.168.0.101",
-          "forge": "192.168.0.102:41414"
-        },
-      }
-    }
-  })   
 
   # Map from config entry to module class
   #
@@ -85,53 +61,51 @@ class Core
     'what_to_mine' => 'WhatToMine',
     
   }.freeze
+
+  attr :verbose
+  attr_reader :config_file, :cfg, :modules, :plugins, :console_out, :os
   
   # TODO: Document
   def initialize(p={})
     @config_file = p["config"] || p["config_file"] || "wth_config.yml"
     @config_type = "yml"
     @verbose = p["verbose"] || false
+    set_module_config_version(CONFIG_VERSION)
+    @cfg = load_config(@config_file)
+    @console_out = @cfg["console_out"] ? true : false
     @page_titles = []
     if config["pages"]
       config["pages"].each_pair{|pn,pt|
         @page_titles[pn.to_i - 1] = pt
       }
     end
+
     @log = {}
     @modules = {}
     @os = OS
     @plugins = {}
-    init_plugins(config["plugins"])
     os_init
   end
 
   # Config and core version stuff
   #
-  def version ; VERSION ; end  
-  def module_config_version ; CONFIG_VERSION ; end
-  def current_config_version ; config["version"] ; end
-  def config_version ; config["version"] ; end
+  def version ; VERSION ; end
 
-  # There is a newer version of the config format
-  # TODO: Maybe not going to work out.
+  # Service Start
+  # Easy startup for WTH
   #
-  def newer_config_version?
-    current_config_version < module_config_version  
-  end
-
-  # A bare bones template in case you have nothing.
-  #
-  def template_config ; TEMPLATE_CONFIG ; end
-
-  # Returns config hash, loading default one if needed.
-  #
-  # @returns Hash
-  #
-  def config
-    if !@cfg
-      load_config(@config_file)
+  def start
+    init_plugins(config["plugins"])
+    sleep(1)
+    init_wth_modules(config['modules'])
+    sleep(1)
+    @cfg["web_server_start"] && webserver_start
+    sleep(0.5)
+    if @cfg["console_out"]
+      init_key_reader
+    else
+      puts "WTH started.  Will not detach from console in MS Windows."    
     end
-    @cfg
   end
 
   # Load basic "template" files
@@ -142,7 +116,22 @@ class Core
     load 'templates/gpu_worker.rb'
     load 'templates/table.rb'
   end
-  
+
+  # Returns config hash, loading default one if needed.
+  #
+  # @returns Hash
+  #
+  def config
+    @cfg ||= load_config(@config_file)
+  end
+
+  # There is a newer version of the config format
+  # TODO: Maybe not going to work out.
+  #
+  def newer_config_version?
+    current_config_version < module_config_version  
+  end
+    
   # Load or create/save/load template config file.  Sets and return config hash.
   #
   # @param String file Optional file, default uses config_file
@@ -150,33 +139,29 @@ class Core
   #
   def load_config(file=config_file)
     puts "Loading config file #{file}..."
-    @cfg = load_yaml(file) if File.file?(file)
-    if @cfg.empty?
-      puts "No config file found. Saving template config to '#{file}'..."
-      @cfg = template_config
-      save_config(file)
+    cfg = File.file?(file) ? load_yaml(file) : ''
+
+    if cfg.empty?
+      puts "No config file found or is empty. Saving template config to '#{file}'..."
+      cfg = YAML.load(template_config)
+      dump_config(cfg,file)
     else
       puts "Configuration loaded..."
     end
-    if newer_config_version?
+
+    if cfg["version"] < module_config_version
       STDERR.puts "There is a newer version of the configuration format than what your config file is using."
     end
-    @cfg = DEFAULT_CONFIG.merge(@cfg)
-    @cfg
+    YAML.load(template_config).merge!(cfg)
+    cfg
   rescue => e
     puts "Unknown error loading config file '#{file}': #{e}"
     {}
   end
   
-  # Save a config file out.
-  #
-  # @param String file Optional file, default uses config_file
-  # @param Hash hash Optional hash to save, default is config/cfg.
-  # @returns Boolean
-  #
   def save_config(file=config_file,hash=cfg)
     hash["version"] = CONFIG_VERSION if newer_config_version?
-    save_yaml(file,hash)
+    dump_config(hash,file)
   end
 
   # Load YAML file.
@@ -194,16 +179,6 @@ class Core
       Error: #{e.to_s[0..255]}
     }
   end
-
-  # Save config to YAML.
-  #
-  # @param String file Optional file, default uses config_file
-  # @param Hash hash Optional hash to save, default is config/cfg.
-  # @returns Boolean
-  #
-  def save_yaml(file=config_file,hash=cfg)
-    File.write(file, cfg.to_yaml) 
-  end  
 
   # Load JSON file.
   #
@@ -261,6 +236,7 @@ class Core
   # @param [Hash] cfg The config section for plugins
   #
   def init_plugins(cfg)
+    return nil if !cfg
     cfg.each_pair{|k,v|
       next if !PLUGINS[k]
       init_plugin(k,v)
@@ -272,7 +248,7 @@ class Core
     return nil if !PLUGINS[name]
     file = PLUGINS[name].snake_case
     puts "Loading Plugin: #{name} => #{file}"
-    load "./core/plugins/#{file}.rb"
+    load "./lib/plugins/#{file}.rb"
     obj = PLUGINS[name].constantize
     puts "Init Plugin: #{name} => #{obj.name}"
     @plugins[name] = obj.new(cfg)    
@@ -290,10 +266,11 @@ class Core
   # @param [Hash] cfg The config section for a module
   #
   def init_wth_module(name,cfg)
+    cfg["default_module_frequency"] = config["default_module_frequency"]
     api = cfg['api']
     file = MODULES[api].snake_case
     puts "Loading Module: #{name} => #{file}"
-    load "./core/modules/#{file}.rb"
+    load "./lib/modules/#{file}.rb"
     obj = MODULES[api].constantize
     puts "Init Module: #{name} => #{obj.name}"
     obj = @modules[name] = obj.new(config: cfg)
@@ -319,6 +296,7 @@ class Core
   # @param [Hash] cfg The config section for modules
   #
   def init_wth_modules(h_mods)
+    return nil if !h_mods
     h_mods.each_pair {|m,p|
       init_wth_module(m,p) if check_wth_module?(m,p)  
     }
@@ -387,6 +365,7 @@ class Core
 					Thread.current["me"] = v
 					a = v.console_out(v.check_all)
 					c = a.is_a?(Array) ? a : a.split("\n")
+          c << ""
 					Thread.current["mypage"] = c
 					Thread.current["events"] = v.events
 					v.clear_events
@@ -413,10 +392,10 @@ class Core
   #
   # @param [Integer] port The port to run service on.
   def webserver_start(port=8000)
-    @webserver = WebServerBasic.new(
-        :port => port,
-        :version => version,
-    )
+    puts "Loading web server on port# #{port}"
+    @webserver = WebServerBasic.new({
+        :version => version
+    }.merge(config["web_server"]))
     @webserver.start
     @webserver.write_html_file('events','Events',"Nothing to show")
     @webserver.write_html_file('web_logs','Web Logs',"Nothing to show")    
@@ -435,9 +414,11 @@ class Core
   # @param [Array] pages Page data to render to html files
   #
   def webserver_pulse(pages)
+    return nil if !@webserver
     # Non blocking read on webserver output to web access log
-    io = @webserver.read_io_nonblock
-    add_log('web_logs',io) if io
+    while io = @webserver.read_io_nonblock
+      add_log('web_logs',io)
+    end
     Thread.new{
       @webserver.write_html(page_titles,pages)
     }
@@ -487,8 +468,6 @@ class Core
 #    puts "Model: " + CPU.model.to_s
 #    puts "Type: " + CPU.cpu_type.to_s
 #    puts "Num CPU: " + CPU.num_cpu.to_s
-#puts "123"
-#puts "234"
     CPU.processors{ |cpu|
        pp cpu
     }    

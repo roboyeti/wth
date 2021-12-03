@@ -1,5 +1,5 @@
 # Author: BeRogue01
-# License: Free yo, like air and water ... so far ...
+# License: See LICENSE file
 # Date: 10/2021
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho

@@ -14,13 +14,14 @@ class PoolBase < Base
     @worker_row    = @config["worker_row"] || 5
   end
   
-  def structure
+  def pool_structure
     OpenStruct.new({
       "name": '',
       "address": '',
       "private_address": '',
       "available_balance": 0.0,
       "pending_balance": 0.0,
+      "unpaid_balance": 0.0,
       "uuid": '',
       "workers_up": 0,
       "workers_down": 0,      
@@ -36,10 +37,12 @@ class PoolBase < Base
       "accepted": 0.0,
       "rejected": 0.0,
       "stale": 0.0,
-      "workers": []
+      "workers": [],
+      "status": 'ok',
+      "timestamp": Time.now
     })
   end
-
+  
   def worker_structure
     OpenStruct.new({
       "online": false,

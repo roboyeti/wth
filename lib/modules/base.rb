@@ -17,7 +17,7 @@ class Base
  
   def initialize(p={})
     @config = p[:config] || {}
-    @frequency = @config["every"] || 12
+    @frequency = @config["every"] || @config["default_frequency"] || 12
     @port = @config["port"] || 0
     @page = @config["page"] || 1
     @coin    = @config["coin"] || ''
@@ -52,6 +52,19 @@ class Base
     @standalone == 1 || @standalone == true || @standalone == 'true'
   end
   
+  # Add event
+  def add_error(addr,message)
+    @events << $pastel.red(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
+  end
+  # Add event
+  def add_event(addr,message)
+    @events << $pastel.white(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
+  end
+  # Add event
+  def add_warn(addr,message)
+    @events << $pastel.yellow(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
+  end
+  
   # Check all nodes provided in a module config.
   #
   def check_all
@@ -67,33 +80,24 @@ class Base
         v = @config['nodes'][k]
         @data['addresses'][k] = {}
         begin
+          # If still down (under recheck frequency), mark it as such, update recheck counter, else we delete the down entry
           if @down[k]
             if (Time.now - @down[k]) < 180
-              @data[:addresses][k] = OpenStruct.new(structure.to_hash.merge({
-                "down" => true,
-                "message" => "Service down!  Checked @ #{@down[k]} #{(Time.now - @down[k]).round(2)} seconds ago",
-                "time"  => Time.now,
-              }))
-
+              @data[:addresses][k] = down_handler(k,"Service recheck pending...")
             else
               @down.delete(k)
-              h = self.check(v,k)
-              @data['addresses'][k] = h
             end
-          else
+          end
+          
+          # We need to check again, since we may have deleted the down
+          if !@down[k]
             h = self.check(v,k)
             @data['addresses'][k] = h
           end
+          
         rescue => e
           @down[k] = Time.now
-          @events << "#{Time.now} : #{k} : #{e} #{e.backtrace[0]}"
-          @data[:addresses][k] = OpenStruct.new(structure.to_hash.merge({
-            "down" => true,
-            "message" => "Service down!  Checked @ #{@down[k]} #{(Time.now - @down[k]).round(2)} seconds ago",
-            'backtrace' => e.backtrace[0..4],
-            'error' => e,
-            "time"  => Time.now,
-          }))
+          @data[:addresses][k] = down_handler(k,"Service down!",false,e)
         end
       }
       @last_check = Time.now
@@ -103,15 +107,41 @@ class Base
     @data
   end
 
+  def down_handler(addr,message,countdown=true,error=nil)    
+    message = if countdown
+      "#{message} ;; Checked @ #{@down[addr]} ;; #{(Time.now - @down[addr]).round(2)} seconds ago"    
+    else
+      check_time = (180 - (Time.now - @down[addr]))
+      "#{message} ;; Checked @ #{@down[addr]} ;; Checking in #{check_time.round(2)} seconds."
+    end
+        
+    data = structure
+    data.down     = true
+    data.message  = message
+    data.time     = Time.now
+    data.addr = data.name = addr
+
+    if error
+      data.backtrace  = error.backtrace[0..4],
+      data.error      = error,
+      add_error(addr,"#{error} #{error.backtrace[0]}")
+      add_error(addr,message)
+    else
+      add_warn(addr,message)
+    end
+    
+    data
+  end
+  
   # Quick and simple rest call with URL.
   # TODO: Get timeout working. Execute needs trouble shooting or gem replaced...
-  def simple_rest(url,timeout=120)
+  def simple_rest(url,timeout=10)
 #    s = if proxy
 #          RestClient::Request.execute(:method => :get, :url => url, :proxy => proxy, :headers => {}, :timeout => timeout)
 #        else
-#          RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => timeout)          
+    s = RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => timeout)          
 #        end
-    s = RestClient.get url
+#    s = RestClient.get url
     res = s && s.body ? JSON.parse(s.body) : {}
     begin
       s.closed
@@ -222,9 +252,9 @@ class Base
   
   # Output a console table
   def table_out(headers,rows,title=nil)
-    max_col = 0
+    max_col = 1
     rows.each {|row|
-      max_col = row.count if row.count > max_col
+      max_col = row.count if row.is_a?(Array) && row.count > max_col
     } 
 
     div = "│" #colorize("│",$color_divider)
@@ -249,7 +279,7 @@ class Base
       end
       table << r.map{|c|
         colorize(c,$color_row)        
-      }
+      }      
     }
 
     # Go thru all columns to set alignment because setting it
@@ -262,7 +292,7 @@ class Base
     tout = table.render
     tarr = tout.split("\n")
     idx = 0
-    len = tarr[1].length + 1
+    len = tarr[1] ? tarr[1].length + 1 : 0
 
     if title
       tarr.delete_at(idx + 1)
@@ -277,7 +307,7 @@ class Base
     tarr.map!{|t|
       t.gsub("│",colorize("│",$color_divider))
     }
-    tout = tarr.join("\n") << "\n \n"    
+    tout = tarr.join("\n")
   end
 
   # Color and style the speed value
@@ -326,15 +356,45 @@ class Base
       temp = colorize(temp_str,$color_temp_ok)
     end
   end
+
+  # Colorize for simple threshold ... kind of lame... mileage may vary...
+  #
+  # @params [Numeric] value What you need to compare and color 
+  # @params [String] comparator Comparators: "<","<=",">",">=","=="
+  # @params [Numeric] warn_value Value for yellow color
+  # @params [Numeric] alert_value Value for red color
+  #
+  def colorize_simple_threshold(value,comparator,warn_value,alert_value)
+    if eval("#{value} #{comparator} #{alert_value}")
+      colorize(value,$color_red)
+    elsif eval("#{value} #{comparator} #{warn_value}")
+      colorize(value,$color_warn)
+    else
+      colorize(value,$color_ok)
+    end      
+  end
+  
+  # Colors s2
+  def colorize_percent_of(s1,s2,pwarn,palert)
+    color_str = if s2 > (s1 * palert)
+      $color_alert     
+    elsif s2 > (s1 * pwarn)
+	  $color_warn
+    else
+	  $color_ok
+    end
+    colorize(s2,color_str)
+  end
   
   def colorize(val,colors)
     m = $pastel
     arc = *colors
-    #pp colors
     arc.each {|c|
       m = m.send(c)
     }
     m.detach.(val)
+  rescue
+    val
   end
   
   def no_colors(s)

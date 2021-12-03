@@ -5,37 +5,45 @@
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
 # TODO: dynamic load different servers, init in core
-# TODO: enable SSL
+# TODO: fix SSL
 # TODO: Threads optional?
-# TODO: logs
 #
-#require 'sinatra'
 require 'webrick'
 require 'webrick/https'
 require "terminal"
+require 'openssl'
 
 include WEBrick
 
 class WTHBasicServlet < HTTPServlet::AbstractServlet
 
   def do_GET(request, response)
-    qr_type = request.query["module"] ? 'module' : 'cmd'
-    data = case qr_type
-      when 'module' then module_handler(request)
-      when 'command' then command_handler(request)
-      else {}
-    end
     
-    response.status = 200
-    response.body = data.to_json
-    response['Content-Type'] = 	'application/json'
+    cli_key = CGI.unescape(request.query["key"] || "")
+
+    if !@options[0] || cli_key == @options[0]
+      qr_type = request.query["module"] ? 'module' : 'cmd'
+      data = case qr_type
+        when 'module' then module_handler(request)
+        when 'command' then command_handler(request)
+        else {}
+      end
+      
+      response.status = 200
+      response.body = data.to_json
+      response['Content-Type'] = 	'application/json'
+    else
+      response.status = 401
+      response.body = { message: 'Incorrect key provided.  See your config'}.to_json
+      response['Content-Type'] = 	'application/json'
+    end
   end
 
   # Respond with an HTTP POST just as we do for the HTTP GET.
   alias :do_POST :do_GET
 
   # Handle modules requests
-  def module_handler(request)
+  def module_handler(request)    
     qr_mod = CGI.unescape(request.query["module"] || "")
     if !qr_mod || qr_mod.empty?
       { message: "module not specified" }
@@ -60,13 +68,17 @@ class WebServerBasic
   using IndifferentHash  
   include ConsoleInit
   
-  attr_reader :config, :io_read, :io_write, :web_thread , :port, :host, :version
+  attr_reader :config, :io_read, :io_write, :web_thread , :port, :host, :ssl, :api, :version, :cert_file
   
   def initialize(p={})
   	@config = p
   	@version = @config["version"] || ''
     @port = @config["port"] || 8000
     @host = @config["host"] || 'localhost'
+    @ssl  = @config["ssl"] || false
+    @api  = @config["api"] || false
+    @key  = @config["key"] || nil
+    @cert_file = @config["cert_file"] || 'data/wth.crt'
   end
   
   # Spin up the server in a thread and connect
@@ -74,45 +86,61 @@ class WebServerBasic
   def start
     # IO Pipes to connect to thread IO
     @io_read, @io_write = IO.pipe
-    port = @port
+    cert = if File.exist?(cert_file)
+      File.read(cert_file)
+    else
+      crt = [['CN', WEBrick::Utils::getservername, OpenSSL::ASN1::PRINTABLESTRING ]]
+      File.write(cert_file,crt)
+      crt
+    end
+    access_log = [ [ @io_write, WEBrick::AccessLog::COMMON_LOG_FORMAT ] ]
     
     # Basic web server thread   
     @web_thread = Thread.new{
-    #  cert_name = [
-    #    %w[CN localhost],
-    #  ] 
-      access_log = [
-        [ @io_write, WEBrick::AccessLog::COMMON_LOG_FORMAT ],
-      ]
     
       server = WEBrick::HTTPServer.new(
                 :Port => port,
+                :BindAddres => @host,
                 :DocumentRoot => 'web',
                 :AccessLog => access_log,
                 :Logger => WEBrick::Log.new("tmp/webservice.log",10),
-                #:SSLEnable => true,
-                #:SSLCertName => cert_name
+                :SSLEnable => @ssl,
+                :SSLCertName => cert
               )
-      server.mount('/api', WTHBasicServlet )
+
+      @fh = WEBrick::HTTPServlet::FileHandler.new(server,'web')
+
+      # Mount the API handler  
+      server.mount('/api', WTHBasicServlet, @key ) if api
+
+      # Commandeer the root file handler to require key when enabled
+      # and then either error or hand back to the FileHandler servlet
+      server.mount_proc('/') {|request,response|
+        cli_key = CGI.unescape(request.query["key"] || "")
+
+        if request.path =~ /[\.css|\.jpg|\.png\.ico]/ || cli_key == @key
+          @fh.do_GET(request,response)
+        else
+          response.status = 401
+          response.body = 'Incorrect key provided.  See your config'
+          response['Content-Type'] = 	'text/plain'
+        end
+
+      } if @key
 
       # Trap signals so as to shutdown cleanly.
       ['TERM', 'INT'].each do |signal|
-       trap(signal){ s.shutdown }
+        trap(signal){ server.shutdown; exit; }
       end
       
       server.start  
     }
     return @web_thread
-  rescue
-    puts "#{e} #{e.backtrace[0]}"
-    exit
   end
   
   def read_io_nonblock
     r = @io_read.readline_nonblock
-  rescue => e
-#    puts e
-#    exit
+  rescue
   end
 
   def write_html_file(file,name,content)
@@ -141,16 +169,3 @@ class WebServerBasic
       }
   end
 end
-
-#class IO
-#  def readline_nonblock
-#    buffer = ""
-#    buffer << read_nonblock(1) while buffer[-1] != "\n"
-#
-#    buffer
-#  rescue IO::WaitReadable => blocking
-#    raise blocking if buffer.empty?
-#
-#    buffer
-#  end
-#end

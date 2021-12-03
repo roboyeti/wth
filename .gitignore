@@ -7,4 +7,4 @@ marketing
 !web/generated
 web/generated/*.html
 wth_config.yml
-
+wth_config_mine.yml

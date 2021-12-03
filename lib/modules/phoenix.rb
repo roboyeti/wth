@@ -4,7 +4,7 @@
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
-load "./core/modules/claymore.rb"
+load "./lib/modules/claymore.rb"
 class Phoenix < Claymore
   using IndifferentHash  
   

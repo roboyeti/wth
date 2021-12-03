@@ -110,9 +110,7 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
       uptime = colorize("down",$color_alert)
 
       if h.down == true
-        h.name = addr
         h.cpu = cpu_structure
-        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h.message))
       else
         uptime = uptime_seconds(h.uptime) if h.uptime != "down"
       end

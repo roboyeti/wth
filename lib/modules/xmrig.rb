@@ -57,9 +57,6 @@ class Xmrig < Base
     hash = data[:addresses]
     rows = []
     
-#    label_format  = " %-18s  %8s │ %8s │ %6s │ %4s │ %4s │ %8s │ %8s │ %13s │ %22s │ %3s │ %-33s "
-#    column_format = "%19s: %8s │ %8s │ %6s │ %4s │ %4s │ %8s │ %8s │ %13.2f │ %22s │ %3s │ %-33s"
-#    my_title = "#{title}: #{@config[:extra]}"
     headers = [
       nice_title, "Uptime","Diff","Accpt","Rjct","Fail",
       "Avg H/s","Max H/s","Total KH","Pool","Th#","CPU"
@@ -68,12 +65,11 @@ class Xmrig < Base
     hash.keys.sort.map{|addr|
       h = hash[addr]
       if h["down"] == true
-        @events << sprintf("%15s - %s",addr,h["message"])
-        next
+        uptime = colorize("down",$color_alert)
+      else
+        uptime = uptime_seconds(h["uptime"])
       end
-
-      uptime = uptime_seconds(h["uptime"])
-
+      
       rows << [
         h.name, uptime,
         h["difficulty"], h.total_shares,h.rejected_shares,h.failed_shared,

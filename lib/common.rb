@@ -2,11 +2,12 @@ require 'optparse'
 require 'ostruct'
 require "zeitwerk"
 
-Dir["./core/utility/ext/*.rb"].each {|file| load file }
+Dir["./lib/utility/ext/*.rb"].each {|file| load file }
 
 loader = Zeitwerk::Loader.new
 loader.push_dir(__dir__)
-loader.push_dir("core")
+loader.push_dir("lib")
+loader.push_dir("lib/components")
 loader.setup
 
 # Default options

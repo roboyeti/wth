@@ -30,7 +30,7 @@ class FlockPool < PoolBase
   def format(name,coin,res1)
     balance_mod = 100000000
     data = res1
-    h = structure
+    h = pool_structure
     h.name = name
     h.address = name
     h.private_address = " #{h.address[0..2]} ... #{h.address[-3..-1]} "
@@ -70,15 +70,13 @@ class FlockPool < PoolBase
     hash = data[:addresses]
     rows = []
     title = "Flock Pool : https://flockpool.com : Last checked #{data[:last_check_ago].ceil(2)} seconds ago"
-    headers = ['Address','Coin','Balance','Unpaid','Pending','Auto Pay#','Combined Speed','Avg Speed', 'Accepted','Rejected','Stale', 'Workers Up/Dwn']
+    headers = ['Address','Status','Coin','Balance','Unpaid','Pending','Auto Pay#','Combined Speed','Avg Speed', 'Accepted','Rejected','Stale', 'Workers Up/Dwn']
 
     hash.keys.sort.map{|addr|
       h = hash[addr]
 
       if h.down == true
-        h.name = addr
-        h.uptime = colorize("down",$color_alert)
-        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h["message"]))
+        h.status = colorize("down",$color_alert)
       end
 
       worker_str = colorize_workers(h)
@@ -88,7 +86,7 @@ class FlockPool < PoolBase
       
       private_address = " #{h.name[0..2]} ... #{h.name[-3..-1]} "
       rows << [
-        colorize(h.private_address,$color_pool_id),
+        colorize(h.private_address,$color_pool_id), h.status,
         h.coin, h.available_balance.round(2), h.unpaid_balance.round(2), h.pending_balance.round(2),
         h.auto_pay, speed_str, h.avg_speed.round(2), 
         h.accepted, reject_str, stale_str, worker_str

@@ -1,5 +1,5 @@
 # Author: BeRogue01
-# License: Free yo, like air and water ... so far ...
+# License: See LICENSE file
 # Date: 10/12/2021
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
@@ -157,13 +157,12 @@ module ConsoleInit
   # TODO: replace. Was cut and pasted from original loop
   # and badly altered to easily work.
   #
-  def keypress_pulse(sleepy=0.25)
+  def keypress_pulse
     @loop_int=false
     reader.read_keypress(nonblock: true)    
     if @loop_int
       return true
     end
-    sleep(sleepy)
     return false
   end
   

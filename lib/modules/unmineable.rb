@@ -34,7 +34,7 @@ class Unmineable < PoolBase
   
   def format(name,coin,res1,res2,res3)
     data = res1["data"]
-    h = structure
+    h = pool_structure
     h.name = name
     h.address = data["address"]
     h.private_address = " #{h.address[0..2]} ... #{h.address[-3..-1]} "
@@ -74,23 +74,20 @@ class Unmineable < PoolBase
     hash = data[:addresses]
     rows = []
     title = "Unmineable : Last checked #{data[:last_check_ago].ceil(2)} seconds ago"
-    headers = ['Address','Coin','Balance','Network','Algo','Fee','Auto Pay','Combined Speed','Calculated Speed', 'Workers Up/Dwn']
+    headers = ['Address','Status','Coin','Balance','Network','Algo','Fee','Auto Pay','Combined Speed','Calculated Speed', 'Workers Up/Dwn']
       
     hash.keys.sort.map{|addr|
       h = hash[addr]
 
       if h["down"] == true
-        h.merge!(structure)
-        h["name"] = addr
-        h[:uptime] = colorize("down",$color_alert)
-        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h["message"]))
+        h.status = colorize("down",$color_alert)
       end
       
       worker_str = colorize_workers(h)
       calc_str = colorize_speed_compare(h.speed.round,h.calc_speed.round)
 
       rows << [
-        colorize(h.private_address,$color_pool_id),
+        colorize(h.private_address,$color_pool_id), h.status,
         h.coin, h.available_balance, h.network, h.algo, h.mining_fee, h.auto_pay,
         h.speed.round,calc_str, worker_str
       ]

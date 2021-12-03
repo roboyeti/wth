@@ -1,5 +1,27 @@
 #Change Log
 
+## VERSION 0.17 - 2021-11-24
+- Added: Handle errors/events better (more standardized)
+- AddedL API and basic web interfaces now have optional key protection
+- Added: web config options: port, host, ssl, api, key
+- Added: new config options enabled in web server as well
+- Change: semi improved down host handling... needs more work...
+- Added: self signed cert SSL added
+-- Generates a new self cert and saves it.  Changing it makes Firefox angry.
+-- Mostly untested.  Need to provide more SSL support/testing
+- Removed: signum pool miner override of check_all, now consolidated
+- Removed: extra pre-recheck round on down servers
+- Added: Web logs
+- Added: detach mode for non-Windows.  Untested.  Enabled when console output turned off
+- Added: Enabled config options for turning off html output
+- Added: Enabled config option for turning off console output (and input)
+- Added: Option to disable / enable web service entirely
+- Change:  Started working on new config module
+- Added: Working missing config creates default config bits
+- Added: Config documentation pass #1
+- Fixed: Some miner / pool failures on down hosts
+- Added: auto generated API key for WTH when config is missing and generated
+
 ## VERSION 0.16 - 2021-11-24
 - Added: Simple Web API to request module json data.
 -- localhost:8000/api?module=<your module config name | "list" to get those>
