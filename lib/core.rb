@@ -85,6 +85,7 @@ class Core
     @os = OS
     @plugins = {}
     os_init
+    $app = self
   end
 
   # Config and core version stuff

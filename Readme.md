@@ -87,7 +87,7 @@ adding something I don't need myself.
 - RTM: RCMPMeSS2CYSbepTEbR5X3dNpwDQFZxnHM
 - XLM: TBD
 
-![Example](/screeshots/wth_con01.png)
-![Example](/screeshots/wth_con02.png)
-![Example](/screeshots/wth_web01.png)
-![Example](/screeshots/wth_web01.png)
+![Example](/screenshots/wth_con01.png)
+![Example](/screenshots/wth_con02.png)
+![Example](/screenshots/wth_web01.png)
+![Example](/screenshots/wth_web01.png)
