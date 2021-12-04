@@ -1,4 +1,9 @@
-#Change Log
+# Change Log
+
+## VERSION pre-0.18 - 2021-12-03
+- More documentation / error corrections
+- Markdown fixes
+- BTC, ETC, ETH and XMR donation addresses added
 
 ## VERSION 0.17 - 2021-11-24
 - Added: Handle errors/events better (more standardized)
@@ -7,8 +12,8 @@
 - Added: new config options enabled in web server as well
 - Change: semi improved down host handling... needs more work...
 - Added: self signed cert SSL added
--- Generates a new self cert and saves it.  Changing it makes Firefox angry.
--- Mostly untested.  Need to provide more SSL support/testing
+    - Generates a new self cert and saves it.  Changing it makes Firefox angry.
+    - Mostly untested.  Need to provide more SSL support/testing
 - Removed: signum pool miner override of check_all, now consolidated
 - Removed: extra pre-recheck round on down servers
 - Added: Web logs
@@ -25,7 +30,7 @@
 
 ## VERSION 0.16 - 2021-11-24
 - Added: Simple Web API to request module json data.
--- localhost:8000/api?module=<your module config name | "list" to get those>
+    - localhost:8000/api?module=<your module config name | "list" to get those>
 - Fixed: More fixes and consolidations to OpenStruct format versus hashes
 - Changed: Standalone titles / tables to look slightly better
 - Fixed: What to mine is now more accurate in general and new "fixup" framework added for odd ball miners (ex., Nice Hash!?!?!)
@@ -34,7 +39,7 @@
 ## VERSION 0.15 - 2021-11-21
 - Improved: unmineable output
 - Added: WhatToMine plugin
--- Added: Price plugin hooks to gpu modules
+    - Added: Price plugin hooks to gpu modules
 - Fixed threading issue on cache with concurrency semaphore
 - Fixed threading issue on modules race condition
 - Added: Pool coloring for workers up/down, stale, reject, and speed comaprisons to calc or avg

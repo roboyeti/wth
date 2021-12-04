@@ -52,10 +52,13 @@ By default, WTH offers the following modes:
 - "e" key will show available commands in basic web interface and console
 - http://localhost:8080/api?module=list provides a list of configured modules that can be queried.
     - http://localhost:8080/api?module=<module_name> will return JSON for that module entry
-
+- With either web interface (basic or API), you can enable a private key to restrict access
+    - Enable in config and set your key
+    - Add &key=<your_key> to the URL for both interfaces to send it with request.
+    
 ## Other stuff
 - wthlab.rb is an interactive shell with a WTH application spun up with your config.
-    - wthd.rb is an untested daemonized wth for OSs that support fork.
+- wthd.rb is an untested daemonized wth for OSs that support fork.
     - Use: ruby ./wthd.rb [start|stop|status|restart]
 - To detach from console in linux, you can also set config option "console_out" to false
 
@@ -80,12 +83,12 @@ miner, pool, or other crypto currency related site/tool integrated, donations al
 long way to convince me to investigate if it is possible and spend the personal time
 adding something I don't need myself.
 
-- BTC: TBD
-- ETH: TBD
-- ETC: TBD
+- BTC: bc1qwnuxek3zw6cht7gqm07smr7pam8qngl9l72jqk
+- ETH: 0x0c3154E8bFB49Fc54e675f4D230737B76cAc8346
+- ETC: 0x0b719bd9AD3786D340ea0D13465CB7EDe20c7DF5
 - SIGNA: S-CJFF-3JYH-GMBY-D2DRX
 - RTM: RCMPMeSS2CYSbepTEbR5X3dNpwDQFZxnHM
-- XLM: TBD
+- XMR: 85AUKf2jByxRy884ebLagvToXmTW4hYmrhQUxvudKsvwWKpdKt1xMatargMD4DQTCCZgoxtiyrz6RTUXeciKGdz8Vqd9Ly8
 
 ![Example](/screenshots/wth_con01.png)
 ![Example](/screenshots/wth_con02.png)
