@@ -1,0 +1,9 @@
+# CpuMiner
+
+Find and edit the 'config.json', with minimum config as follows:
+
+  "api-bind" : "0.0.0.0:4048",
+  "api-remote": true,
+
+Port number above can be whatever you want it to be, but it must then match what is specified in the WTH config.
+

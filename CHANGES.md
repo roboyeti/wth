@@ -1,9 +1,12 @@
 # Change Log
 
-## VERSION pre-0.18 - 2021-12-03
+## VERSION pre-0.18 - 2021-12-06
 - More documentation / error corrections
 - Markdown fixes
 - BTC, ETC, ETH and XMR donation addresses added
+- Added miner specific docs, README updates
+- More reliability of cpu miners on down
+- html_out config enabled
 
 ## VERSION 0.17 - 2021-11-24
 - Added: Handle errors/events better (more standardized)

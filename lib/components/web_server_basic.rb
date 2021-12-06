@@ -78,6 +78,7 @@ class WebServerBasic
     @ssl  = @config["ssl"] || false
     @api  = @config["api"] || false
     @key  = @config["key"] || nil
+    @html_out = @config["html_out"] || true
     @cert_file = @config["cert_file"] || 'data/wth.crt'
   end
   
@@ -144,6 +145,7 @@ class WebServerBasic
   end
 
   def write_html_file(file,name,content)
+    return nil if !@html_out
     if content.is_a?(String)
       content = content.split("\n")
     end
@@ -162,10 +164,11 @@ class WebServerBasic
       pages.each_with_index {|e,i|
         idx = i + 1
         web_hdr_out = console_header(titles[i])
+        write_html_file("page_#{idx}",titles[i],e)
         
-        ff = File.open("./web/generated/page_#{idx}.html", 'w')
-        ff.write(Terminal.render((web_hdr_out + e).join("\n")))
-        ff.close
+#        ff = File.open("./web/generated/page_#{idx}.html", 'w')
+#        ff.write(Terminal.render((web_hdr_out + e).join("\n")))
+#        ff.close
       }
   end
 end

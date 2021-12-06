@@ -1,0 +1,10 @@
+# Claymore Miner (Untested)
+
+I believe this is the same as Phoenix miner.  Please let us know if this does not work.
+
+Find and edit the 'config.txt', with minimum config as follows:
+
+-cdm 2
+-cdmport 0.0.0.0:33433
+
+Port number above can be whatever you want it to be, but it must then match what is specified in the WTH config.

@@ -60,7 +60,7 @@ web_server:
 ## Host sets interface for web server.
 ## Examples: 127.0.0.1, localhost, 192.168.0.10, 0.0.0.0 (all interfaces).
 ## Default is 127.0.0.1, meaning only accessible on the local machine
-  host: 0.0.0.0
+  host: 127.0.0.1
   ssl: false
   api: false
 ## Auto generated uuid if you created config by running program.

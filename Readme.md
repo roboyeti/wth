@@ -34,15 +34,19 @@ By default, WTH offers the following modes:
 - Open shell (power shell pref, even inside ConEmu)
 - cd to installation directory
 - #> bundle install
+- Copy wth_config_example.yml to wth_config.yml
 - Edit config file (see Configuration)
-- #> ruby .\wth.rb (or double click in file window)
-
+- #> .\wth.rb (or double click in file window)
+    - If .\wth.rb doesn't work, try 'ruby .\wth.rb'
+    
 ## Installation - Linux
 - Install ruby 2.7+ for your platform
-- Edit config file (see Configuration)
 - cd to installation directory
 - #> bundle install
-- #> ruby ./wth.rb
+- Copy wth_config_example.yml to wth_config.yml
+- Edit config file (see Configuration)
+- #> .\wth.rb
+    - If .\wth.rb doesn't work, try 'ruby .\wth.rb'
 
 ## Installation - OSx
 - Same as linux, unknown mileage
@@ -73,18 +77,20 @@ By default, WTH offers the following modes:
 ## Configuration - Modules
 Specific configuration options can be found in the example config.
 
-Brief documentation for how to enable APIs for specific module can be found in docs/modules/<module_name>.
+Brief documentation for how to enable APIs for a specific module target can be found in docs/modules/<target_name>.
 
 List of supported modules
 
 GPU Miners
-- T-Rex Miner = "t_rex_unm"
-- Phoenix Miner = "phoenix"
 - Excavator (Nicehash Nvidia Miner) = "nice_hash"
+- Claymore Miner = "phoenix" (untested)
+- Phoenix Miner = "phoenix"
+- T-Rex Miner = "t_rex_unm"
 
 CPU Miners
 - XMRig = "xmrig"
-- Raptoreum = "raptoreum"
+- Cpuminer-gr = "raptoreum"
+- Cpuminer-<algo> = "cpuminer" (Untested other than cpuminer-gr)
 
 Harddrive Miners
 - Signum Miner (pool API) = "signum_pool_miner"
@@ -100,10 +106,21 @@ Specific configuration options can be found in the example config.
 List of supported plugins
 * what_to_mine : Enables what to mine revenue calculations on supporting modules
 
-
 ## Configuration - Web Server
+The following web server config options are:
+
+web_server:
+  html_out: [true|false] = Enable the console => html conversion.  Turning this off will leave the API running, if that is enabled.  True default.
+  port: [integer] = Port number to run basic and API on.  Default is 8080
+  host: [network_addr] = For local machine access, set to 127.0.0.1 or localhost, 0.0.0.0 for all interfaces (default), or specific IP address for a specific interface.
+  ssl: [true|false] = Enables SSL, which is not fully functional at this time.  False default.
+  api: [true|false] = Enable the API interface for the web server.  Default false.
+  key: [string] = User chosen string to act as you private web access string.  If you run wth without a config, one will be generated with a unique string here.
 
 ## Configuration - Global
+console_out: [true|false] = Enable console output.
+web_server_start: [true|false] = Run web server or not
+default_module_frequency: [integer] = Number of seconds between default module check.  Override in module with "every:" directive
 
 ## Donate!
 Donations are very welcome and if you find this program helpful.  If you want a

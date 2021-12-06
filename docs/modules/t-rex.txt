@@ -1,17 +1,16 @@
-Edit config.json, minimum config is as follows:
+# T-Rex Miner
 
+Find and edit the 'config.json', with minimum config as follows:
 
 // HTTP API bind address.
 "api-bind-http": "0.0.0.0:4067", // Set to "0" to disable HTTP API
-
 // Enable https protocol for API calls.
 "api-https": false,
-
 // Pre-generated authorization key for API calls.
 "api-key": "",
-
 // Full path to API web server certificate file.
 "api-webserver-cert" : "",
-
 // Full path to API web server private key file.
 "api-webserver-pkey" : "",
+
+Port number above can be whatever you want it to be, but it must then match what is specified in the WTH config.
