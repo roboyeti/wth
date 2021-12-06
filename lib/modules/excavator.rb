@@ -4,6 +4,12 @@
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
+# nhqm.conf:
+# "watchDogAPIAuth" : "your_private_api_key",
+#	"watchDogAPIHost" : "0.0.0.0",
+#	"watchDogAPIPort" : 18000,
+#	"watchDogAPITimeout" : 2000,
+#
 require 'rest-client'
 require 'json'
 

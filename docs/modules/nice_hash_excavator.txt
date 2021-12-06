@@ -1,0 +1,12 @@
+# Nicehash Quick Miner
+ 
+Find and edit configuration file "nhqm.conf".
+ 
+Change or add the following settings
+
+"watchDogAPIAuth" : "your_private_api_key",
+"watchDogAPIHost" : "0.0.0.0",
+"watchDogAPIPort" : 18000,
+"watchDogAPITimeout" : 2000,
+
+

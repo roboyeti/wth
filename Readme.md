@@ -61,17 +61,45 @@ By default, WTH offers the following modes:
 - wthd.rb is an untested daemonized wth for OSs that support fork.
     - Use: ruby ./wthd.rb [start|stop|status|restart]
 - To detach from console in linux, you can also set config option "console_out" to false
+- When a URL is visible on the console, you may be able to CTRL + Mouse click it to open in browser.  Terminal and OS mileage may vary.
 
 ## Configuration
 - The default config file is "wth_config.yml"
 - A default config can be created by running the program and then quiting (q)
 - Example config file is "wth_config_example.yml"
-- You can run with different config files with -c <FILE> or --config <FILE>
+- You can run with different config file using arguments to wth: -c <FILE> or --config <FILE>
     - Example: ruby wth.rb -c wth_my_other_config.yml
 
 ## Configuration - Modules
+Specific configuration options can be found in the example config.
+
+Brief documentation for how to enable APIs for specific module can be found in docs/modules/<module_name>.
+
+List of supported modules
+
+GPU Miners
+- T-Rex Miner = "t_rex_unm"
+- Phoenix Miner = "phoenix"
+- Excavator (Nicehash Nvidia Miner) = "nice_hash"
+
+CPU Miners
+- XMRig = "xmrig"
+- Raptoreum = "raptoreum"
+
+Harddrive Miners
+- Signum Miner (pool API) = "signum_pool_miner"
+
+Pools
+- Signum Pool API = "signum_pool_view"
+- Flock Pool (RTM) = "flock_pool"
+- Unmineable (Address API) = "unmineable"
 
 ## Configuration - Plugins
+Specific configuration options can be found in the example config.
+
+List of supported plugins
+* what_to_mine : Enables what to mine revenue calculations on supporting modules
+
 
 ## Configuration - Web Server
 

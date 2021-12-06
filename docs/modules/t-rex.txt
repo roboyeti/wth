@@ -1,0 +1,17 @@
+Edit config.json, minimum config is as follows:
+
+
+// HTTP API bind address.
+"api-bind-http": "0.0.0.0:4067", // Set to "0" to disable HTTP API
+
+// Enable https protocol for API calls.
+"api-https": false,
+
+// Pre-generated authorization key for API calls.
+"api-key": "",
+
+// Full path to API web server certificate file.
+"api-webserver-cert" : "",
+
+// Full path to API web server private key file.
+"api-webserver-pkey" : "",
