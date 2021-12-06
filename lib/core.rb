@@ -35,7 +35,7 @@ class Core
   include ConsoleInit
   include Sys
 
-  VERSION = "0.17"
+  VERSION = "0.17d"
   CONFIG_VERSION = 20211103
 
   # Map from config entry to module class

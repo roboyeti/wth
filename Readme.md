@@ -110,16 +110,24 @@ List of supported plugins
 The following web server config options are:
 
 web_server:
+
   html_out: [true|false] = Enable the console => html conversion.  Turning this off will leave the API running, if that is enabled.  True default.
+  
   port: [integer] = Port number to run basic and API on.  Default is 8080
+  
   host: [network_addr] = For local machine access, set to 127.0.0.1 or localhost, 0.0.0.0 for all interfaces (default), or specific IP address for a specific interface.
+  
   ssl: [true|false] = Enables SSL, which is not fully functional at this time.  False default.
+  
   api: [true|false] = Enable the API interface for the web server.  Default false.
+  
   key: [string] = User chosen string to act as you private web access string.  If you run wth without a config, one will be generated with a unique string here.
 
 ## Configuration - Global
 console_out: [true|false] = Enable console output.
+
 web_server_start: [true|false] = Run web server or not
+
 default_module_frequency: [integer] = Number of seconds between default module check.  Override in module with "every:" directive
 
 ## Donate!
