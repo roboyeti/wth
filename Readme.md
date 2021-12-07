@@ -30,7 +30,7 @@ By default, WTH offers the following modes:
 
 ## Installation - Windows
 - Install Ruby: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.0.2-1/rubyinstaller-3.0.2-1-x64.exe
-- Optional: Install ConEmu: URL_HERE
+- Optional: Install ConEmu: https://conemu.github.io/
 - Open shell (power shell pref, even inside ConEmu)
 - cd to installation directory
 - #> bundle install
