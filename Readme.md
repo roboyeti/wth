@@ -40,6 +40,8 @@ By default, WTH offers the following modes:
     - If .\wth.rb doesn't work, try 'ruby .\wth.rb'
     
 ## Installation - Linux
+- Install Ruby dependencies
+    -  sudo apt install curl g++ gcc autoconf automake bison libc6-dev libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev libreadline-dev libssl-dev
 - Install ruby 2.7+ for your platform
 - cd to directory where you extracted WTH 
 - #> bundle install
