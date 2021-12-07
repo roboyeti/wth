@@ -41,8 +41,8 @@ By default, WTH offers the following modes:
     
 ## Installation - Linux
 - Install ruby 2.7+ for your platform
-- cd to WTH installation directory
-- #> bundle install
+- cd directory to where you extracted WTH 
+- #> sudo bundle install
 - Copy wth_config_example.yml to wth_config.yml
 - Edit config file (see Configuration)
 - #> .\wth.rb
