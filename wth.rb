@@ -28,8 +28,9 @@ puts "Loading data into modules..."
 numcols = TTY::Screen.cols
 # TODO : Fix $page global, move page state to app
 $page = last_page = 1
-last_run = Time.now - 10
+last_run = Time.now - 100
 threaded = true # Turn into config option
+page_out = []
 
 Process.daemon(true, true) if !app.console_out && !app.os.windows?
 
@@ -49,27 +50,28 @@ while 1
     app.clear
   end
     
-  begin
-#    if Time.now - last_run > 6  
-      page_out = threaded ? app.thread_wth_modules : app.run_wth_modules
-
-      out = page_out[$page - 1] || ['Nothing to show']
-
-      if app.console_out
-        app.reposition
-        app.cursor_hide
-        app.console_header(app.page_title($page - 1)).each {|o| app.clear_line; puts o; }     
-        out.each {|o|
-          app.clear_line
-          puts " #{o}"
-        }
-        app.clear_screen_down
-      end
+  if (Time.now - last_run > 8) || app.down_reset?
+    app.down_reset_clear
+    page_out = threaded ? app.thread_wth_modules : app.run_wth_modules
+    last_run = Time.now
+  end
   
-      app.webserver_pulse(page_out)
-#    end
-  end    
+  out = page_out[$page - 1] || ['Nothing to show']
 
+  if app.console_out
+    app.reposition
+    app.cursor_hide
+    app.console_header(app.page_title($page - 1)).each {|o| app.clear_line; puts o; }
+    out.each {|o|
+      app.clear_line
+      puts "#{o}"
+    }
+    #puts "Next check in #{(8 - (Time.now - last_run)).round(2)} seconds"
+    app.clear_screen_down
+  end
+
+  app.webserver_pulse(page_out)
+  
   24.times {
     if app.console_out
       break if app.keypress_pulse

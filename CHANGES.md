@@ -1,12 +1,19 @@
 # Change Log
 
 ## VERSION pre-0.18 - 2021-12-06
-- More documentation / error corrections
-- Markdown fixes
-- BTC, ETC, ETH and XMR donation addresses added
-- Added miner specific docs, README updates
-- More reliability of cpu miners on down
-- html_out config enabled
+- Docs: More documentation / error corrections
+- Docs: Markdown fixes
+- Docs: BTC, ETC, ETH and XMR donation addresses added
+- Docs: Added miner specific docs, README updates
+- Fixed: More reliability of cpu miners on down
+- Added: html_out config enabled
+- Fixed: More fixes on pool downs
+- Change: Decreased down re-check time
+- Change: Increased REST call default timeout
+- Fixed: Utilize page "cache" for faster UI page switches & refresh
+- Change: Imposes min limit on frequency to 8 seconds, regardless of module settings
+- Added: "f" force recheck on downed nodes for console.  May require a cycle to catch up in view
+- Fixed: even longer delay for refresh than the lack of page cache use
 
 ## VERSION 0.17 - 2021-11-24
 - Added: Handle errors/events better (more standardized)

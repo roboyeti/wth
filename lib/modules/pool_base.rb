@@ -42,6 +42,9 @@ class PoolBase < Base
       "timestamp": Time.now
     })
   end
+  def structure
+    pool_structure  
+  end
   
   def worker_structure
     OpenStruct.new({
@@ -64,6 +67,8 @@ class PoolBase < Base
   end
 
   def colorize_up_down_compare(up,down)
+    up ||= 0
+    down ||= 0
     my_str = "#{up}/#{down}"
     if up == 0
       colorize(my_str,$color_pool_updown_alert)
@@ -76,6 +81,8 @@ class PoolBase < Base
 
   # Colors s2
   def colorize_percent_of(s1,s2,pwarn,palert)
+    s1 ||= 0
+    s2 ||= 0
     if s2 > (s1 * palert)
       colorize(s2,$color_pool_alert)      
     elsif s2 > (s1 * pwarn)
@@ -87,6 +94,8 @@ class PoolBase < Base
   
   # Colors s2
   def colorize_speed_compare(s1,s2)
+    s1 ||= 0
+    s2 ||= 0
     if s2 < (s1 * $pool_speed_compare_percent_alert)
       colorize(s2,$color_pool_speed_compare_alert)      
     elsif s2 < (s1 * $pool_speed_compare_percent_warn)

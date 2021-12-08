@@ -29,6 +29,7 @@ module ConsoleInit
     [
         "1,2,3,4,5,6,7,8,9,0: Display Pages 1-10",
         "r: Refresh Screen",
+        "f: Force recheck of down nodes",
         "c: Reload Config","s: Save Config","h: View Config",
         "l: View Events","w: View Web Log",
         "q: Quit",
@@ -87,8 +88,13 @@ module ConsoleInit
       end
       if event.value == "r"
         TTY::Screen.rows.times {|r|
-          puts cursor.clear_line  
+          puts clear
         }
+        @loop_int = true
+      end  
+      if event.value == "f"
+        clear_all_down_nodes
+        @loop_int = true
       end  
       if event.value == "c"
         clear

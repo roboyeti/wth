@@ -386,6 +386,21 @@ class Core
 		page_out
 	end
 
+  def clear_all_down_nodes
+    @modules.each_pair {|k,v|
+      v.clear_down
+    }
+    @down_reset = true
+  end
+  
+  def down_reset?
+    @down_reset ||= false
+  end
+  
+  def down_reset_clear
+    @down_reset = false
+  end
+  
   # Start web server
   # TODO: Enable port setting in config
   # TODO: Allow set IP to localhost only

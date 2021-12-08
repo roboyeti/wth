@@ -38,6 +38,10 @@ class Base
     @events = []    
   end
 
+  def clear_down
+    @down = {}
+  end
+  
   def nice_title
     if config['extra']
       "#{title} #{config['extra']}"
@@ -82,7 +86,7 @@ class Base
         begin
           # If still down (under recheck frequency), mark it as such, update recheck counter, else we delete the down entry
           if @down[k]
-            if (Time.now - @down[k]) < 180
+            if (Time.now - @down[k]) < 60
               @data[:addresses][k] = down_handler(k,"Service recheck pending...")
             else
               @down.delete(k)
@@ -135,7 +139,7 @@ class Base
   
   # Quick and simple rest call with URL.
   # TODO: Get timeout working. Execute needs trouble shooting or gem replaced...
-  def simple_rest(url,timeout=10)
+  def simple_rest(url,timeout=20)
 #    s = if proxy
 #          RestClient::Request.execute(:method => :get, :url => url, :proxy => proxy, :headers => {}, :timeout => timeout)
 #        else
