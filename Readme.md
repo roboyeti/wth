@@ -30,7 +30,7 @@ By default, WTH offers the following modes:
 
 ## Installation - Windows
 - Install Ruby: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.0.2-1/rubyinstaller-3.0.2-1-x64.exe
-- Optional: Install ConEmu: URL_HERE
+- Optional: Install ConEmu: https://conemu.github.io/
 - Open shell (power shell pref, even inside ConEmu)
 - cd to installation directory
 - #> bundle install
@@ -40,8 +40,10 @@ By default, WTH offers the following modes:
     - If .\wth.rb doesn't work, try 'ruby .\wth.rb'
     
 ## Installation - Linux
+- Install Ruby dependencies
+    -  sudo apt install curl g++ gcc autoconf automake bison libc6-dev libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev libreadline-dev libssl-dev
 - Install ruby 2.7+ for your platform
-- cd to installation directory
+- cd to directory where you extracted WTH 
 - #> bundle install
 - Copy wth_config_example.yml to wth_config.yml
 - Edit config file (see Configuration)
