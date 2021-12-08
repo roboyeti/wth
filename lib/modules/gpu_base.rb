@@ -15,6 +15,9 @@ class GpuBase < Base
     super
     @standalone = @config["standalone"]
     @gpu_row    = @config["gpu_row"] || 5
+    if @standalone == true
+      @gpu_row = 1
+    end
   end
 
   def mine_profit(*p)
@@ -40,7 +43,6 @@ class GpuBase < Base
       if h["down"] == true
         h.name = addr
         h.uptime = colorize("down",$color_alert)
-#        @events << $pastel.red(sprintf("%s : %22s: %s",Time.now,addr,h.message))
       end
 
       reject_str = colorize_percent_of(h[:total_shares],h[:rejected_shares],0.10,0.50)
@@ -69,6 +71,7 @@ class GpuBase < Base
       gheaders = []
       grows = []
       gpu_grid(hosts,gheaders,grows)
+      o << "\n"
       o << table_out(gheaders,grows)
       o
     else

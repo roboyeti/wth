@@ -14,6 +14,7 @@
 - Change: Imposes min limit on frequency to 8 seconds, regardless of module settings
 - Added: "f" force recheck on downed nodes for console.  May require a cycle to catch up in view
 - Fixed: even longer delay for refresh than the lack of page cache use
+- Fixed: GPU standalone mode to work, but not document-able feature yet
 
 ## VERSION 0.17 - 2021-11-24
 - Added: Handle errors/events better (more standardized)
