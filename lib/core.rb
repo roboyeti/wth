@@ -79,6 +79,7 @@ class Core
         @page_titles[pn.to_i - 1] = pt
       }
     end
+    @header_short = @cfg["header_short"] ? true : false
 
     @log = {}
     @modules = {}

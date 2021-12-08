@@ -181,6 +181,10 @@ module ConsoleInit
   # Todo: web unused...I think
   #
   def console_header(page_title=" ",web=true)
+    @header_short ? console_header_short(page_title,web) : console_header_long(page_title,web)
+  end
+
+  def console_header_long(page_title=" ",web=true)
     out = []
     border = pastel.blue.dim.detach
     center = pastel.magenta.dim.detach
@@ -192,8 +196,13 @@ module ConsoleInit
     info = [page,stuff].join(' ')    
   
     # TODO: Simplify, gotten out of control... 
-    mycols = 60
-    longer = title.length > info.length ? title.length : info.length
+    mycols = 90
+    title_length = no_ascii(title).length
+    info_length = no_ascii(info).length
+    
+    longer = title_length > info_length ? title_length : info_length
+
+#    longer = title.length > info.length ? title.length : info.length
     mycols = longer if longer > mycols
     
     top = border.( sprintf("╭%#{mycols-2}s╮",'─'*(mycols-2)) )
@@ -207,6 +216,41 @@ module ConsoleInit
     out << ""
     out
   end       
+
+  def console_header_short(page_title=" ",web=true)
+    out = []
+    border = pastel.blue.dim.detach
+    center = pastel.magenta.dim.detach
+    title = center.("What The Hash? https://github.com/roboyeti/wth")
+    time = Time.now.strftime("%Y/%m/%d %H:%M:%S")
+  
+    page = pastel.bright_green("#{page_title}") 
+    stuff = border.("#{time} | e:Commands")
+    info = [page,stuff].join(' ')    
+  
+    # TODO: Simplify, gotten out of control... 
+    mycols = 60
+    title_length = no_ascii(title).length
+    info_length = no_ascii(info).length
+    
+    longer = title_length > info_length ? title_length : info_length
+    mycols = longer if longer > mycols
+    
+    top = border.( sprintf("╭%#{mycols-2}s╮",'─'*(mycols-2)) )
+    pad_len = top.length - 2 - title.length
+    len = (pad_len/2).round
+    len2 = len + (pad_len % 2)
+    out << top
+    out << sprintf("%1s%#{len}s%s%#{len2}s%1s",border.('│'),'',title,'',border.('│'))
+    out << border.( sprintf("╰%#{mycols-2}s╯",'─'*(mycols-2)) )
+    out << sprintf(" %#{top.length}s",info)
+    out << ""
+    out
+  end       
+
+  def no_ascii(s)
+    s.gsub /\e\[\d+m/, ""
+  end
   
   # Clear screen
   #
