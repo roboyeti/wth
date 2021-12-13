@@ -34,24 +34,30 @@ class Core
   include WthConfig
   include ConsoleInit
   include Sys
-
+  include SemanticLogger::Loggable
+  
   VERSION = "0.17d"
   CONFIG_VERSION = 20211103
 
   # Map from config entry to module class
   #
   MODULES = {
-    'excavator' => "Excavator",
-    'nice_hash' => "Excavator",
-    'phoenix' => "Phoenix",
-    'signum_pool_miner' => "SignumPoolMiner",
-    'signum_pool_view' => "SignumPoolView",
-    't_rex' => "TRex",
-    'unmineable' => "Unmineable",
-    'xmrig' => "Xmrig",
-    'raptoreum' => "Cpuminer",
-    'cpuminer' => "Cpuminer",
-    'flock_pool' => "FlockPool",    
+    'excavator'         => 'Excavator',
+    'nice_hash'         => 'Excavator',
+    'phoenix'           => 'Phoenix',
+    'signum_pool_miner' => 'SignumPoolMiner',
+    'signum_pool_view'  => 'SignumPoolView',
+    't_rex'             => 'TRex',
+    'unmineable'        => 'Unmineable',
+    'xmrig'             => 'Xmrig',
+    'raptoreum'         => 'Cpuminer',
+    'cpuminer'          => 'Cpuminer',
+    'flock_pool'        => 'FlockPool',
+    'gminer'            => 'GMiner',
+    'g_miner'           => 'GMiner',
+    'coin_gecko'        => 'CoinGeckoTracker',
+    'wth_link'          => 'WthLink',
+    'wth'               => 'WthLink',
   }.freeze
 
   # Map from config entry to plugin class
@@ -63,7 +69,7 @@ class Core
   }.freeze
 
   attr :verbose
-  attr_reader :config_file, :cfg, :modules, :plugins, :console_out, :os
+  attr_reader :config_file, :cfg, :modules, :plugins, :console_out, :os, :start_page
   
   # TODO: Document
   def initialize(p={})
@@ -71,6 +77,8 @@ class Core
     @config_type = "yml"
     @verbose = p["verbose"] || false
     set_module_config_version(CONFIG_VERSION)
+    check_and_rotate_log('wth.log')
+
     @cfg = load_config(@config_file)
     @console_out = @cfg["console_out"] ? true : false
     @page_titles = []
@@ -79,8 +87,8 @@ class Core
         @page_titles[pn.to_i - 1] = pt
       }
     end
+    @start_page = @cfg["start_page"] || 1
     @header_short = @cfg["header_short"] ? true : false
-
     @log = {}
     @modules = {}
     @os = OS
@@ -102,12 +110,21 @@ class Core
     init_wth_modules(config['modules'])
     sleep(1)
     @cfg["web_server_start"] && webserver_start
+      
     sleep(0.5)
     if @cfg["console_out"]
+      logger.info("WTH started with console.")
       init_key_reader
     else
+      logger.info("WTH started without console.")
       puts "WTH started.  Will not detach from console in MS Windows."    
     end
+  end
+
+  # Pulse the service, letting it do one round of work
+  def pulse
+    check_and_rotate_log('wth.log')
+#    @cfg["web_server_start"] && app.webserver_pulse(page_out)
   end
 
   # Load basic "template" files
@@ -155,8 +172,10 @@ class Core
       STDERR.puts "There is a newer version of the configuration format than what your config file is using."
     end
     YAML.load(template_config).merge!(cfg)
+    logger.info("Loaded from config file: #{file}")
     cfg
   rescue => e
+    logger.error("Unknown error loading config file '#{file}'",e)
     puts "Unknown error loading config file '#{file}': #{e}"
     {}
   end
@@ -212,6 +231,22 @@ class Core
     File.open(file, "w+") do |f|
       f << JSON.pretty_generate(hash)
     end
+  end
+
+  def check_rotate_log?(log_file)
+    File.size(log_file) > 10000000
+  end
+
+  def check_and_rotate_log(log_file)
+    rotate_log if check_rotate_log?(log_file)
+  end
+  
+  def rotate_log(log_file)
+    SemanticLogger.flush
+    FileUtils.cp(log_file, "#{log_file}.bck")
+    File.new(log_file,"w+")
+    SemanticLogger.reopen
+#    File.truncate(log_file, 0)
   end
   
   # Add to a "log" stream.  This provides in memory, short
@@ -343,8 +378,16 @@ class Core
 
 		page_out = 10.times.map{|| []}
 		@modules.each_pair {|k,v|
-      a = v.console_out(v.check_all)
-      c = a.is_a?(Array) ? a : a.split("\n")
+      begin
+        a = v.console_out(v.check_all)
+        c = a.is_a?(Array) ? a : a.split("\n")
+        c << ""
+      rescue => e
+        add_log('events',"#{k} :: Output processing error: #{e} #{e.backtrace[0]}")
+        logger.error("#{k} :: Output processing error",e)
+        c << pastel.bright_red("#{k} - Error generating output.  See logs.")
+        c << ""
+      end
       page = (v.page || 1) - 1
       page_out[page] ||= []
       c.each {|l| page_out[page] << l }
@@ -356,6 +399,7 @@ class Core
 
   # Run modules, threaded
   # TODO: Needs to be improved upon ... a lot
+  # TODO: Consolidate code with non-threaded method
   #
   # @return [Array] The pages to render form module pulse
   #
@@ -364,10 +408,19 @@ class Core
     @modules.each_pair {|k,v|
 			thread = Thread.new {
           load_templates
-					Thread.current["me"] = v
-					a = v.console_out(v.check_all)
-					c = a.is_a?(Array) ? a : a.split("\n")
-          c << ""
+          Thread.current.name = "#{self.class.name}:#{k}"
+          Thread.current["me"] = v
+          c = []
+          begin
+            a = v.console_out(v.check_all)
+            c = a.is_a?(Array) ? a : a.split("\n")
+            c << ""
+          rescue => e
+            add_log('events',"#{k} :: Output processing error: #{e} #{e.backtrace[0]}")
+            logger.error("#{k} :: Output processing error",e)
+            c << pastel.bright_red("#{k} - Error generating output.  See logs.")
+            c << ""
+          end
 					Thread.current["mypage"] = c
 					Thread.current["events"] = v.events
 					v.clear_events
@@ -408,11 +461,11 @@ class Core
   # TODO: Abstract in plugin
   #
   # @param [Integer] port The port to run service on.
-  def webserver_start(port=8000)
-    puts "Loading web server on port# #{port}"
+  def webserver_start
     @webserver = WebServerBasic.new({
         :version => version
     }.merge(config["web_server"]))
+    puts "Loading web server on port# #{@webserver.port}"
     @webserver.start
     @webserver.write_html_file('events','Events',"Nothing to show")
     @webserver.write_html_file('web_logs','Web Logs',"Nothing to show")    
@@ -420,6 +473,8 @@ class Core
     web_cmd_list.each{|c| wout << sprintf("%10s%-s",'',c) }
     wout << "\n"
     @webserver.write_html_file('command_list','Commands',wout)
+    logger.info("WTH web service started on port: #{@webserver.port}")
+
     @webserver
   end
   

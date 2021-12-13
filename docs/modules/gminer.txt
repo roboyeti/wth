@@ -1,0 +1,11 @@
+GMiner - https://github.com/develsoftware/GMinerRelease
+
+Find and copy 'sample_config.txt' to 'config.txt', with minimum config as follows:
+
+[common]
+api=10555 ; enable API, to view statistics navigate to http://localhost:10555 in your browser
+
+Port number above can be whatever you want it to be, but it must then match what is specified in the WTH config.
+
+Run "miner --config config.txt"
+

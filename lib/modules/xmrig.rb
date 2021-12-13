@@ -12,7 +12,7 @@ class Xmrig < Base
 
   def initialize(p={})
     super
-    @title = p[:title] || 'XMRig RandX'    
+    @title = @config["title"] || 'XMRig RandX'    
   end
 
   def check(ip,host)

@@ -13,6 +13,7 @@ class GpuBase < Base
  
   def initialize(p={})
     super
+    @devices = @config["devices"] || {}
     @standalone = @config["standalone"]
     @gpu_row    = @config["gpu_row"] || 5
     if @standalone == true
@@ -39,6 +40,7 @@ class GpuBase < Base
     
     hosts.keys.sort.each{|addr|
       h = hosts[addr]
+      h = OpenStruct.new(h) if !h.is_a?(OpenStruct)
 
       if h["down"] == true
         h.name = addr

@@ -48,7 +48,7 @@
 
 .term-fg30 { color: #666666; } /* black (but we can't use black, so a diff color) */
 .term-fg31 { color: #ff7070; } /* red */
-.term-fg32 { color: #86a686; } /* green */
+.term-fg32 { color: #46B676; } /* green */
 /*.term-fg32 { color: #b0f986; }*/ /* green */
 .term-fg33 { color: #c6c502; } /* yellow */
 .term-fg34 { color: #8db7e0; } /* blue */

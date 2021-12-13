@@ -43,7 +43,7 @@ class WhatToMine < PluginBase
 		@sema_calc = Concurrent::Semaphore.new(1)
 		@sema_coin = Concurrent::Semaphore.new(1)
 		@lifespan = p[:lifespan] || 180
-		@cache = Lightly.new dir: 'tmp/wtm_cache', life: 300, hash: false
+		@cache = Lightly.new dir: 'tmp/wtm_cache', life: @lifespan, hash: false
 		coins # Init cached data storage
 	end
 	
@@ -81,7 +81,7 @@ class WhatToMine < PluginBase
 				req.gsub!(/\@#{var}/,eval("#{var}").to_s)
 			}
 			url = [URL,req].join('/')
-			resp = simple_rest(url)
+			simple_rest(url)
 		end
 		@sema_calc.release
 		ret = reward_structure

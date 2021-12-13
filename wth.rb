@@ -27,7 +27,7 @@ puts "Loading data into modules..."
 
 numcols = TTY::Screen.cols
 # TODO : Fix $page global, move page state to app
-$page = last_page = 1
+$page = last_page = app.start_page
 last_run = Time.now - 100
 threaded = true # Turn into config option
 page_out = []
@@ -38,9 +38,8 @@ Process.daemon(true, true) if !app.console_out && !app.os.windows?
 # - add web logs to web channel
 # - setup screen stuff
 # - iterate thru the modules
-# TODO: Integrate loop into app lib and add into start
-# TODO: Decouple loop timer with running modules so we can
-#       print old screen on transition from other pages
+# - print results (new or cached) to console, if enabled
+# - pulse web server so it can get some work done.
 while 1
   
   last_page = $page
@@ -53,6 +52,8 @@ while 1
   if (Time.now - last_run > 8) || app.down_reset?
     app.down_reset_clear
     page_out = threaded ? app.thread_wth_modules : app.run_wth_modules
+    app.webserver_pulse(page_out)
+    app.pulse
     last_run = Time.now
   end
   
@@ -69,9 +70,8 @@ while 1
     #puts "Next check in #{(8 - (Time.now - last_run)).round(2)} seconds"
     app.clear_screen_down
   end
-
-  app.webserver_pulse(page_out)
   
+  # Sleep with keyboard responsiveness
   24.times {
     if app.console_out
       break if app.keypress_pulse

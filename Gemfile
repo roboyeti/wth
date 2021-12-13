@@ -27,6 +27,7 @@ gem 'concurrent-ruby', require: 'concurrent' # Used for thread safe vars
 gem 'symbolized'  # For the love of ... Ruby hash needs help
 gem 'zeitwerk'    # Code auto loader/reloader magic
 gem 'daemon'
+gem 'semantic_logger'
 
 # Misc
 gem 'lucky_case'  # Adds various "case" conversions (snake, camel, etc)
@@ -39,6 +40,9 @@ gem 'sinatra'   # DSL for web routes
 #gem 'puma'
 #gem 'opal' # Someday ...
 #gem 'rack'
+
+# Modules / Plugins
+gem 'coingecko_ruby'
 
 # This sucks,because it always ignores the use of Gemfile.lock.  Can't find a better
 # solution.

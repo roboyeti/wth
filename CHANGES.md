@@ -1,6 +1,6 @@
 # Change Log
 
-## VERSION pre-0.18 - 2021-12-06
+## VERSION pre-0.18 - 2021-12-12
 - Docs: More documentation / error corrections
 - Docs: Markdown fixes
 - Docs: BTC, ETC, ETH and XMR donation addresses added
@@ -17,10 +17,18 @@
 - Fixed: GPU standalone mode to work, but not document-able feature yet.  Add "standlone: true" to modules.
 - Change: Preliminary work on better header sizing
 - Added: Ability to enable a shorter header for pages with "header_short: true"
+- Added: GMiner gpu miner support module
+- Added: Logging to file initial support.  More to be done.  "log_level: <level>" added to config
+- Fixed: More resilient modules against errors in console output, catching the errors and logging them instead of crashing/terminating
+- Added: Coin tracker "portfolio" module to track prices, holding value, avg cost of holdings, profit/loss (via coingecko)
+- Added: Config directive "start_page: #" to display page other than default of 1st page
+- Added: WTH Link Module!!!  Now a WTH instance can grab data and display it in source module format from another WTH module!
+-- Why would I do that?  Well, for one, you could run a WTH instance inside one network grabbing data from multiple local miners and then pull that data from a publicly availble node while limiting firewall access to WTH node.
+-- Worth noting, the goal is to provide a WTH push to WTH as well and this was step one, get the module instancing from WTH data etc.
 
 ## VERSION 0.17 - 2021-11-24
 - Added: Handle errors/events better (more standardized)
-- AddedL API and basic web interfaces now have optional key protection
+- Added: API and basic web interfaces now have optional key protection
 - Added: web config options: port, host, ssl, api, key
 - Added: new config options enabled in web server as well
 - Change: semi improved down host handling... needs more work...

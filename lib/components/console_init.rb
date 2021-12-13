@@ -79,6 +79,7 @@ module ConsoleInit
     
       if ['1','2','3','4','5','6','7','8','9','0'].include? event.value
         $page = event.value.to_i >= 1 ? event.value.to_i : 10
+        puts clear
         @loop_int = true
       end
       

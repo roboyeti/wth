@@ -11,6 +11,7 @@ require 'concurrent'
 
 class Base
   using IndifferentHash  
+  include SemanticLogger::Loggable
 
   attr_accessor :title
   attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses, :coin
@@ -22,11 +23,12 @@ class Base
     @page = @config["page"] || 1
     @coin    = @config["coin"] || ''
     @last_check = Time.now - (@frequency*2)
-    @title = @config[:title] || 'Undefined???'
+    @title = @config["title"] || 'Undefined???'
     @down = {}
     @data = Concurrent::Hash.new()
     @events = []
     @responses = {}
+    logger.info("Loaded module")
   end
 
   [:check, :console_out, :format].each {|m|
@@ -77,7 +79,10 @@ class Base
 
     if @data.empty? || tchk > @frequency
       out = []
-      @data = OpenStruct.new({ addresses: {} })
+      @data = OpenStruct.new({
+        addresses: {},
+        module: self.class.name
+      })
       addresses = @config['nodes'].keys.sort
       
       addresses.each {|k|
@@ -95,11 +100,14 @@ class Base
           
           # We need to check again, since we may have deleted the down
           if !@down[k]
+            logger.debug("Checking service #{k}")
             h = self.check(v,k)
+            h["target"] = v
             @data['addresses'][k] = h
           end
           
         rescue => e
+          logger.error("Service down #{k}", e)
           @down[k] = Time.now
           @data[:addresses][k] = down_handler(k,"Service down!",false,e)
         end
@@ -157,23 +165,25 @@ class Base
   # Structure of GPU workers
   def node_structure
     OpenStruct.new({
-      name: "",
-      address: "",
-      miner: "",
-      uptime: 0,
-      algo: "",
-      coin: "",
-      pool: "",
-      difficulty: 0,
+      name:     "",
+      address:  "",
+      miner:    "",
+      uptime:   0,
+      algo:     "",
+      coin:     "",
+      pool:     "",
+      difficulty:     0,
       combined_speed: 0,
-      total_shares: 0,
+      total_shares:   0,
       rejected_shares: 0,
+      stale_shares:   0,
       invalid_shares: 0,
-      power_total: 0,
-      time: Time.now,
-      gpu: {},
-      cpu: cpu_structure,
-      system: {},
+      power_total:    0,
+      target:   "",
+      time:     Time.now,
+      gpu:      {},
+      cpu:      cpu_structure,
+      system:   {},
     })
   end
 
@@ -190,13 +200,17 @@ class Base
   # * id may not match "system" id.  PCI bus id is more reliable.
   def gpu_structure
     OpenStruct.new({
-      :pci        =>"0",
-      :id         =>0,
-      :gpu_speed  =>0.0,
-      :gpu_temp   =>0,
-      :gpu_fan    =>0,
-      :gpu_power  =>0,
-      :speed_unit =>""
+      pci: "0",
+      id: 0,
+      gpu_speed: 0.0,
+      gpu_temp: 0,
+      gpu_fan: 0,
+      gpu_power: 0,
+      speed_unit: "",
+      total_shares: 0,
+      rejected_shares: 0,
+      stale_shares: 0,
+      invalid_shares: 0,
     })
   end
 
@@ -205,11 +219,14 @@ class Base
   # * id may not match "system" id.  PCI bus id is more reliable.
   def gpu_device_structure
     OpenStruct.new({
-      :pci        =>"0",
-      :id         =>0,
-      :gpu_temp   =>0,
-      :gpu_fan    =>0,
-      :gpu_power  =>0,
+      pci:        "0",
+      id:         0,
+      card:       "",
+      gpu_temp:   0,
+      gpu_fan:    0,
+      gpu_power:  0,
+      core_clock: 0,
+      memory_clock: 0,
     })
   end
 
@@ -383,15 +400,42 @@ class Base
     color_str = if s2 > (s1 * palert)
       $color_alert     
     elsif s2 > (s1 * pwarn)
-	  $color_warn
+      $color_warn
     else
-	  $color_ok
+      $color_ok
     end
     colorize(s2,color_str)
   end
+
+  # Colors s2
+  def colorize_above_below(s1,value,round=nil)
+    color_str = if s1 == value
+      ""
+    elsif s1 > value
+  	  $color_ok
+    else
+      $color_alert
+    end
+    s1 = sprintf("%.#{round}f",s1) if round
+    colorize(s1,color_str)
+  end
+  alias_method :colorize_around, :colorize_above_below
+  
+  def colorobj
+    @pastel ||= Pastel.new
+  end
+
+  def colorizer(colors)
+    m = colorobj
+    arc = *colors
+    arc.each {|c|
+      m = m.send(c)
+    }
+    lambda{|v| m.detach.(v)}
+  end
   
   def colorize(val,colors)
-    m = $pastel
+    m = colorobj
     arc = *colors
     arc.each {|c|
       m = m.send(c)
@@ -405,5 +449,12 @@ class Base
     s.gsub /\e\[\d+m/, ""
   end
 
+  def parse_rfc3339(time)
+    DateTime.rfc3339(time).to_time  
+  end
   
+  def nice_time(time)
+    return '' if !time.is_a?(Time)
+    time.localtime.strftime "%Y-%m-%d %H:%M:%S"
+  end
 end

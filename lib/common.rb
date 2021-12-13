@@ -6,6 +6,7 @@
 require 'optparse'
 require 'ostruct'
 require "zeitwerk"
+require 'semantic_logger'
 
 Dir["./lib/utility/ext/*.rb"].each {|file| load file }
 
@@ -14,6 +15,15 @@ loader.push_dir(__dir__)
 loader.push_dir("lib")
 loader.push_dir("lib/components")
 loader.setup
+
+# Set the global default log level
+SemanticLogger.default_level = :info
+# Log to a file, and use the colorized formatter
+SemanticLogger.add_appender(file_name: 'wth.log')
+
+# Create an instance of a logger
+# Add the application/class name to every log message
+#logger = SemanticLogger['MyClass']
 
 # Default options
 $options = OpenStruct.new({ config_file: 'wth_config.yml'})
