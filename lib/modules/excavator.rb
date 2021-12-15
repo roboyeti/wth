@@ -34,7 +34,6 @@ class Excavator < GpuBase
     base = algos["algorithms"][0]
     time = base["uptime"].to_f
     uptime = uptime_minutes(time)
-    #time > (1440 * 60) ? sprintf("%.2fd",(time / (1440 * 60))) : sprintf("%.2fh",(time / (60*60)))
 
     h = worker_structure
     h.name = name
@@ -44,6 +43,8 @@ class Excavator < GpuBase
     h.combined_speed = base["speed"].to_f / 1000000.0
     h.total_shares = base["accepted_shares"].to_i
     h.rejected_shares = base["rejected_shares"].to_i
+    h.coin = coin
+    h.revenue = mine_revenue(h.coin,h.combined_speed).to_f
 
     device_map = {}
     devices["devices"].each {|d|

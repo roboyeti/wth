@@ -310,7 +310,7 @@ class Core
     load "./lib/modules/#{file}.rb"
     obj = MODULES[api].constantize
     puts "Init Module: #{name} => #{obj.name}"
-    obj = @modules[name] = obj.new(config: cfg)
+    obj = @modules[name] = obj.new(config: cfg.merge({name: name}))
     plugins.each_pair{|p,e|
       e.register.each_pair{|m,t|
         if obj.respond_to?(m)

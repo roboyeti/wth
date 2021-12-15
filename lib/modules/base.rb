@@ -14,13 +14,15 @@ class Base
   include SemanticLogger::Loggable
 
   attr_accessor :title
-  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses, :coin
+  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :proxy_url
  
   def initialize(p={})
     @config = p[:config] || {}
     @frequency = @config["every"] || @config["default_frequency"] || 12
     @port = @config["port"] || 0
     @page = @config["page"] || 1
+    @proxy = @config["proxy"] || false
+    @dump = @config["dump"] || false
     @coin    = @config["coin"] || ''
     @last_check = Time.now - (@frequency*2)
     @title = @config["title"] || 'Undefined???'
@@ -144,22 +146,62 @@ class Base
     
     data
   end
-  
+
+  def get_proxy
+    # https://www.proxyscan.io/api/proxy?type=https
+    #199.19.225.54:3128
+    url = 'https://www.proxyscan.io/api/proxy?level=anonymous&type=https&format=txt'
+    #url = 'https://www.proxy-list.download/api/v1/get?type=https&anon=elite'
+    @proxy_timer ||= 0
+    if !@proxy_url || (Time.now - @proxy_timer > 86400)
+      p = RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => 30)    
+#      pdata = p.body.split("\r\n")
+      pdata = p.body.split("\n")
+      @proxy_url = "https://#{pdata.sample}"
+      @proxy_timer = Time.now
+    end
+    @proxy_url
+  end
+
   # Quick and simple rest call with URL.
-  # TODO: Get timeout working. Execute needs trouble shooting or gem replaced...
-  def simple_rest(url,timeout=20)
-#    s = if proxy
-#          RestClient::Request.execute(:method => :get, :url => url, :proxy => proxy, :headers => {}, :timeout => timeout)
-#        else
-    s = RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => timeout)          
-#        end
+  def simple_rest(url,timeout=30)
+    s = if proxy
+          p_url = get_proxy
+puts "#{p_url}!!!"
+          RestClient::Request.execute(:method => :get, :url => url, :proxy => p_url, :headers => {}, :timeout => timeout)
+        else
+          RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => timeout)          
+        end
 #    s = RestClient.get url
     res = s && s.body ? JSON.parse(s.body) : {}
+    file = url.split('?')[0].split('://')[1].gsub('/','_')
+    @dump && dump_response(file,["URL::#{url}",res])
+
     begin
       s.closed
     rescue
     end
-    res
+    return res
+  end
+
+  # Dump data to tmp file
+  def dump_response(file,data)
+    file.gsub!(/[\:|\.]/,'_')
+    file = "#{self.class.name}_#{file}.txt"
+    File.open("./tmp/#{file}", "w+") {|f|
+      f << "Class::#{self.class.name}\n"     
+      data.each{|d|
+        f << "#{d}\n"
+      }
+    }
+  end
+
+  def module_structure
+    OpenStruct.new({
+      module: self.class.name,
+      name: name,
+      addresses: {},
+    })
   end
 
   # Structure of GPU workers
@@ -173,12 +215,13 @@ class Base
       coin:     "",
       pool:     "",
       difficulty:     0,
-      combined_speed: 0,
+      combined_speed: 0.0,
       total_shares:   0,
       rejected_shares: 0,
       stale_shares:   0,
       invalid_shares: 0,
       power_total:    0,
+      revenue:        0.0,
       target:   "",
       time:     Time.now,
       gpu:      {},

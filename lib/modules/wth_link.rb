@@ -26,11 +26,8 @@ class WthLink < Base
       @mod[host] ||= mod
 	  m = @mod[host]
 	  file = m.snake_case
-    #puts "Loading Module: #{name} => #{file}"
 	  load "./lib/modules/#{file}.rb"
 	  @clss ||= m.constantize
-    #puts "Init Module: #{name} => #{obj.name}"
-	  #@title = "#{@title}:#{@clss.name}"
 	  @target[host] = @clss.new() #{ title: "#{@title}:#{@clss.name}" })
 	end
     @target[host]

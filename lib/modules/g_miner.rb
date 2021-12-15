@@ -38,8 +38,8 @@ class GMiner < GpuBase
     h.rejected_shares = res["total_rejected_shares"].to_i
     h.stale_shares = res["total_stale_shares"].to_i
     h.invalid_shares = res["total_invalid_shares"].to_i
-    h.coin = self.coin
-    
+    h.coin = coin
+
     res["devices"].each {|d|
       gpu = gpu_structure
 #bus_id	"0000:09:00.0"
@@ -61,6 +61,7 @@ class GMiner < GpuBase
       h.combined_speed += (d["speed"].to_f / 1000000.0)
       h.gpu[gpu.pci] = gpu
     }
+    h.revenue = mine_revenue(h.coin,h.combined_speed).to_f
     h
   end
 

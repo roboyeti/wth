@@ -30,6 +30,7 @@ class Claymore < GpuBase
       s.closed
     rescue => e
     end
+    @dump && dump_response("#{ip}_#{port}_#{cmd}",["Command::#{ip}_#{port}_#{cmd}",res])
     return res
   end
   
@@ -53,21 +54,23 @@ class Claymore < GpuBase
     speed = base[3].split(';')
     stats = base[6].split(';')    
     shares = base[9].split(';')
+    rejects = base[10].split(';')
+    invalids = base[11].split(';')
     uptime = uptime_minutes(base[1].to_f)
   
     o = worker_structure
     o.name = name
     o.address = name
-#    o.miner = base[0].split(' - ')[0]
-#    o.miner_coin base[0].split(' - ')[1]
+    o.miner = base[0].split(' - ')[0]
+    o.coin = base[0].split(' - ')[1] || coin
     o.uptime = uptime
     o.pool = base[7]
     o.combined_speed = group[0].to_f / 1000.0
     o.total_shares = group[1].to_i
     o.rejected_shares = group[2].to_i
-    o.invalid_shares = base[8].split(';')[0]
-    o.power_total = base[17]
-    o.gpu = {}
+    o.invalid_shares = base[8].split(';')[0].to_i
+    o.power_total = base[17].to_i
+    o.revenue = mine_revenue(o.coin,o.combined_speed).to_f
 
     pci.each_with_index {|p,i|
       g = o.gpu[p] = gpu_structure
@@ -76,6 +79,9 @@ class Claymore < GpuBase
       g.gpu_speed = speed[i].to_f / 1000.0
       g.gpu_temp = stats[i*2].to_i
       g.gpu_fan = stats[i*2+1].to_i
+      g.total_shares = shares[i].to_i
+      g.rejected_shares = rejects[i].to_i
+      g.invalid_shares = invalids[i].to_i
       g.speed_unit = 'Mh/s'
     }
     o

@@ -15,11 +15,11 @@ class TRex < GpuBase
     @title = p[:title] || "T-Rex"    
   end
 
-  def check(ip,name)
-    host,port = ip.split(':')
+  def check(target,name)
+    host,port = target.split(':')
     port = port ? port : @port    
     res = simple_rest("http://#{host}:#{port}/summary")
-    format(name,ip,res)
+    format(name,target,res)
   end
 
   def format(name,ip,res)
@@ -33,8 +33,9 @@ class TRex < GpuBase
     h.combined_speed = res["hashrate"].to_f / 1000000.0
     h.total_shares = res["accepted_count"].to_i
     h.rejected_shares = res["rejected_count"].to_i
-    h.coin = self.coin
-    
+    h.coin = coin
+    h.revenue = mine_revenue(h.coin,h.combined_speed).to_f
+
     device_map = {}
     res["gpus"].each {|d|
       gpu = gpu_structure

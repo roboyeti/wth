@@ -25,6 +25,8 @@
 - Added: WTH Link Module!!!  Now a WTH instance can grab data and display it in source module format from another WTH module!
 -- Why would I do that?  Well, for one, you could run a WTH instance inside one network grabbing data from multiple local miners and then pull that data from a publicly availble node while limiting firewall access to WTH node.
 -- Worth noting, the goal is to provide a WTH push to WTH as well and this was step one, get the module instancing from WTH data etc.
+- Added: initial proxy support for modules ... because unmineable API bottlenecking is ridiculous garbage
+- Added: Some fixes for data that wasn't getting to API output, such as revenue
 
 ## VERSION 0.17 - 2021-11-24
 - Added: Handle errors/events better (more standardized)
