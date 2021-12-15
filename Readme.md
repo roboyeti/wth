@@ -103,6 +103,12 @@ Pools
 - Flock Pool (RTM) = "flock_pool"
 - Unmineable (Address API) = "unmineable"
 
+Portfolio
+- Coingecko + personal coin portfolio
+
+WTH Link
+- WTH can pull data from another WTH instance.
+    
 ## Configuration - Plugins
 Specific configuration options can be found in the example config.
 
@@ -146,6 +152,7 @@ adding something I don't need myself.
 - RTM: RCMPMeSS2CYSbepTEbR5X3dNpwDQFZxnHM
 - XMR: 85AUKf2jByxRy884ebLagvToXmTW4hYmrhQUxvudKsvwWKpdKt1xMatargMD4DQTCCZgoxtiyrz6RTUXeciKGdz8Vqd9Ly8
 
+## [Feature Screenshots](/docs/features.md)
 ## Example Console View
 ![Example](/screenshots/wth_con01.png)
 ![Example](/screenshots/wth_con02.png)
