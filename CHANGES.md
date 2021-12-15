@@ -27,6 +27,7 @@
 -- Worth noting, the goal is to provide a WTH push to WTH as well and this was step one, get the module instancing from WTH data etc.
 - Added: initial proxy support for modules ... because unmineable API bottlenecking is ridiculous garbage
 - Added: Some fixes for data that wasn't getting to API output, such as revenue
+- Added: "dump: true/false" flag for modules that will enable dumping to tmp directory the contents of the requested API calls for dev/troubleshooting
 
 ## VERSION 0.17 - 2021-11-24
 - Added: Handle errors/events better (more standardized)
