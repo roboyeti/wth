@@ -53,10 +53,10 @@ class GMiner < GpuBase
       gpu.gpu_fan = d["fan"].to_i
       gpu.gpu_power = d["power_usage"].to_f
       gpu.speed_unit = 'Mh/s'
-      gpu.total_shares = res["accepted_shares"].to_i
-      gpu.rejected_shares = res["rejected_shares"].to_i
-      gpu.stale_shares = res["stale_shares"].to_i
-      gpu.invalid_shares = res["invalid_shares"].to_i
+      gpu.total_shares = d["accepted_shares"].to_i
+      gpu.rejected_shares = d["rejected_shares"].to_i
+      gpu.stale_shares = d["stale_shares"].to_i
+      gpu.invalid_shares = d["invalid_shares"].to_i
       h.power_total += d["power_usage"].to_f
       h.combined_speed += (d["speed"].to_f / 1000000.0)
       h.gpu[gpu.pci] = gpu

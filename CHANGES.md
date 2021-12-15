@@ -26,8 +26,11 @@
 -- Why would I do that?  Well, for one, you could run a WTH instance inside one network grabbing data from multiple local miners and then pull that data from a publicly availble node while limiting firewall access to WTH node.
 -- Worth noting, the goal is to provide a WTH push to WTH as well and this was step one, get the module instancing from WTH data etc.
 - Added: initial proxy support for modules ... because unmineable API bottlenecking is ridiculous garbage
+-- This proxy support leaves a lot to be desired and uses kind of crappy source for free proxy.
+-- User beware, these proxies are rando servers, do not use for requests you don't want shared on the internet
 - Added: Some fixes for data that wasn't getting to API output, such as revenue
 - Added: "dump: true/false" flag for modules that will enable dumping to tmp directory the contents of the requested API calls for dev/troubleshooting
+- Fixed: fixed gminer data for GPU share data
 
 ## VERSION 0.17 - 2021-11-24
 - Added: Handle errors/events better (more standardized)

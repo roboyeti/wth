@@ -153,7 +153,7 @@ class Base
     url = 'https://www.proxyscan.io/api/proxy?level=anonymous&type=https&format=txt'
     #url = 'https://www.proxy-list.download/api/v1/get?type=https&anon=elite'
     @proxy_timer ||= 0
-    if !@proxy_url || (Time.now - @proxy_timer > 86400)
+    if !@proxy_url || (Time.now - @proxy_timer > 3600)
       p = RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => 30)    
 #      pdata = p.body.split("\r\n")
       pdata = p.body.split("\n")
