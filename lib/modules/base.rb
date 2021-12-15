@@ -8,6 +8,7 @@ require 'json'
 require 'pastel'
 require 'terminal-table'
 require 'concurrent'
+require 'pp'
 
 class Base
   using IndifferentHash  
@@ -191,7 +192,11 @@ puts "#{p_url}!!!"
     File.open("./tmp/#{file}", "w+") {|f|
       f << "Class::#{self.class.name}\n"     
       data.each{|d|
-        f << "#{d}\n"
+        if d.is_a?(String)
+          f << "#{d}\n"
+        else
+          PP.pp(d,f)
+        end
       }
     }
   end
@@ -210,6 +215,7 @@ puts "#{p_url}!!!"
       name:     "",
       address:  "",
       miner:    "",
+      user:     "",
       uptime:   0,
       algo:     "",
       coin:     "",

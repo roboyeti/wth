@@ -30,6 +30,7 @@ class GMiner < GpuBase
     h.name = name
     h.address = ip
     h.miner = res['miner']
+    h.user = res['user']
     h.uptime = uptime
     h.pool = res["server"]
     h.algo = res["algorithm"]
