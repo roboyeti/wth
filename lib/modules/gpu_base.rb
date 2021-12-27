@@ -36,7 +36,7 @@ class GpuBase < Base
     rows = []
     max_gpu = 0 # Track largest number of GPU per row
     
-    headers = ['Uptime','Est.Rev','Speed','Power','Shares','Rjct']
+    headers = ['Uptime','Est.Rev','Speed','Power','Shares','Rjct','GPUs >']
     
     hosts.keys.sort.each{|addr|
       h = hosts[addr]
@@ -55,7 +55,8 @@ class GpuBase < Base
         h.combined_speed.round(0),
         format_power(h.power_total),
         h.total_shares,
-        reject_str
+        reject_str,
+        h.gpu.keys.count
       ]
       if !standalone?
         row.unshift(h.name.capitalize)

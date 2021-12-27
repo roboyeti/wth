@@ -46,7 +46,7 @@ class TRex < GpuBase
       gpu.gpu_fan = d["fan_speed"].to_i
       gpu.gpu_power = d["power"].to_f
       gpu.speed_unit = 'Mh/s'
-      h.power_total += d["power_avr"].to_f
+      h.power_total += d["power"].to_f
       h.gpu[gpu.pci] = gpu
     }
     h

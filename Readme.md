@@ -89,6 +89,8 @@ GPU Miners
 - Phoenix Miner = "phoenix"
 - T-Rex Miner = "t_rex_unm"
 - GMiner = "g_miner"
+- LolMiner = "lol_miner"
+- NanoMiner = "nano_miner"
 
 CPU Miners
 - XMRig = "xmrig"

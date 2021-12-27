@@ -55,7 +55,7 @@ class SignumPoolView < Base
     h.poolSharedCapacity = res["poolSharedCapacity"]
     h.poolTotalEffectiveCapacity = res["poolTotalEffectiveCapacity"]
     h.miners = []
-    h.blocks = res4["wonBlocks"][0..50]
+    h.blocks = res4["wonBlocks"][0..@config["record_count"]]
     h.name = addr
 
     pos = 1

@@ -16,13 +16,14 @@ console_out: true
 web_server_start: true
 ## Frequency to use for checking nodes when not specified in module
 default_module_frequency: 8
-pages:
-    1: Overview
-    2: Pools
-    3: Standalone Testing
-    4: I was here
-    5: GPUs
-    6: System
+## You can name any of the 10 pages with your own title below.
+# pages:
+#    1: Overview
+#    2: Pools
+#    3: Standalone Testing
+#    4: I was here
+#    5: GPUs
+#    6: System
 ##===========================================================================================
 ## Web server settings
 ##===========================================================================================
@@ -34,7 +35,9 @@ web_server:
 ## Examples: 127.0.0.1, localhost, 192.168.0.10, 0.0.0.0 (all interfaces).
 ## Default is 127.0.0.1, meaning only accessible on the local machine
   host: 127.0.0.1
+## Currently experimental with known issues.  Contact if prirority
   ssl: false
+## Change api to true if you want to access JSON formatted collected data in WTH
   api: false
 ## Auto generated uuid if you created config by running program.
 ## Uncomment to enable
@@ -53,6 +56,7 @@ modules:
 ##
 ## your_unique_key_here:
 ##   api: <api_name> - REQUIRED! - This actually identifies the module to load for this entry.
+##   debug: true/false - Optional: Enables logged output of requested data into tmp folder
 ##   extra: <your_mini_note> - Optional: Small note for the on display title
 ##   coin: <coin_symbol> - REQUIRED! - Used in display and price predictions.  Where
 ##         specified in the config, required, but consider it required for all miners
@@ -63,7 +67,7 @@ modules:
 ##         In some cases, mod developer may have added common port as default for that miner.
 ##   nodes: Key/Value address pairs for module.  Could be name/ip or wallet_waddress/URL as
 ##          examples.
-##     <name1>: <ip_address1>[:port#]
+##     <name1>: <ip_address1>[:port#][:module_required_options per host]
 ##     <name2>: <ip_address2>
 ##     <name3>: <ip_address3>
 ##   <module_settings1>: example of a module with unique setting. Described below per mod
@@ -84,7 +88,7 @@ modules:
 #    gpu_row: 4
 #    nodes:
 #      <my_node>: <192.168.0.x>
-#  phoenix:
+#  phoenix_example:
 #    api: phoenix
 #    port: 33440
 #    coin: ETH
@@ -93,6 +97,14 @@ modules:
 #    nodes:
 #      <my_node>: <192.168.0.x>:<port#>
 #      <my_node2>: <192.168.0.x>
+#  claymore_example:
+#    api: claymore
+#    port: 3333
+#    coin: ETH
+#    extra: ETH
+#    gpu_row: 5
+#    nodes:
+#      <my_node>: <192.168.0.x>
 #  nice_hash_qm:
 #    api: excavator
 #    port: 18000
@@ -101,7 +113,28 @@ modules:
 #    nodes:
 #      <my_node>: <192.168.0.x>
 #      <my_node2>: <192.168.0.x>
-#  xmrig:
+#  gminer_unm_example:
+#    port: 10555
+#    extra: ETH
+#    coin: ETH
+#    api: g_miner
+#    nodes:
+#      <my_node>: <192.168.0.x>
+#  lol_miner_example:
+#    port: 9095
+#    extra: ETH
+#    coin: ETH
+#    api: lol_miner
+#    nodes:
+#      <my_node>: <192.168.0.x>
+#  nano_miner_example:
+#    port: 9090
+#    extra: ETH
+#    coin: ETH
+#    api: nano_miner
+#    nodes:
+#      <my_node>: <192.168.0.x>:[optional port or leave empty]:<algorithm> (see nano pool docs)
+#  xmrig_example:
 #    api: xmrig
 #    port: 8989
 #    coin: XMR
@@ -110,7 +143,7 @@ modules:
 #    page: 1
 #    nodes:
 #      <my_node>: <192.168.0.x>
-#  raptoreum:
+#  raptoreum_example:
 #    api: cpuminer
 #    port: 4048
 #    coin: RTM
@@ -119,7 +152,7 @@ modules:
 #    page: 1
 #    nodes:
 #      <my_node>: <192.168.0.x>
-#  signum_pool_miner:
+#  signum_pool_miner_example:
 #    api: signum_pool_miner
 #    api_node: https://europe1.signum.network
 #    every: 180
@@ -130,7 +163,7 @@ modules:
 #    capacity:
 #      <Signum address (not alias)>: <decimal amount of TiB>
 #      <Signum address 2 (not alias)>: <decimal amount of TiB>
-#  signum_pool_view:
+#  signum_pool_view_example:
 #    api: signum_pool_view
 #    every: 180
 #    record_count: 15
@@ -141,7 +174,7 @@ modules:
 #    highlight_nodes:
 #      <Signum address 1 (not alias)>
 #      <Signum address 2 (not alias)>
-#  unmineable:
+#  unmineable_example:
 #    api: unmineable
 #    every: 300
 #    page: 2
@@ -152,12 +185,29 @@ modules:
 #      <coin_name1>: <coin_address1>:<coin_symbol>
 #      <coin_name1>: <coin_address1>:<coin_symbol>
 #      <coin_name1>: <coin_address1>:<coin_symbol>
-#  flock_pool:
+#  flock_pool_example:
 #    api: flock_pool
 #    every: 300
 #    page: 2
 #    nodes:
 #      RTM: <RTM_ADDRESS>
+# portfolio_example:
+#   every: 180
+## See coin gecko for currencies and coin names
+#   api: coin_gecko
+## Optional Page #
+#   page: <#>
+## Base currency
+#   currency: usd
+## Default profit rounding
+#   profit_round: 2
+## Default rounding
+#   round: 6
+#   nodes:
+#     <coin1_name>: <amount>::<avg_cost>::<decimal_places>
+#     <coin2_name>: <amount>::<avg_cost>::<decimal_places>
+#     <coin3_name>: <amount>::<avg_cost>::<decimal_places>
+#     ...
 #
 ##===========================================================================================
 ## Plugins && Settings

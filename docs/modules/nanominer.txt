@@ -1,0 +1,8 @@
+# Lol Miner: https://github.com/Lolliedieb/lolMiner-releases
+
+Find and edit a config ini for your algo, with minimum API config as follows:
+
+webPort = 9090
+mport = 9091
+
+Port number above can be whatever you want it to be, but it must then match what is specified in the WTH config.
