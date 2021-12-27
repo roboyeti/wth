@@ -20,6 +20,7 @@ gem 'terminal'
 gem 'os'      # OS detection
 gem 'sys-cpu' # Semi annoying system data
 gem 'lightly' # File cache
+#gem 'opencl-bindings'
 
 # Deep state gems
 gem 'rest-client'

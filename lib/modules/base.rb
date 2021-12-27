@@ -4,6 +4,7 @@
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
+require 'rest-client'
 require 'json'
 require 'pastel'
 require 'terminal-table'
@@ -148,17 +149,28 @@ class Base
     data
   end
 
+  def test_proxy(purl)
+    begin
+      t = RestClient::Request.execute(:method => :get, :url => 'https://gimmeproxy.com/', :proxy => purl, :headers => {}, :timeout => 30)
+      return purl
+    rescue => e
+      @proxy_url = nil
+      return nil
+    end
+  end
+
   def get_proxy
     # https://www.proxyscan.io/api/proxy?type=https
     #199.19.225.54:3128
     url = 'https://www.proxyscan.io/api/proxy?level=anonymous&type=https&format=txt'
-    #url = 'https://www.proxy-list.download/api/v1/get?type=https&anon=elite'
+ #   url = 'https://www.proxy-list.download/api/v1/get?type=https&anon=elite'    
     @proxy_timer ||= 0
     if !@proxy_url || (Time.now - @proxy_timer > 3600)
       p = RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => 30)    
-#      pdata = p.body.split("\r\n")
+      p.body.gsub!("\r\n","\n")
       pdata = p.body.split("\n")
       @proxy_url = "https://#{pdata.sample}"
+      #@proxy_url = "socks5://159.65.225.8:10611"
       @proxy_timer = Time.now
     end
     @proxy_url
@@ -167,8 +179,12 @@ class Base
   # Quick and simple rest call with URL.
   def simple_rest(url,timeout=30)
     s = if proxy
-          p_url = get_proxy
-puts "#{p_url}!!!"
+          p_url = nil
+          p_count = 0
+          until p_url || p_count > 10
+            p_url = test_proxy(get_proxy)
+            p_count += 1
+          end
           RestClient::Request.execute(:method => :get, :url => url, :proxy => p_url, :headers => {}, :timeout => timeout)
         else
           RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => timeout)          

@@ -4,6 +4,9 @@
 - !!!: Adding smirest interface / module / startup
 - !!!: Adding GPU CAPS XML parser
 - !!!: Adding wonderland support module
+- REJECTED/REWORKING: Added: initial proxy support for modules ... because unmineable API bottlenecking is ridiculous garbage
+-- This proxy support leaves a lot to be desired and uses kind of crappy source for free proxy.
+-- User beware, these proxies are rando servers, do not use for requests you don't want shared on the internet
 
 ## Easiest / highest prio
 - Fix standalone ... broken in table_out

@@ -75,7 +75,7 @@
 
     function set_page(page=current_page) {
       current_page = page;
-      load_file("generated/"+current_page+"?key="+key,"html","text/plain;charset=utf-8",auto_refresh);
+      load_file("generated/"+current_page+"?key="+key+"&ts="+Date.now(),"html","text/plain;charset=utf-8",auto_refresh);
     }
 
     function setup_app() {
