@@ -20,10 +20,12 @@ require 'pastel'
 require 'securerandom'
 
 load './lib/components/web_server_basic.rb'
+load './lib/modules/include_list.rb'
 
-[ 'base', 'gpu_base', 'cpu_base', 'pool_base'].each{|mod|
-  load "./lib/modules/#{mod}.rb"
+@modules_autoload_list.each{|mod|
+  load "./lib/modules/#{mod}"
 }
+
 [ 'plugin_base'].each{|mod|
   load "./lib/plugins/#{mod}.rb"
 }
@@ -38,35 +40,7 @@ class Core
   
   VERSION = "0.17d"
   CONFIG_VERSION = 20211103
-
-  # Map from config entry to module class
-  #
-  MODULES = {
-    'excavator'         => 'Excavator',
-    'nice_hash'         => 'Excavator',
-    'phoenix'           => 'Phoenix',
-    'signum_pool_miner' => 'SignumPoolMiner',
-    'signum_pool_view'  => 'SignumPoolView',
-    't_rex'             => 'TRex',
-    'trex'              => 'TRex',
-    'unmineable'        => 'Unmineable',
-    'xmrig'             => 'Xmrig',
-    'raptoreum'         => 'Cpuminer',
-    'cpuminer'          => 'Cpuminer',
-    'flock_pool'        => 'FlockPool',
-    'gminer'            => 'GMiner',
-    'g_miner'           => 'GMiner',
-    'lol_miner'         => 'LolMiner',
-    'lolminer'          => 'LolMiner',
-    'nano_miner'        => 'NanoMiner',
-    'nanominer'         => 'NanoMiner',
-    'teamred'           => 'TeamRedClaymore',
-    'teamredminer'      => 'TeamRedClaymore',
-    'teamred_claymore'  => 'TeamRedClaymore',
-    'coin_gecko'        => 'CoinGeckoTracker',
-    'wth_link'          => 'WthLink',
-    'wth'               => 'WthLink',
-  }.freeze
+  @MODULES = []
 
   # Map from config entry to plugin class
   PLUGINS = {
@@ -246,7 +220,7 @@ class Core
   end
 
   def check_and_rotate_log(log_file)
-    rotate_log if check_rotate_log?(log_file)
+    rotate_log(log_file) if check_rotate_log?(log_file)
   end
   
   def rotate_log(log_file)
@@ -298,12 +272,57 @@ class Core
     puts "Init Plugin: #{name} => #{obj.name}"
     @plugins[name] = obj.new(cfg)    
   end
-  
+
+  def self.modules=(ar)
+    @MODULES = ar
+    setup_modules
+    @MODULES
+  end
+
+  def self.modules
+    @MODULES
+  end
+
+  def modules
+    self.class.modules
+  end
+
+  def self.setup_modules
+    @MODULE_MAP ||= {}
+    @MODULE_NAME_MAP ||= {}
+
+    modules.each{|ma|
+      mkey = ma[0]
+      mdir = ma[1]
+      mnames = ma[2..]
+      @MODULE_MAP[mkey] = {
+        'name' => mkey,
+        'dir' => mdir,
+        'file' => "./lib/modules/#{mdir}/#{mkey.snake_case}",
+        'names' => mnames
+      }
+      mnames.each{|mn|
+        @MODULE_NAME_MAP[mn] = @MODULE_MAP[mkey]
+      }
+    }
+  end
+
+  def self.get_module(key)
+    @MODULE_NAME_MAP || setup_modules
+    if @MODULE_NAME_MAP[key]
+      @MODULE_NAME_MAP[key]
+    end
+  end
+
+  def get_module(key)
+    self.class.get_module(key)
+  end
+
   # Check module has nodes and exists
   #
   def check_wth_module?(name,cfg)
     api = cfg['api']
-    !cfg["nodes"].empty? && MODULES[api]
+    !cfg["nodes"].empty? && get_module(api)
   end
   
   # Dynamic load and init a module
@@ -313,10 +332,11 @@ class Core
   def init_wth_module(name,cfg)
     cfg["default_module_frequency"] = config["default_module_frequency"]
     api = cfg['api']
-    file = MODULES[api].snake_case
-    puts "Loading Module: #{name} => #{file}"
-    load "./lib/modules/#{file}.rb"
-    obj = MODULES[api].constantize
+    mod = get_module(api)
+    file = mod["file"]
+    puts "Loading Module: #{name} => #{mod["name"]} => #{file}"
+    load "#{file}.rb"
+    obj = "Modules::#{mod["name"]}".constantize
     puts "Init Module: #{name} => #{obj.name}"
     obj = @modules[name] = obj.new(config: cfg.merge({name: name}))
     plugins.each_pair{|p,e|
@@ -554,5 +574,5 @@ class Core
   end
   
 end
-
+Core.modules=@modules_registered
 

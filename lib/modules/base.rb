@@ -11,28 +11,62 @@ require 'terminal-table'
 require 'concurrent'
 require 'pp'
 
-class Base
+class Modules::Base
   using IndifferentHash  
   include SemanticLogger::Loggable
 
   attr_accessor :title
-  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :proxy_url
- 
+  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :proxy_url, :config_options
+
+  @api_names = []  
+
+  def self.api_names
+    @api_names
+  end
+
+  def api_names
+    self.class.api_names
+  end
+
   def initialize(p={})
+    # Configuration set values
     @config = p[:config] || {}
     @frequency = @config["every"] || @config["default_frequency"] || 12
+    @frequency = 6 if @frequency < 6
     @port = @config["port"] || 0
     @page = @config["page"] || 1
     @proxy = @config["proxy"] || false
     @dump = @config["dump"] || false
     @coin    = @config["coin"] || ''
+
+    # Internal variables
     @last_check = Time.now - (@frequency*2)
-    @title = @config["title"] || 'Undefined???'
+    @title = 'Undefined???'
     @down = {}
     @data = Concurrent::Hash.new()
     @events = []
     @responses = {}
+    @config_options = {}
+
+    register_config_option("every",12,[],"Number of seconds between checks.  Minimum 6 seconds. Set carefully, as a low value might put a lot of load on your systems or remote APIs.")
+    register_config_option("page",1,[],"Optional page # to display on.")
+    register_config_option("dump",false,[true,false],"Optional value to have module dump the raw remote requests into temp dir.  May not always be functional in a module.")
+    register_config_option("coin",'',[],"Optional, but recommended value of the coin symbol the module is related to.  This is used as a helper for things like prfit/revenue calculations.")
+    register_config_option("port",0,[],"Default port # of remote service.  Can be also specified per node in the nodes list.")
+#    register_config_option("proxy",'',[],"Enables proxy calls.  Uses a proxy_list.  Caution, this should never be used with authentication data.")
+#    register_config_option("proxy_url",'',[],"Enables proxy calls via a user defined proxy.")
+
     logger.info("Loaded module")
+  end
+
+  def register_config_option(name,default,options,description)
+    @config_options[name] = {
+      :name => name,
+      :default => default,
+      :options => options,
+      :description => description,
+    }
+    @config_options
   end
 
   [:check, :console_out, :format].each {|m|
@@ -203,8 +237,8 @@ class Base
 
   # Dump data to tmp file
   def dump_response(file,data)
-    file.gsub!(/[\:|\.]/,'_')
     file = "#{self.class.name}_#{file}.txt"
+    file.gsub!(/[\:|\.]/,'_')
     File.open("./tmp/#{file}", "w+") {|f|
       f << "Class::#{self.class.name}\n"     
       data.each{|d|
