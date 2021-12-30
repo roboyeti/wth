@@ -1,0 +1,1 @@
+netsh advfirewall firewall add rule name="ALLOW TCP PORT 8085 : Openhardware Web" dir=in action=allow protocol=TCP localport=8085
