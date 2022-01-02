@@ -35,24 +35,23 @@ class Modules::CoinGeckoTracker < Modules::PortfolioBase
     @cache[key] = Lightly.new dir: 'tmp/wtm_cache', life: @lifespan + @lifeinc, hash: false
     @lifeinc += 1
     res = @cache[key].get "coingecko_#{key}" do
-
-	  # Really needs to be a check within sliding window that
-	  # utilizes thread safe class variables to ensure they all stay
-	  # below free threshold and return gracefully without a down
-	  #
-	  if @lifeinc > 60
-  		sleep(1)
-	  elsif @lifeinc > 45
-  		sleep(0.5)
-	  elsif @lifeinc > 30
-  		sleep(0.25)
-	  end
-	  r = @client.markets(name, vs_currency: @currency)
-	  r.each{|c|
-  		c["cached_time"] = Time.now
-	  }
-	  r
-	end
+      # Really needs to be a check within sliding window that
+      # utilizes thread safe class variables to ensure they all stay
+      # below free threshold and return gracefully without a down
+      #
+      if @lifeinc > 60
+        sleep(1)
+      elsif @lifeinc > 45
+        sleep(0.5)
+      elsif @lifeinc > 30
+        sleep(0.25)
+      end
+      r = @client.markets(name, vs_currency: @currency)
+      r.each{|c|
+        c["cached_time"] = Time.now
+      }
+      r
+    end
 
     format(name,data,res)
   end

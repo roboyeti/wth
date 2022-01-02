@@ -38,7 +38,7 @@ class Core
   include Sys
   include SemanticLogger::Loggable
   
-  VERSION = "0.17d"
+  VERSION = "0.19a"
   CONFIG_VERSION = 20211103
   @MODULES = []
 
@@ -51,7 +51,7 @@ class Core
   }.freeze
 
   attr :verbose
-  attr_reader :config_file, :cfg, :modules, :plugins, :console_out, :os, :start_page
+  attr_reader :config_file, :cfg, :module_instances, :plugins, :console_out, :os, :start_page
   
   # TODO: Document
   def initialize(p={})
@@ -73,6 +73,7 @@ class Core
     @header_short = @cfg["header_short"] ? true : false
     @log = {}
     @modules = {}
+    @module_instances = {}
     @os = OS
     @plugins = {}
     os_init
@@ -88,11 +89,8 @@ class Core
   #
   def start
     init_plugins(config["plugins"])
-    sleep(1)
     init_wth_modules(config['modules'])
-    sleep(1)
-    @cfg["web_server_start"] && webserver_start
-      
+    @cfg["web_server_start"] && webserver_start      
     sleep(0.5)
     if @cfg["console_out"]
       logger.info("WTH started with console.")
@@ -338,7 +336,7 @@ class Core
     load "#{file}.rb"
     obj = "Modules::#{mod["name"]}".constantize
     puts "Init Module: #{name} => #{obj.name}"
-    obj = @modules[name] = obj.new(config: cfg.merge({name: name}))
+    obj = @module_instances[name] = obj.new(config: cfg.merge({name: name}))
     plugins.each_pair{|p,e|
       e.register.each_pair{|m,t|
         if obj.respond_to?(m)
@@ -365,14 +363,14 @@ class Core
     h_mods.each_pair {|m,p|
       init_wth_module(m,p) if check_wth_module?(m,p)  
     }
-    modules
+    module_instances
   end
 
   def init_cfg_modules()
     config["modules"].each_pair {|m,p|
       init_wth_module(m,p) if check_wth_module?(m,p)  
     }
-    modules
+    module_instances
   end
 
   # Run modules, unthreaded
@@ -383,7 +381,7 @@ class Core
     load_templates
 
 		page_out = 10.times.map{|| []}
-		@modules.each_pair {|k,v|
+		module_instances.each_pair {|k,v|
 #      a =
       v.check_all
 #      c = a.is_a?(Array) ? a : a.split("\n")
@@ -405,7 +403,7 @@ class Core
     load_templates
 
 		page_out = 10.times.map{|| []}
-		@modules.each_pair {|k,v|
+		module_instances.each_pair {|k,v|
       begin
         a = v.console_out(v.check_all)
         c = a.is_a?(Array) ? a : a.split("\n")
@@ -433,8 +431,12 @@ class Core
   #
 	def thread_wth_modules
 		threads = []
-    @modules.each_pair {|k,v|
+    module_instances.each_pair {|k,v|
 			thread = Thread.new {
+          ['TERM', 'INT'].each do |signal|
+            trap(signal){ exit; }
+          end
+
           load_templates
           Thread.current.name = "#{self.class.name}:#{k}"
           Thread.current["me"] = v
@@ -469,7 +471,7 @@ class Core
 	end
 
   def clear_all_down_nodes
-    @modules.each_pair {|k,v|
+    module_instances.each_pair {|k,v|
       v.clear_down
     }
     @down_reset = true

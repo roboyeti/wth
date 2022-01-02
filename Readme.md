@@ -33,7 +33,7 @@ By default, WTH offers the following modes:
 - Optional: Install ConEmu: https://conemu.github.io/
 - Open shell (power shell pref, even inside ConEmu)
 - cd to installation directory
-- #> bundle install
+- #> bundle install --deployment
 - Copy wth_config_example.yml to wth_config.yml
 - Edit config file (see Configuration)
 - #> .\wth.rb (or double click in file window)
@@ -44,14 +44,14 @@ By default, WTH offers the following modes:
     -  sudo apt install curl g++ gcc autoconf automake bison libc6-dev libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev libreadline-dev libssl-dev
 - Install ruby 2.7+ for your platform
 - cd to directory where you extracted WTH 
-- #> bundle install
+- #> bundle install --deployment
 - Copy wth_config_example.yml to wth_config.yml
 - Edit config file (see Configuration)
 - #> .\wth.rb
     - If .\wth.rb doesn't work, try 'ruby .\wth.rb'
 
 ## Installation - OSx
-- Same as linux, unknown mileage
+- Same as linux?, unknown mileage
 
 ## Use
 - All modules can be spread across 10 "pages" for display and keys 1-0 bring you to the page.
@@ -66,7 +66,7 @@ By default, WTH offers the following modes:
 - wthlab.rb is an interactive shell with a WTH application spun up with your config.
 - wthd.rb is an untested daemonized wth for OSs that support fork.
     - Use: ruby ./wthd.rb [start|stop|status|restart]
-- To detach from console in linux, you can also set config option "console_out" to false
+- To detach from console, you can also set config option "console_out" to false
 - When a URL is visible on the console, you may be able to CTRL + Mouse click it to open in browser.  Terminal and OS mileage may vary.
 
 ## Configuration
@@ -77,9 +77,8 @@ By default, WTH offers the following modes:
     - Example: ruby wth.rb -c wth_my_other_config.yml
 
 ## Configuration - Modules
-Specific configuration options can be found in the example config.
-
-Brief documentation for how to enable APIs for a specific module target can be found in docs/modules/<target_name>.
+- Specific configuration options can be found in the example config.
+- Brief documentation for how to enable APIs for a specific module target can be found in docs/modules/<target_name>.
 
 List of supported modules
 
@@ -105,17 +104,32 @@ Pools
 - Flock Pool (RTM) = "flock_pool"
 - Unmineable (Address API) = "unmineable"
 
+Tokens
+- Signum Tokens = "signum_tokens"
+
 Portfolio
 - Coingecko + personal coin portfolio
+
+Hardware
+- OpenHardwareMonitor +WMI GPU monitoring on Win32 and JSON API on all platforms OHM supports.  (Experimental)
+- LibreHardwareMonitor +WMI GPU monitoring on Win32 and JSON API on all platforms OHM supports.  (Experimental)
+-- These are not currently documented or formaly supported
 
 WTH Link
 - WTH can pull data from another WTH instance.
     
 ## Configuration - Plugins
-Specific configuration options can be found in the example config.
+- Specific configuration options can be found in the example config.
 
 List of supported plugins
 * what_to_mine : Enables what to mine revenue calculations on supporting modules
+
+## Configuration - Global
+console_out: [true|false] = Enable console output.
+
+web_server_start: [true|false] = Run web server or not
+
+default_module_frequency: [integer] = Number of seconds between default module check.  Override in module with "every:" directive
 
 ## Configuration - Web Server
 The following web server config options are:
@@ -128,18 +142,14 @@ web_server:
   
   host: [network_addr] = For local machine access, set to 127.0.0.1 or localhost, 0.0.0.0 for all interfaces (default), or specific IP address for a specific interface.
   
-  ssl: [true|false] = Enables SSL, which is not fully functional at this time.  False default.
+  ssl: [true|false] = Enables SSL, which is not fully functional at this time.  False default. (not fully functional yet)
   
   api: [true|false] = Enable the API interface for the web server.  Default false.
   
   key: [string] = User chosen string to act as you private web access string.  If you run wth without a config, one will be generated with a unique string here.
 
-## Configuration - Global
-console_out: [true|false] = Enable console output.
-
-web_server_start: [true|false] = Run web server or not
-
-default_module_frequency: [integer] = Number of seconds between default module check.  Override in module with "every:" directive
+## Configuration - Misc Notes
+- Tor SOCKS and Http Proxy is available, but currently is enabled per module with no global mechanism to set it yet.
 
 ## Donate!
 Donations are very welcome and if you find this program helpful.  If you want a

@@ -35,6 +35,9 @@ OptionParser.new do |opts|
   opts.on("-c", "--conf CONFIG_FILE","Specify config file.  Default is 'wth_config.yml'.") do |config_file|
     $options.config_file = config_file
   end
+  opts.on("-d", "--daemonize","Daemonize on supported platforms") do
+    $options.daemonize = 1
+  end
   opts.on_tail("-h", "--help", "Show this message") do
     puts opts
     exit

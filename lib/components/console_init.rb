@@ -165,6 +165,8 @@ module ConsoleInit
   # and badly altered to easily work.
   #
   def keypress_pulse
+    return false if !console_out
+
     @loop_int=false
     reader.read_keypress(nonblock: true)    
     if @loop_int
@@ -252,10 +254,16 @@ module ConsoleInit
   def no_ascii(s)
     s.gsub /\e\[\d+m/, ""
   end
-  
+
+  # Get number of console columns
+  def screen_columns
+    TTY::Screen.cols
+  end
+
   # Clear screen
   #
   def clear
+    return false if !console_out
     cursor = TTY::Cursor
     printf cursor.clear_screen
     reposition
@@ -265,18 +273,21 @@ module ConsoleInit
   # TODO: Rename reset_cursor
   #
   def reposition
+    return false if !console_out
     printf cursor.move_to(0,0)
   end
   
   # Clear current text line
   #
   def clear_line
+    return false if !console_out
     printf cursor.clear_line
   end
   
   # Clear from current line down
   #
   def clear_screen_down
+    return false if !console_out
     printf cursor.clear_screen_down
   end
   
@@ -286,5 +297,16 @@ module ConsoleInit
   #
   def cursor_hide
     printf cursor.hide
+  end
+
+  def update_screen
+    return false if !console_out
+
+    if @numcols && screen_columns != @numcols
+      @numcols = screen_columns
+      clear
+    else
+      @numcols = screen_columns
+    end
   end
 end

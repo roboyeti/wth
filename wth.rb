@@ -11,6 +11,26 @@ load './lib/common.rb'
 app = Core.new(
   :config_file => $options.config_file
 )
+#Process.daemon(true, true)
+#if !app.console_out && !app.os.windows?
+#  require 'daemons'
+#elsif !app.console_out
+#  spawn(
+#end
+Process.setproctitle("zzzzzz")
+if $options.daemonize && app.os.windows?
+  f = spawn('ruby', "#{__FILE__}", "-c $options.config_file") #, :out=>'NUL:', :err=>'NUL:')
+#  Process.detach(f)
+  Process.wait(f)
+  exit
+elsif $options.daemonize
+  require 'daemons'
+  init()
+  Daemons.daemonize
+  exit
+#  Daemons.run("#{__FILE__})
+end
+
 app.clear
 
 if app.newer_config_version?
@@ -30,9 +50,7 @@ numcols = TTY::Screen.cols
 $page = last_page = app.start_page
 last_run = Time.now - 100
 threaded = true # Turn into config option
-page_out = []
-
-Process.daemon(true, true) if !app.console_out && !app.os.windows?
+page_out = 10.times.map{|i| ['Loading data ...'] }
 
 # Endless good times.
 # - add web logs to web channel
@@ -40,21 +58,31 @@ Process.daemon(true, true) if !app.console_out && !app.os.windows?
 # - iterate thru the modules
 # - print results (new or cached) to console, if enabled
 # - pulse web server so it can get some work done.
-while 1
-  
+thread = nil
+loop do
+
   last_page = $page
-  
-  if TTY::Screen.cols != numcols
-    numcols = TTY::Screen.cols
-    app.clear
-  end
-    
-  if (Time.now - last_run > 8) || app.down_reset?
-    app.down_reset_clear
-    page_out = threaded ? app.thread_wth_modules : app.run_wth_modules
-    app.webserver_pulse(page_out)
-    app.pulse
+
+  if !thread && ( (Time.now - last_run > 8) || app.down_reset? )
+    thread = Thread.new {
+      # Trap signals so as to shutdown cleanly.
+      ['TERM', 'INT'].each do |signal|
+        trap(signal){ exit; }
+      end
+      app.down_reset_clear
+      Thread.current["page_out"] = threaded ? app.thread_wth_modules : app.run_wth_modules
+      app.webserver_pulse(page_out)
+      app.pulse
+      true
+    }
+    thread.abort_on_exception = true
     last_run = Time.now
+  end
+
+  if thread && !thread.status
+      page_out = thread["page_out"]
+      thread.exit
+      thread = nil
   end
   
   out = page_out[$page - 1] || ['Nothing to show']
@@ -67,16 +95,19 @@ while 1
       app.clear_line
       puts "#{o}"
     }
-    #puts "Next check in #{(8 - (Time.now - last_run)).round(2)} seconds"
     app.clear_screen_down
   end
   
   # Sleep with keyboard responsiveness
   24.times {
-    if app.console_out
-      break if app.keypress_pulse
+    break if app.keypress_pulse
+    app.update_screen
+    if thread
+      v = thread.join(0.1)
+      break if v
+    else
+      sleep(0.25)
     end
-    sleep(0.25)
   }  
 end
 

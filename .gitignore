@@ -10,3 +10,5 @@ wth_config.yml
 wth_config_mine.yml
 wth.log
 wth.log.bck
+.bundle
+vendor

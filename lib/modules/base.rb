@@ -16,7 +16,7 @@ class Modules::Base
   include SemanticLogger::Loggable
 
   attr_accessor :title
-  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :proxy_url, :config_options
+  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :config_options, :tor_socks
 
   @api_names = []  
 
@@ -35,9 +35,14 @@ class Modules::Base
     @frequency = 6 if @frequency < 6
     @port = @config["port"] || 0
     @page = @config["page"] || 1
-    @proxy = @config["proxy"] || false
+
     @dump = @config["dump"] || false
     @coin    = @config["coin"] || ''
+    @tor_host = @config["tor_host"] || '127.0.0.1'
+    @tor_port = @config["tor_port"] || 9050
+    @tor_socks = @config["tor_socks"] || false
+    @proxy = @config["proxy"] || false
+    @proxy_url = @config["proxy_url"] || 'http://127.0.0.1:8080'
 
     # Internal variables
     @last_check = Time.now - (@frequency*2)
@@ -183,47 +188,29 @@ class Modules::Base
     data
   end
 
-  def test_proxy(purl)
-    begin
-      t = RestClient::Request.execute(:method => :get, :url => 'https://gimmeproxy.com/', :proxy => purl, :headers => {}, :timeout => 30)
-      return purl
-    rescue => e
-      @proxy_url = nil
-      return nil
-    end
+  # TODO: Add timeout!!!
+  def proxy_request(url,timeout=30)
+    return "{}" if @proxy_url.empty?
+    RestClient::Request.execute(:method => :get, :url => url, :proxy => p_url, :headers => {}, :timeout => timeout)
   end
 
-  def get_proxy
-    # https://www.proxyscan.io/api/proxy?type=https
-    #199.19.225.54:3128
-    url = 'https://www.proxyscan.io/api/proxy?level=anonymous&type=https&format=txt'
- #   url = 'https://www.proxy-list.download/api/v1/get?type=https&anon=elite'    
-    @proxy_timer ||= 0
-    if !@proxy_url || (Time.now - @proxy_timer > 3600)
-      p = RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => 30)    
-      p.body.gsub!("\r\n","\n")
-      pdata = p.body.split("\n")
-      @proxy_url = "https://#{pdata.sample}"
-      #@proxy_url = "socks5://159.65.225.8:10611"
-      @proxy_timer = Time.now
-    end
-    @proxy_url
+  # TODO: Add timeout!!!
+  def tor_request(url,timeout=30)
+    return "" if @tor_host.empty?
+    require 'socksify/http'
+    uri = URI.parse(url)
+    Net::HTTP.SOCKSProxy(@tor_host, @tor_port).get(uri)
   end
 
   # Quick and simple rest call with URL.
   def simple_rest(url,timeout=30)
     s = if proxy
-          p_url = nil
-          p_count = 0
-          until p_url || p_count > 10
-            p_url = test_proxy(get_proxy)
-            p_count += 1
-          end
-          RestClient::Request.execute(:method => :get, :url => url, :proxy => p_url, :headers => {}, :timeout => timeout)
+          proxy_request(url,timeout)
+        elsif tor_socks
+          OpenStruct.new({ body: tor_request(url,timeout)})
         else
           RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => timeout)          
         end
-#    s = RestClient.get url
     res = s && s.body ? JSON.parse(s.body) : {}
     file = url.split('?')[0].split('://')[1].gsub('/','_')
     @dump && dump_response(file,["URL::#{url}",res])

@@ -48,11 +48,11 @@ class WTHBasicServlet < HTTPServlet::AbstractServlet
     if !qr_mod || qr_mod.empty?
       { message: "module not specified" }
     elsif qr_mod == "list"
-      $app.modules.keys
-    elsif !$app.modules.has_key?(qr_mod)
+      $app.module_instances.keys
+    elsif !$app.module_instances.has_key?(qr_mod)
       { message: "no module #{qr_mod}" }
     else
-      OpenStruct.new($app.modules[qr_mod].data).deep_to_h 
+      OpenStruct.new($app.module_instances[qr_mod].data).deep_to_h 
     end
   rescue => e
       { message: "unknown server error #{e} : #{e.backtrace[0]}" }

@@ -16,22 +16,12 @@
 #   status
 #
 require 'daemons'
+Daemons.run("wth.rb @ARGV[1..]")
 
-# Default options
-#$options = OpenStruct.new({ config_file: 'wth_config.yml'})
-#
-## Option parser
-#OptionParser.new do |opts|
-#  opts.banner = "Usage: wthc.rb [options]"
-#
-#  opts.on("-c", "--conf CONFIG_FILE","Specify config file.  Default is 'wth_config.yml'.") do |config_file|
-#    $options.config_file = config_file
-#  end
-#  opts.on_tail("-h", "--help", "Show this message") do
-#    puts opts
-#    exit
-#  end
-#end.parse!
-#
+#Process.setproctitle("zzzzzz")
+#if $options.daemonize && app.os.windows?
+#  f = spawn('ruby', "wth.rb") #, :out=>'NUL:', :err=>'NUL:')
+#  Process.detach(f)
+#  Process.wait(f)
+#  exit
 
-Daemons.run('wthc.rb')
