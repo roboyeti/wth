@@ -46,8 +46,8 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
 
   def initialize(p={})
     super
-    @user = p[:user] || 'allend'
-    @password = p[:password] || '!Dr00gzy!'
+    @user = p[:user] || 'administrator'
+    @password = p[:password] || ''
     @source = "OpenHardwareMonitor"
     if !@password
       puts "Password for Ohm User #{@user}"
@@ -284,7 +284,6 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     hash.keys.sort.each_with_index{|addr,i|
       h = hash[addr]
   
-#      next if h.down == true
       if h.down == true
         h["gpu"][0] = gpu_structure
         g.name = colorize("down",$color_alert)
@@ -298,14 +297,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       }
     }
 
-#pp headers
-#pp rows
     table_out(headers,rows,title)
-#puts headers.join(',')
-#rows.each{|r|
-  #puts r.join(',')
-#}
-#exit
   end
 
   def fix_keys(hsh,*extra)
@@ -326,14 +318,3 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     key.gsub(/[\.|\-|\=\s]/,'_').snakecase  
   end
 end
-
-#require 'winrm'
-#require 'json'
-#
-#ohm = OhmWin32.new({ :user => 'allend', :password => '!Dr00gzy!'})
-#r = ohm.check("192.168.0.122::lhm","Vendetta")
-#pp r
-#a = { addresses: { r.name => r } }
-#pp a
-#pp ohm.console_out(a)
-

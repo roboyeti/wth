@@ -8,6 +8,7 @@
 - Change: Gemfile now has optional components to decrease gem size when necessary
 - Added: LibreHardwareMonitor/OpenHardwareMonitor GPU display (experimental, unsupported, undocumented for now)
 
+
 ## VERSION 0.18 - 2021-12-27
 - Docs: More documentation / error corrections
 - Docs: Markdown fixes
