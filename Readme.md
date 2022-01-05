@@ -1,4 +1,4 @@
-![WTH - What the Hash?](/web/favicon-32x32.png)
+![WTH - What the Hash?](/web/favicon/android-chrome-192x192.png)
 ## WTH - What the Hash?
 
 WTH was designed with the goal of providing a expandable quick
