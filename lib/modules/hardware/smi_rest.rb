@@ -1,4 +1,8 @@
-# java -jar file.jar --server.port=8080
+# Author: BeRogue01
+# License: See LICENSE file
+# Date: 10/2021
+#
+# java -jar file.jar --server.port=<port>
 # 
 class SmiRest
   

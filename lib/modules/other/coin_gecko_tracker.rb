@@ -32,7 +32,7 @@ class Modules::CoinGeckoTracker < Modules::PortfolioBase
   def check(data,name)
     (own,paid) = data.split('::')
     key = "#{name}_#{@currency}"
-    @cache[key] = Lightly.new dir: 'tmp/wtm_cache', life: @lifespan + @lifeinc, hash: false
+    @cache[key] = Lightly.new dir: 'tmp/coingecko_cache', life: @lifespan + @lifeinc, hash: false
     @lifeinc += 1
     res = @cache[key].get "coingecko_#{key}" do
       # Really needs to be a check within sliding window that

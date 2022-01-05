@@ -9,7 +9,7 @@ class Modules::Xmrig < Modules::CpuMinerBase
 
   def initialize(p={})
     super
-    @title = 'XMRig RandX'    
+    @title = config["title"] || 'XMRig RandX'    
   end
 
   def check(ip,host)
@@ -67,7 +67,7 @@ class Modules::Xmrig < Modules::CpuMinerBase
       end
       
       rows << [
-        h.name, uptime,
+        h.name.capitalize, uptime,
         h.difficulty, h.total_shares,h.rejected_shares,h.failed_shared,
         h.combined_speed, h.max_speed, h.hashes_total/1000.0,
         h.pool, h.cpu.threads_used, h.cpu.name

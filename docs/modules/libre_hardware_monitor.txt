@@ -1,0 +1,34 @@
+# LibreHardwareMonitor
+
+https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/
+
+The LibreHardwareMonitor provides a remote way to get live information on a windows machine's hardware.
+
+WTH currently uses WMI to get at LHM's sensor data from WMI, mainly due to the fact that WMI is
+used anyway to access more details about hardware, like GPUs, so might as well just keep using
+WMI for sensor data.
+
+WMI remote access does have to be enabled on each machine within a shell with admin privileges:
+ #> powershell Enable-PSRemoting -Force
+
+You will also need a valid user/password for WTH to call WMI with.  Both can be supplied via the WTH config, or optionally, if all systems use the same password,
+you can leave it empty, which will prompt you for a password when you first startup WTH.  This is obviously less than ideal, either way, so
+future work on this module will work on an SSL key access method that is more secure.
+
+LHM, and it's predecessor, OHM, also have built in web servers that can be enables and opened for
+remote access via:
+ #> netsh advfirewall firewall add rule name="ALLOW TCP PORT 8085 : Openhardware Web" dir=in action=allow protocol=TCP localport=8085
+
+Using the following prefab config file contents, the web server will be auto started on run with the same port:
+LHM, and it's predecessor, OHM, also have built in web servers that can be enables and opened for
+remote access via:
+ #> netsh advfirewall firewall add rule name="ALLOW TCP PORT 8085 : Openhardware Web" dir=in action=allow protocol=TCP localport=8085
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <appSettings>
+    <add key="listenerPort" value="8085" />
+  </appSettings>
+</configuration>
+
+Again, WTH does not use this interface at this time, but we may add one, plus, it is cool and allows remote viewing, albiet in
+possibly the worst JSON structure you have ever witnessed!

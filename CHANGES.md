@@ -1,13 +1,18 @@
 # Change Log
 
-## VERSION 0.19a - 2021-12-30
+## VERSION 0.19b - 2021-12-30
 - Added: Tor SOCKS proxy option for Tor installs.  Currently limited to per module config
 - Change: Made WTH more responsive to changes in displays (data is now gathered in a master thread and screen updated regardless)
 - Change: Changed how proxy works.  Mostly untested, but you now are expected to provide a proxy rather than WTH finding one for you
 -- Solutions like Tor can be used with SOCKS, but Privoxy and other proxy over Tor would be used via this proxy config
 - Change: Gemfile now has optional components to decrease gem size when necessary
 - Added: LibreHardwareMonitor/OpenHardwareMonitor GPU display (experimental, unsupported, undocumented for now)
-
+- Added: CoinGecko plugin w/hook to translate coin# to $ worth (only dollar for now)
+- Fixed: Some format bugs
+- Fixed: Some modules not using optional config options
+- Fixed: Performance blocking issues on some modules
+- Fixed: Threading deadlock
+- Change: Improved config documentation... I think.
 
 ## VERSION 0.18 - 2021-12-27
 - Docs: More documentation / error corrections

@@ -2,6 +2,9 @@
 ##===========================================================================================
 ## Config file is in YAML format, which is far easier to use than JSON, but you
 ## have to keep the integrity of the indentation for nested attributes.
+##
+## Uncomment any directive below by removing the single "#".  Anything with "##" is actually
+## only a comment and not a config option.
 ##===========================================================================================
 ##
 ## Version should not be change by hand.  It is a experimental feature to help keep
@@ -39,9 +42,8 @@ web_server:
   ssl: false
 ## Change api to true if you want to access JSON formatted collected data in WTH
   api: false
-## Auto generated uuid if you created config by running program.
 ## Uncomment to enable
-#  key: 89cdd74dd7da0b74bfef3f8f7ad37d
+#  key: <your_unique_key_here_with_no_spaces_or_special_characters>
 ##===========================================================================================
 ## Modules && Settings
 ##===========================================================================================
@@ -54,10 +56,16 @@ modules:
 ##
 ## Common options, format, and descriptions / notes.
 ##
+## Modules provide specific end point functionality to display.  You can have multiple
+## instances of a module by using different "your_unique_key_here", which should have no
+## spaces or special characters, but otherwise is whatever you wish to call it. Please note,
+## this name (or key) is used to retrieve data via WTH's own API, so if you plan to use it,
+## you might want to not go crazy.
+##
 ## your_unique_key_here:
 ##   api: <api_name> - REQUIRED! - This actually identifies the module to load for this entry.
 ##   debug: true/false - Optional: Enables logged output of requested data into tmp folder
-##   extra: <your_mini_note> - Optional: Small note for the on display title
+##   extra: <your_mini_note> - Optional: Small note for on display title
 ##   coin: <coin_symbol> - REQUIRED! - Used in display and price predictions.  Where
 ##         specified in the config, required, but consider it required for all miners
 ##   every: <integer> Optional: number of seconds between checks.  Some modules enforce
@@ -78,33 +86,45 @@ modules:
 ## GPU module options:
 ##   gpu_rows: <Integer> - Optional, defaults to 5, specifies GPUS to show per row
 ##
-## All modules settings will be provided in this example config for each module (for now).
+## Unique optional modules settings will be provided in this example config for each module
+## (for now), as this example config is the documentation for module config.
+##
+##===========================================================================================
+##
+##-------------------------------------------------------------------------------------------
+## T-Rex GPU iner
 ##-------------------------------------------------------------------------------------------
 #  t_rex_example1:
 #    api: t_rex
 #    port: 4067
 #    coin: ETH
-#    extra: ETH>BTT
 #    gpu_row: 4
 #    nodes:
 #      <my_node>: <192.168.0.x>
+##-------------------------------------------------------------------------------------------
+## Phoenix GPU Miner
+##-------------------------------------------------------------------------------------------
 #  phoenix_example:
 #    api: phoenix
 #    port: 33440
 #    coin: ETH
-#    extra: ETH
 #    gpu_row: 5
 #    nodes:
 #      <my_node>: <192.168.0.x>:<port#>
 #      <my_node2>: <192.168.0.x>
+##-------------------------------------------------------------------------------------------
+## Claymore GPU Miner (and EThman/Ethermine API compatible miners)
+##-------------------------------------------------------------------------------------------
 #  claymore_example:
 #    api: claymore
 #    port: 3333
 #    coin: ETH
-#    extra: ETH
 #    gpu_row: 5
 #    nodes:
 #      <my_node>: <192.168.0.x>
+##-------------------------------------------------------------------------------------------
+## Nice Hash Quick Miner
+##-------------------------------------------------------------------------------------------
 #  nice_hash_qm:
 #    api: excavator
 #    port: 18000
@@ -113,109 +133,198 @@ modules:
 #    nodes:
 #      <my_node>: <192.168.0.x>
 #      <my_node2>: <192.168.0.x>
+##-------------------------------------------------------------------------------------------
+## GMiner GPU Miner
+##-------------------------------------------------------------------------------------------
 #  gminer_unm_example:
-#    port: 10555
-#    extra: ETH
-#    coin: ETH
 #    api: g_miner
+#    port: 10555
+#    coin: ETH
 #    nodes:
 #      <my_node>: <192.168.0.x>
+##-------------------------------------------------------------------------------------------
+##  Lol GPU Miner
+##-------------------------------------------------------------------------------------------
 #  lol_miner_example:
-#    port: 9095
-#    extra: ETH
-#    coin: ETH
 #    api: lol_miner
+#    port: 9095
+#    coin: ETH
 #    nodes:
 #      <my_node>: <192.168.0.x>
+##-------------------------------------------------------------------------------------------
+## Nano GPU Miner
+##-------------------------------------------------------------------------------------------
 #  nano_miner_example:
-#    port: 9090
-#    extra: ETH
-#    coin: ETH
 #    api: nano_miner
+#    port: 9090
+#    coin: ETH
 #    nodes:
 #      <my_node>: <192.168.0.x>:[optional port or leave empty]:<algorithm> (see nano pool docs)
+##-------------------------------------------------------------------------------------------
+## XMRig CPU Miner
+##-------------------------------------------------------------------------------------------
 #  xmrig_example:
 #    api: xmrig
 #    port: 8989
 #    coin: XMR
-#    extra: XMR
 #    every: 12
-#    page: 1
 #    nodes:
 #      <my_node>: <192.168.0.x>
+##-------------------------------------------------------------------------------------------
+## Cpuminer
+##-------------------------------------------------------------------------------------------
 #  raptoreum_example:
 #    api: cpuminer
 #    port: 4048
 #    coin: RTM
-#    extra: RTM
 #    every: 12
-#    page: 1
 #    nodes:
 #      <my_node>: <192.168.0.x>
+##-------------------------------------------------------------------------------------------
+## Signum Pool - Miner Information
+##
+## Capacity is optional and simply provides coloring of calculated capacity versus full capcity.
+##
+##-------------------------------------------------------------------------------------------
 #  signum_pool_miner_example:
 #    api: signum_pool_miner
 #    api_node: https://europe1.signum.network
 #    every: 180
-#    page: 1
+#    page: <#>
 #    nodes:
 #      <Signum address (not alias)>: <POOL URL>
 #      <Signum address 2 (not alias)>: <POOL URL>
 #    capacity:
 #      <Signum address (not alias)>: <decimal amount of TiB>
 #      <Signum address 2 (not alias)>: <decimal amount of TiB>
+##-------------------------------------------------------------------------------------------
+## Signum Asset Viewer
+##-------------------------------------------------------------------------------------------
+#  signum_asset_view_example:
+#    api: signum_asset_view
+#    api_node: https://signawallet.notallmine.net
+#    every: 180
+#    page: <#>
+#    description_length: 60
+##   Nodes for asset_view must end with : for silly reasons we won't go into right now. :-)
+#    nodes:
+#      <Signum address (not alias)>:
+#      <Signum address 2 (not alias)>:
+##-------------------------------------------------------------------------------------------
+## Signum Pool - Pool Information
+##-------------------------------------------------------------------------------------------
 #  signum_pool_view_example:
 #    api: signum_pool_view
 #    every: 180
 #    record_count: 15
 #    show_block_winners: true
-#    page: 2
+#    page: <#>
 #    nodes:
 #      Signapool NotAllMine: https://signapool.notallmine.net
 #    highlight_nodes:
 #      <Signum address 1 (not alias)>
 #      <Signum address 2 (not alias)>
+##-------------------------------------------------------------------------------------------
+## Unmineable Pool View
+##
+##   You wil probably want to set up tor for Unmineable.  See docs for why.
+##   You can also just try it and wait until they ban you IP address because
+##   they suck.  Then setup Tor and enable tor_socks proxy by it to true.
+##-------------------------------------------------------------------------------------------
 #  unmineable_example:
 #    api: unmineable
 #    every: 300
-#    page: 2
+#    page: <#>
+#    tor_socks: false
 #    keys:
 #      KEY: <your_unmineable_key_here>
 #      SECRET: <your_unmineable_secret_key_here>
 #    nodes:
 #      <coin_name1>: <coin_address1>:<coin_symbol>
-#      <coin_name1>: <coin_address1>:<coin_symbol>
-#      <coin_name1>: <coin_address1>:<coin_symbol>
+#      <coin_name2>: <coin_address2>:<coin_symbol>
+#      ...
+##-------------------------------------------------------------------------------------------
+## Flock Pool View
+##-------------------------------------------------------------------------------------------
 #  flock_pool_example:
 #    api: flock_pool
 #    every: 300
-#    page: 2
+#    page: <#>
+#    coin: RTM
 #    nodes:
-#      RTM: <RTM_ADDRESS>
+## Addresses should always be followed by ":" as in the example below
+#      <RTM_address>:
+#      ...
+##-------------------------------------------------------------------------------------------
+## Coin Portfolio
+##
+## See coin gecko for currencies and coin names, examples below, but you can get the
+## "name" from their page.  Search the coin and look for "API id" under "Info".  That is
+## the coin name.  For supported currencies, see:
+## https://api.coingecko.com/api/v3/simple/supported_vs_currencies
+##
+## profit_round:  Depending on your currency choice, you may want to change this.
+## round: Default rounding for a crypto currency, override in the node list if needed.
+##
+##-------------------------------------------------------------------------------------------
 # portfolio_example:
 #   every: 180
-## See coin gecko for currencies and coin names
 #   api: coin_gecko
-## Optional Page #
 #   page: <#>
-## Base currency
 #   currency: usd
 ## Default profit rounding
 #   profit_round: 2
 ## Default rounding
 #   round: 6
 #   nodes:
-#     <coin1_name>: <amount>::<avg_cost>::<decimal_places>
-#     <coin2_name>: <amount>::<avg_cost>::<decimal_places>
-#     <coin3_name>: <amount>::<avg_cost>::<decimal_places>
+#     <coin1_name>: <amount>::<avg_cost>
+#     <coin2_name>: <amount>::<avg_cost>::<optional decimal_places>
 #     ...
-#
+##-------------------------------------------------------------------------------------------
+## Libre Hardware Monitor
+## (maybe Open Hardware Monitor compatible ?)
+##
+## See documentation for Libre setup.
+##
+## User names and passwords should stay in quotes to handle unusual characters.
+##-------------------------------------------------------------------------------------------
+#  libre_hardware_example:
+#    every: 12
+#    api: lhm_gpu_w32
+#    page: <#>
+#    user: "<username>"
+#    password: "<password>"
+#    nodes:
+#      <hostname>: <ip address>
+## Advanced example.  To skip an option, leave empty (will look like "::" between options)
+## Source is "ohm" or "lhm".  Only "lhm" is tested.
+#      <hostname>: <ip address>:<option port>:<optional source>:<optional user>:<optional password>
+##-------------------------------------------------------------------------------------------
 ##===========================================================================================
-## Plugins && Settings
+## Plugins
+##
+## Plugins provide ancillary functionality to the system or to modules, but don't directly
+## show data themselves.
+##
+## Some plugins use lifespan setting to cache data for that many seconds.  This reduces
+## your traffic and their API bandwidth/resource consumption.  Recommended values are listed
+## below, but some plugins may have hard coded limits you can't go below.
+##
+## Other config options will be listed with the plugin.
+##
+## We recommend leaving on the uncommented plugins, as they provide hooks into some of
+## the modules to do things like get price conversions of mined/held assets.
+##
 ##===========================================================================================
 plugins:
-## ===== Whattomine.com =====
+##-------------------------------------------------------------------------------------------
+## Whattomine.com
 ## Plugin for revenue/profit estimations on GPU/CPU using whattomine.com
-#  what_to_mine:
-#    lifespan: 300
-#
+##-------------------------------------------------------------------------------------------
+  what_to_mine:
+    lifespan: 300
+  coin_gecko:
+    lifespan: 180
+##===========================================================================================
 ## THE END
+##===========================================================================================

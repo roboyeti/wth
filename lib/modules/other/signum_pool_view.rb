@@ -24,7 +24,7 @@ class Modules::SignumPoolView < Modules::Base
 
   def initialize(p={})
     super
-    @title = @config["title"] || 'Signa Pool View'
+    @title = @config["title"] || 'Signum Pool Stats'
     @pool_records = @config["record_count"] || 10
     @show_block_winners = @config["show_block_winners"] || true
     @highlight_nodes = @config["highlight_nodes"] || []

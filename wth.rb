@@ -11,13 +11,7 @@ load './lib/common.rb'
 app = Core.new(
   :config_file => $options.config_file
 )
-#Process.daemon(true, true)
-#if !app.console_out && !app.os.windows?
-#  require 'daemons'
-#elsif !app.console_out
-#  spawn(
-#end
-Process.setproctitle("zzzzzz")
+
 if $options.daemonize && app.os.windows?
   f = spawn('ruby', "#{__FILE__}", "-c $options.config_file") #, :out=>'NUL:', :err=>'NUL:')
 #  Process.detach(f)
@@ -50,7 +44,7 @@ numcols = TTY::Screen.cols
 $page = last_page = app.start_page
 last_run = Time.now - 100
 threaded = true # Turn into config option
-page_out = 10.times.map{|i| ['Loading data ...'] }
+page_out = 10.times.map{|i| ['Loading data.  Could take some time ...'] }
 
 # Endless good times.
 # - add web logs to web channel

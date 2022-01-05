@@ -1,9 +1,19 @@
+# Author: BeRogue01
+# License: See LICENSE file
+# Date: 10/12/2021
+#
+# Love everybody,but never sell your sword.  ~ Paulo Coelho
+#
 # https://github.com/WinRb/WinRM
 # https://github.com/LibreHardwareMonitor/LibreHardwareMonitor
-# 
+#
 # Enable-PSRemoting -Force
 # gem install -r winrm
 # NOT NEEDED?  Get-PNPDevice -InstanceID '#{g1}' | ConvertTo-Json
+#
+# TODO - add OpenHardwareMonitor link and test
+# TODO - performance issue ... probably need to extract the requests into a gather job thread
+#
 require 'winrm'
 require 'lightly'
 
@@ -44,64 +54,141 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     'open' => "OpenHardwareMonitor",
   }
 
+  attr_reader :lifespan, :cache
+
   def initialize(p={})
     super
-    @user = p[:user] || 'administrator'
-    @password = p[:password] || ''
-    @source = "OpenHardwareMonitor"
+    @user = @config[:user] || 'administrator'
+    @password = @config[:password] || ''
+    @source = "LibraHardwareMonitor"
     if !@password
-      puts "Password for Ohm User #{@user}"
+      puts "Password for Ohm User #{@user}:"
       @password = ARGF.gets
     end
-    @port = p["port"] || 5985
-    @protocol = p["protocol"] || 'http'
-    @lifespan = p["lifespan"] || 120
+    @port = @config["port"] || 5985
+    @protocol = @config["protocol"] || 'http'
+    @lifespan = @config["lifespan"] || 120
     @lifespan = 60 if @lifespan < 120
-    @cache = {}
+    @threads = {}
+    @conn = {}
+    @shell = {}
+    cache_dir = 'tmp/wmi_ohm_cache'    
+    @cache = OpenStruct.new({
+      default: Lightly.new(dir: cache_dir, life: @lifespan, hash: false),
+      sensors: Lightly.new(dir: cache_dir, life: 12, hash: false),
+    })
   end
 
-  def request(cmd)
+  def flush
+    @cache.each_pair{|k,v|
+      v.flush
+    }
+  end
+
+  def request(ckey,cmd)
+ #   @debug = 1
     @debug && puts("COMMAND: #{cmd}")
-    out = @shell.run("#{cmd} | ConvertTo-Json").output
+    out = @shell[ckey].run("#{cmd} | ConvertTo-Json").output
     @debug && puts(out)
     JSON.parse(out)
   end
   
   # The check for Open/Libre Hardware Monitors is complicated, because it doesn't provide that much data, but does
   # provide good sensor info, especially for GPUs.
-  def check(ip,name)
-    host,port,src = ip.split(':')
+  def check(addr,name)
+    host,port,src,user,pass = addr.split(':')
     if src && src == "lhm"
       @source = "LibreHardwareMonitor"
     end
+    user = user && !user.empty? ? user : @user
+    pass = pass && !user.empty? ? pass : @password
     port = port && !port.empty? ? port : @port    
-    conn = WinRM::Connection.new({ 
-        endpoint: "#{@protocol}://#{host}:#{port}/wsman",
-        user: @user,
-        password: @password
-    })
-    @shell = conn.shell(:powershell)
-    res = { "gpus" => {} }
 
     ckey = "#{host}_#{port}"
-    cache = @cache[ckey] ||= Lightly.new dir: 'tmp/wmi_ohm_cache', life: @lifespan, hash: false
-    cache2 = @cache["sensors_#{ckey}"] ||= Lightly.new dir: 'tmp/wmi_ohm_cache', life: 12, hash: false
+    res = { "gpus" => {}, "cpus" => {} }
 
-    cmd = CMDS["ohm_sensors"].gsub('%SOURCE%',@source)
-    @sensors = cache2.get("ohm_sensors_#{ckey}"){ request(cmd).map{|r| fix_keys(r,[/^/,'Ohm']) } }
-    cmd = CMDS["ohm_hardware"].gsub('%SOURCE%',@source)
-    @hardware = cache2.get("ohm_hardware_#{ckey}"){ request(cmd).map{|r| fix_keys(r,[/^/,'Ohm']) } }
-
-    gpu = check_gpu(host,port,@sensors,@hardware)
-
-    res["gpus"] = gpu
-
-    res
-    format(name,ip,res)
+    ret = if @threads[ckey]
+      val = @threads[ckey].value!(0.25)
+      if val
+        @threads.delete(ckey)
+        val
+      else
+        warn_structure(format(name,addr,res))
+      end
+    else
+      @threads[ckey] = Concurrent::Promises.future(ckey) do |ckey|
+        @conn[ckey] = WinRM::Connection.new({ 
+            endpoint: "#{@protocol}://#{host}:#{port}/wsman",
+            user: user,
+            password: pass
+        })
+        @shell[ckey] = @conn[ckey].shell(:powershell)
+        
+        cmd = CMDS["ohm_sensors"].gsub('%SOURCE%',@source)
+        sensors = cache.sensors.get("ohm_sensors_#{ckey}"){ request(ckey,cmd).map{|r| fix_keys(r,[/^/,'Ohm']) } }
+        cmd = CMDS["ohm_hardware"].gsub('%SOURCE%',@source)
+        hardware = cache.sensors.get("ohm_hardware_#{ckey}"){ request(ckey,cmd).map{|r| fix_keys(r,[/^/,'Ohm']) } }
+    
+        res["gpus"] = check_gpu(host,port,sensors,hardware)
+        res["cpus"] = check_cpu(host,port,sensors,hardware)
+        res["mem"] = check_mem(host,port,sensors,hardware)
+    
+        format(name,addr,res)
+      end
+        warn_structure(format(name,addr,res))
+    end
+    return ret
+  rescue => e
+    @threads.delete(ckey)
+    raise e
   end
 
-  def check_cpu
+  def check_cpu(host,port,sensors,hardware)
+    cpus = {}
+    hardware.each{|h|
+      ohm_id = h["ohm_identifier"]
+      next if ohm_id !~ /\/*cpu/
+      store_it("#{host}_cpu",h["ohm_name"]) if @store_cpu
+      dnil,dman,did = ohm_id.split('/')
+#      dman = "/#{dman}"
+      cpus[did] = {}
+      cpus[did].merge!(h)
+      cpus[did]["device_id"] = did
+      cpus[did]["device_manufacturer"] = dman
+      cpus[did]["pci"] = "-"
+      core_cnt = 0
+      sensors.each{|s|
+        if s["ohm_parent"] == ohm_id
+          skey = fix_key("#{s["ohm_name"]}_#{s["ohm_sensor_type"]}")
+          cpus[did][skey] = s["ohm_value"]
+          core_cnt = core_cnt + 1 if (s["ohm_name"] =~ /^(CPU|Core)/) && (s["ohm_sensor_type"] == "Clock")
+        end
+      }
+      cpus[did]["cores"] = core_cnt
 
+    }
+    cpus    
+  end
+
+  def check_mem(host,port,sensors,hardware)
+    o = {}
+    hardware.each{|h|
+      ohm_id = h["ohm_identifier"]
+      next if ohm_id !~ /\/ram/
+      dnil,dman,did = ohm_id.split('/')
+      did = "/#{dman}"
+      o.merge!(h)
+      o["device_id"] = did
+      o["pci"] = "-"
+      sensors.each{|s|
+        if s["ohm_parent"] == ohm_id
+          skey = fix_key("#{s["ohm_name"]}_#{s["ohm_sensor_type"]}")
+          o[skey] = s["ohm_value"]
+        end
+      }
+      break
+    }
+    o
   end
 
   # * Get the CIM_PCVideoController.  Note, the ordering is worthless
@@ -114,20 +201,18 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     gpus = {}
     gpus_manufact = {}
 
-    # Setup cache
     ckey = "#{host}_#{port}"
-    cache = @cache[ckey]
 
     # Call CIM_PCVidController
     cmd = CMDS['gpu_wmi_cimvid']
-    wmi_vid = cache.get("gpu_wmi_cimvid_#{ckey}") { request(CMDS['gpu_wmi_cimvid']) }
-
+    wmi_vid = cache.default.get("gpu_wmi_cimvid_#{ckey}") { request(ckey,CMDS['gpu_wmi_cimvid']) }
+    wmi_vid = wmi_vid.is_a?(Hash) ? [ wmi_vid ] : wmi_vid
     wmi_vid.each_with_index{|wv,idx|
       gpus_temp = {}
       # Use PNPDeviceID to find in PnpDeviceProperty
       cmd = CMDS['gpu_wmi_pnpdevprop'].gsub('%PNPDeviceID%',wv["PNPDeviceID"].gsub(/\\/) { |x| "\\#{x}" })
       cmd.gsub!('%KEYS%',PNPDEVKEYS.join(','))
-      wmi_pnpd = cache.get("gpu_wmi_pnpdevprop_#{ckey}_#{idx}"){|e| request(cmd); }
+      wmi_pnpd = cache.default.get("gpu_wmi_pnpdevprop_#{ckey}_#{idx}"){|e| request(ckey,cmd); }
 
       gpus_temp = fix_keys(wv)
 
@@ -138,10 +223,9 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
   
       # Lookup Win32 Registry entry
       cmd = CMDS['gpu_wmi_reg'].gsub('%DeviceDriver%',gpus_temp["device_driver"].gsub(/\\/) { |x| "\\#{x}" })
-      reg_vid = cache.get "gpu_wmi_reg_#{ckey}_#{idx}" do
-        request(cmd)
+      reg_vid = cache.default.get "gpu_wmi_reg_#{ckey}_#{idx}" do
+        request(ckey,cmd)
       end
-
       gpus_temp.merge!(fix_keys(reg_vid,['HardwareInformation.','']))
       if gpus_temp["bios_string"].is_a?(Array)
         gpus_temp["bios_string"] = "unknown"
@@ -157,7 +241,6 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       # to map to OHM/LHM
       # gpus_temp["device_manufacturer"]
       gpu_m = GPU_MANUFACTURER[gpus_temp["device_manufacturer"].downcase]
-      #puts gpu_m
       gpu_ohm_type = "/gpu-#{gpu_m}"
       gpus_manufact[gpu_ohm_type] ||= []
       gpus_manufact[gpu_ohm_type] << bus_num
@@ -168,21 +251,21 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       gpus_manufact[k] = v.sort
     }
 
-    @hardware.each{|h|
-     ohm_id = h["ohm_identifier"]
-     next if ohm_id !~ /\/gpu-/
-     dnil,dman,did = ohm_id.split('/')
-     dman = "/#{dman}"
-     bus = gpus_manufact[dman][did.to_i]
-     gpus[bus].merge!(h)
-     gpus[bus]["device_id"] = did
-     @sensors.each{|s|
-       if s["ohm_parent"] == ohm_id
+    hardware.each{|h|
+      ohm_id = h["ohm_identifier"]
+      next if ohm_id !~ /\/gpu-/
+      dnil,dman,did = ohm_id.split('/')
+      dman = "/#{dman}"
+      bus = gpus_manufact[dman][did.to_i]
+      gpus[bus].merge!(h)
+      gpus[bus]["device_id"] = did
+      sensors.each{|s|
+        if s["ohm_parent"] == ohm_id
           skey = fix_key("#{s["ohm_name"]}_#{s["ohm_sensor_type"]}")
           gpus[bus][skey] = s["ohm_value"]
-       end
-     }
-   }
+        end
+      }
+    }
 
     gpus
   end
@@ -191,11 +274,11 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     OpenStruct.new({
       name:     "",
       address:  "",
-#      uptime:   0,
-#      power_total:    0,
       target:   "",
       time:     Time.now,
       gpu:      {},
+      cpu:      {},
+      mem:      {}
     })
   end
 
@@ -205,6 +288,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       manufacturer: "",
       id: "",
       pci: "",
+      type: "gpu",
       location: "",
       bios: "",
       driver_date: "",
@@ -212,7 +296,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       memory_free: 0,
       memory_used: 0,
       memory_total: 0,
-      memory_size: "MB",
+      memory_size: "GB",
       temperature: 0,
       temperature_hotspot: 0,
       power: 0,
@@ -228,32 +312,26 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     })
   end
 
-  def gpu_map
-    {
-      name: "name",
-      manufacturer: "device_manufacturer",
-      id: "device_id",
-      pci: "device_bus_number",
-      location: "device_location_info",
-      bios: "bios_string",
-      driver_date: "driver_date",
-      driver: "driver_version",
-      memory_free: "gpu_memory_free_small_data",
-      memory_used: "gpu_memory_used_small_data",
-      memory_total: "gpu_memory_total_small_data",
-      temperature: "gpu_core_temperature",
-      temperature_hotspot: "gpu_hot_spot_temperature",
-      power: "gpu_package_power",
-      fan_rpm: "gpu_fan_fan",
-      fan_percent: "gpu_fan_control",
-      clock: "gpu_core_clock",
-      memory_clock: "gpu_memory_clock",
-      bus_load: "gpu_bus_load", # haha
-      core_load: "gpu_core_load",
-      memory_load: "gpu_memory_controller_load",
-      pci_rx: "gpu_pc_ie_rx_throughput",
-      pci_tx: "gpu_pc_ie_tx_throughput",
-    }
+  def cpu_structure
+    OpenStruct.new({
+      name: "",
+      id: 0,
+      type: "cpu",
+      cores: 0,
+      memory_free: 0,
+      memory_used: 0,
+      memory_total: 0,
+      memory_size: "MB",
+      temperature: 0,
+      temperature_max: 0,
+      power: 0,
+      fan_rpm: 0,
+      fan_percent: 0,
+      clock: 0,
+      bus_speed: 0,
+      core_load: 0,
+      memory_load: 0
+    })
   end
 
   def format(name,ip,res)
@@ -262,59 +340,101 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     o.address = ip
     res["gpus"].each_pair{|gk,gv|
       g = gpu_structure
-      gpu_map.each_pair{|k,v|
-        g.send("#{k}=",gv[v])
-      }
-      g["pci_rx"] = g["pci_rx"].to_f / 100000
-      g["pci_tx"] = g["pci_tx"].to_f / 100000
+      g.name = gv["name"]
+      g.manufacturer = gv["device_manufacturer"]
+      g.id = gv["device_id"]
+      g.pci = gv["device_bus_number"]
+      g.location = gv["device_location_info"]
+      g.bios = gv["bios_string"]
+      g.driver_date = gv["driver_date"]
+      g.driver = gv["driver_version"]
+      g.memory_free = gv["gpu_memory_free_small_data"].to_f / 1000
+      g.memory_used = gv["gpu_memory_used_small_data"].to_f / 1000
+      g.memory_total = gv["gpu_memory_total_small_data"].to_f / 1000
+      g.temperature = gv["gpu_core_temperature"].to_i
+      g.temperature_hotspot = gv["gpu_hot_spot_temperature"].to_i
+      g.power = gv["gpu_package_power"].to_i
+      g.fan_rpm = gv["gpu_fan_fan"].to_i
+      g.fan_percent = gv["gpu_fan_control"].to_i
+      g.clock = gv["gpu_core_clock"].to_i
+      g.memory_clock = gv["gpu_memory_clock"].to_i
+      g.bus_load = gv["gpu_bus_load"].to_i
+      g.core_load = gv["gpu_core_load"].to_i
+      g.memory_load = gv["gpu_memory_controller_load"].to_i
+      g.pci_rx = gv["gpu_pc_ie_rx_throughput"].to_f / 100000
+      g.pci_tx = gv["gpu_pc_ie_tx_throughput"].to_f / 100000
       o.gpu[gk] = g
     }
+
+    res["cpus"].each_pair{|ck,cv|
+      c = cpu_structure
+      c.name = cv["ohm_name"]
+      c.manufacturer = cv["device_manufacturer"]
+      c.id = cv["device_id"]
+      c.pci = "-"
+      c.cores = cv["cores"].to_i
+      c.memory_free = res["mem"]["memory_available_data"].to_f
+      c.memory_used = res["mem"]["memory_used_data"].to_f
+      c.memory_total = c.memory_free + c.memory_used
+      c.memory_size = "GB"
+      c.temperature = (cv["cpu_package_temperature"] || cv["core_tdie_temperature"]).to_i
+      c.temperature_max = (cv["core_max_temperature"] || cv["core_tctl_temperature"]).to_i
+      c.power = (cv["cpu_package_power"] || cv["package_power"]).to_i
+      c.fan_rpm = 0
+      c.fan_percent = 0
+      c.clock = (cv["cpu_core1_clock"] || cv["core1_clock"]).to_i
+      c.bus_speed = cv["bus_speed_clock"].to_i
+      c.core_load = cv["cpu_total_load"].to_i
+      c.memory_load = res["mem"]["memory_load"].to_i
+      o.cpu[ck] = c
+    }
+    o.mem = res["mem"]
     o
+  end
+
+  def warn_structure(h)
+    h.gpu[0] = gpu_structure
+    h.gpu[0].name = colorize("pending...",$color_warn)
+    h.state = 'pending_update'
+    h
+  end
+
+  def down_structure(h)
+    h.gpu[0] = gpu_structure
+    h.gpu[0].name = colorize("down",$color_alert)
+    h
   end
 
   def console_out(data)
     hash = data[:addresses]
     rows = []
     title = "LibreHardwareMonitor" #Coin Portfolio: https://www.coingecko.com : Last checked #{data[:last_check_ago].ceil(2)} seconds ago"
-    headers = ['Name','Card','Bus#','Bios','Driver','Mem(MB)','Pwr','Temp','HotSpot','Fan','Fan%','Clock','MemClk']
+    headers = ['Name','Device','Type','Bus/Id','Bios/Cores','Driver Version','Mem(GB)','Pwr(W)','Temp','HotSpot','Fan(rpm)','Fan%','Clk','MemClk','BusLoad/Speed','CoreLoad','MemLoad']
 
-    total_value = 0.0
-    total_profit = 0.0
-	
     hash.keys.sort.each_with_index{|addr,i|
-      h = hash[addr]
-  
-      if h.down == true
-        h["gpu"][0] = gpu_structure
-        g.name = colorize("down",$color_alert)
-      end
+      h = hash[addr]  
+      h = down_structure(h) if h.down == true
+
       h["gpu"].keys.sort.each_with_index{|bus,i|
         g = h["gpu"][bus]
         rows << [
-          h.name, g.name, g.pci, g.bios, g.driver, g.memory_total, g.power,
-          g.temperature, g.temperature_hotspot, g.fan_rpm, g.fan_percent, g.clock, g.memory_clock
+          h.name.capitalize, g.name, g.type.upcase, g.pci, g.bios, g.driver, g.memory_total.round, g.power,
+          g.temperature, g.temperature_hotspot, g.fan_rpm, g.fan_percent,
+          g.clock, g.memory_clock, g.bus_load, g.core_load, g.memory_load
         ]
       }
+      h["cpu"].keys.sort.each_with_index{|bus,i|
+        g = h["cpu"][bus]
+        rows << [
+          h.name.capitalize, g.name, g.type.upcase, g.id, "#{g.cores} cores", "", g.memory_total.round, g.power,
+          g.temperature, g.temperature_max, g.fan_rpm, g.fan_percent,
+          g.clock, "", g.bus_speed, g.core_load, g.memory_load
+        ]
+      }
+
     }
 
     table_out(headers,rows,title)
   end
 
-  def fix_keys(hsh,*extra)
-    new_hash = {}
-    hsh.each_pair{|k,v|
-      new_hash[fix_key(k,*extra)] = v
-    }
-    new_hash
-  end
-
-  def fix_key(k,*extra)
-    key = k.dup
-    if !extra.empty?
-      extra.each{|e|
-        key.gsub!(e[0],e[1])
-      }
-    end
-    key.gsub(/[\.|\-|\=\s]/,'_').snakecase  
-  end
 end

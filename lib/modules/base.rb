@@ -16,7 +16,7 @@ class Modules::Base
   include SemanticLogger::Loggable
 
   attr_accessor :title
-  attr_reader :config, :last_check, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :config_options, :tor_socks
+  attr_reader :config, :last_check, :last_check_ago, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :config_options, :tor_socks, :title
 
   @api_names = []  
 
@@ -31,10 +31,13 @@ class Modules::Base
   def initialize(p={})
     # Configuration set values
     @config = p[:config] || {}
+    @store = p[:store] || nil
+
     @frequency = @config["every"] || @config["default_frequency"] || 12
     @frequency = 6 if @frequency < 6
     @port = @config["port"] || 0
     @page = @config["page"] || 1
+    @extra = @config["extra"] || ""
 
     @dump = @config["dump"] || false
     @coin    = @config["coin"] || ''
@@ -43,12 +46,19 @@ class Modules::Base
     @tor_socks = @config["tor_socks"] || false
     @proxy = @config["proxy"] || false
     @proxy_url = @config["proxy_url"] || 'http://127.0.0.1:8080'
+    @pending = false
 
     # Internal variables
     @last_check = Time.now - (@frequency*2)
+    @last_check_ago = 0 #Time.now - @last_check
+
     @title = 'Undefined???'
     @down = {}
+    @pending = []
     @data = Concurrent::Hash.new()
+    @data[:address] = {}
+    @data[:module] = self.class.name
+    @data[:last_check_ago] = @last_check_ago
     @events = []
     @responses = {}
     @config_options = {}
@@ -78,6 +88,27 @@ class Modules::Base
     # TODO - add error output for no default available...    
   } 
 
+  #----------------- Hooks ------------------------
+  def coin_value_dollars(*p)
+    v = self.respond_to?(:coin_value_dollars_hook) ? coin_value_dollars_hook(*p) : 0
+    sprintf("$%0.2f",v)
+  end
+
+  #----------------- Store ------------------------
+  def store_it(key,value)
+    if store && !store.empty?
+      store[key] = value
+    end
+  end
+
+  def store_get(key)
+    if store && !store.empty?
+      store[key]
+    end
+  end
+
+  #----------------- Maintenance Calls ------------------------
+
   # Caller should collect and clear per iteration
   def clear_events
     @events = []    
@@ -89,9 +120,9 @@ class Modules::Base
   
   def nice_title
     if config['extra']
-      "#{title} #{config['extra']}"
+      "#{title}: #{config['extra']}"
     elsif config['coin']
-      "#{title} - #{config['coin']}"
+      "#{title}: #{config['coin']}"
     else
       title
     end
@@ -119,23 +150,21 @@ class Modules::Base
   def check_all
     @events = []
     tchk = (Time.now - @last_check)
+    lcl_last_check = @last_check
+    lcl_last_check_ago = @last_check_ago
 
-    if @data.empty? || tchk > @frequency
-      out = []
-      @data = OpenStruct.new({
-        addresses: {},
-        module: self.class.name
-      })
-      addresses = @config['nodes'].keys.sort
+    if !@pending.empty? || @data.empty? || tchk > @frequency
+      addresses = {}
+      address_list = @config['nodes'].keys.sort
       
-      addresses.each {|k|
+      address_list.each {|k|
         v = @config['nodes'][k]
-        @data['addresses'][k] = {}
+        addresses[k] = {}
         begin
           # If still down (under recheck frequency), mark it as such, update recheck counter, else we delete the down entry
           if @down[k]
             if (Time.now - @down[k]) < 60
-              @data[:addresses][k] = down_handler(k,"Service recheck pending...")
+              addresses[k] = down_handler(k,"Service recheck pending...")
             else
               @down.delete(k)
             end
@@ -145,20 +174,38 @@ class Modules::Base
           if !@down[k]
             logger.debug("Checking service #{k}")
             h = self.check(v,k)
-            h["target"] = v
-            @data['addresses'][k] = h
+            if h.state == 'pending_update'
+              @pending << k
+            else
+              @pending.delete(k)
+            end
+            if @data[:addresses] && @data[:addresses][k] && h.state == 'pending_update'
+              addresses[k] = @data[:addresses][k]
+            else
+              h["target"] = v
+              addresses[k] = h
+            end
           end
           
         rescue => e
           logger.error("Service down #{k}", e)
           @down[k] = Time.now
-          @data[:addresses][k] = down_handler(k,"Service down!",false,e)
+          addresses[k] = down_handler(k,"Service down!",false,e)
         end
+
       }
+      @data[:addresses] = addresses
       @last_check = Time.now
     end
 
-    @data[:last_check_ago] = (Time.now - @last_check).to_i
+    if @pending.empty?
+      lcl_last_check_ago = (Time.now - @last_check).to_i
+    else
+      @last_check = lcl_last_check
+      lcl_last_check_ago = 0
+    end
+
+    @last_check_ago = @data[:last_check_ago] = lcl_last_check_ago #(Time.now - @last_check).to_i #lcl_last_check_ago
     @data
   end
 
@@ -174,7 +221,8 @@ class Modules::Base
     data.down     = true
     data.message  = message
     data.time     = Time.now
-    data.addr = data.name = addr
+    data.addr     = data.name = addr
+    data.state    = 'down'
 
     if error
       data.backtrace  = error.backtrace[0..4],
@@ -243,6 +291,15 @@ class Modules::Base
       module: self.class.name,
       name: name,
       addresses: {},
+    })
+  end
+
+  def root_structure
+    OpenStruct.new({
+      name:     "",
+      address:  "",
+      time:     Time.now,
+      state:    "",
     })
   end
 
@@ -510,6 +567,7 @@ class Modules::Base
   def colorobj
     @pastel ||= Pastel.new
   end
+  alias_method :pastel, :colorobj
 
   def colorizer(colors)
     m = colorobj
@@ -543,4 +601,23 @@ class Modules::Base
     return '' if !time.is_a?(Time)
     time.localtime.strftime "%Y-%m-%d %H:%M:%S"
   end
+
+  def fix_keys(hsh,*extra)
+    new_hash = {}
+    hsh.each_pair{|k,v|
+      new_hash[fix_key(k,*extra)] = v
+    }
+    new_hash
+  end
+
+  def fix_key(k,*extra)
+    key = k.dup
+    if !extra.empty?
+      extra.each{|e|
+        key.gsub!(e[0],e[1])
+      }
+    end
+    key.gsub(/\W/,'').snakecase  
+  end
+
 end

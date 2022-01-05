@@ -28,6 +28,7 @@
 # PoC+/PoC/PoCC miners
     ['SignumPoolMiner','other','signum_pool_miner'],
     ['SignumPoolView','other','signum_pool_view'],
+    ['SignumAssetView','other','signum_asset_view'],
 # Hardware
-    ['OhmGpuWin32','hardware','ohm_gpu_w32'],
+    ['OhmGpuWin32','hardware','ohm_gpu_w32','lhm_gpu_win32'],
 ]

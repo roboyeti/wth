@@ -18,25 +18,52 @@ class Modules::Unmineable < Modules::MinerPoolBase
   def initialize(p={})
     super
     @title = p[:title] || 'Unmineable'
+    @threads = {}
   end
 
   def check(target,type)
     (addr,coin) = target.split(":")
-    req1 = [API_HOST,'address',"#{addr}?coin=#{coin}"].join('/')
-    res1 = simple_rest(req1)
-    uuid = res1["data"]["uuid"]
-    req2 = [API_HOST,'account', uuid, 'workers'].join('/')
-    res2 = simple_rest(req2)
-    #res3 = simple_rest([API_HOST,'account', uuid, 'workers'].join('/'))
-    res3 = {}
-    format(type,coin,res1,res2,res3)
+
+    ckey = "#{addr}_#{coin}"
+
+    ret = if @threads[ckey]
+      val = @threads[ckey].value!(0.25)
+      if val
+        @threads.delete(ckey)
+        val
+      else
+        warn_structure(type,target)
+      end
+    else
+      @threads[ckey] = Concurrent::Promises.future(ckey) do |ckey|
+        req1 = [API_HOST,'address',"#{addr}?coin=#{coin}"].join('/')
+        res1 = simple_rest(req1)
+        uuid = res1["data"]["uuid"]
+        req2 = [API_HOST,'account', uuid, 'workers'].join('/')
+        res2 = simple_rest(req2)
+        format(type,target,res1,res2)
+      end
+      warn_structure(type,target)
+    end
+    return ret
+  rescue => e
+    @threads.delete(ckey)
+    raise e
   end
-  
-  def format(name,coin,res1,res2,res3)
+
+  def warn_structure(type,target)
+    h = format(type,target)
+    h.status = colorize("pending...",$color_warn)
+    h.state = 'pending_update'
+    h
+  end
+
+  def format(name,target,res1={"data"=>{}},res2={"data"=>{}})
+    (addr,coin) = target.split(":")
     data = res1["data"]
     h = pool_structure
     h.name = name
-    h.address = data["address"]
+    h.address = addr
     h.private_address = " #{h.address[0..2]} ... #{h.address[-3..-1]} "
     h.available_balance = data["balance_payable"]
     h.uuid = data["uuid"]
@@ -46,7 +73,7 @@ class Modules::Unmineable < Modules::MinerPoolBase
     h.network = data["network"]
     h.coin = coin
     errs = 0
-    h.errors = data["err_flags"].each_pair{|k,v| err = err + 1 if v}
+    h.errors = data["err_flags"].each_pair{|k,v| err = err + 1 if v} if data["err_flags"]
     algo = []
     res2["data"].each_pair{|ak,av|
       av["workers"].each{|w|
@@ -74,7 +101,7 @@ class Modules::Unmineable < Modules::MinerPoolBase
     hash = data[:addresses]
     rows = []
     title = "Unmineable : Last checked #{data[:last_check_ago].ceil(2)} seconds ago"
-    headers = ['Address','Status','Coin','Balance','Network','Algo','Fee','Auto Pay','Combined Speed','Calculated Speed', 'Workers Up/Dwn']
+    headers = ['Address','Status','Coin','$ Avail','Balance','Network','Algo','Fee','Auto Pay','Combined Speed','Calculated Speed', 'Workers Up/Dwn']
       
     hash.keys.sort.map{|addr|
       h = hash[addr]
@@ -88,10 +115,11 @@ class Modules::Unmineable < Modules::MinerPoolBase
 
       rows << [
         colorize(h.private_address,$color_pool_id), h.status,
-        h.coin, h.available_balance, h.network, h.algo, h.mining_fee, h.auto_pay,
+        h.coin, coin_value_dollars(h.available_balance.to_f, h.coin), h.available_balance, h.network, h.algo, h.mining_fee, h.auto_pay,
         h.speed.round,calc_str, worker_str
       ]
     }
     table_out(headers,rows,title)
   end
+
 end

@@ -27,7 +27,7 @@ class Modules::Cpuminer < Modules::CpuMinerBase
   
   def initialize(p={})
     super
-    @title = p[:title] || 'Cpuminer'    
+    @title = config[:title] || 'Cpuminer'    
   end
 
 	def send_command(host,port,cmd)
@@ -115,7 +115,7 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
       end
       
       rows << [
-        h.name, uptime, h.algo,
+        h.name.capitalize, uptime, h.algo,
         h.difficulty, h.total_shares,h.rejected_shares,h.failed_shared,
         h.combined_speed, h.rate,
         h.pool, h.cpu.threads_used, ''

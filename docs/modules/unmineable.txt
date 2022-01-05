@@ -1,0 +1,24 @@
+# Unmineable Pool
+
+Unmineable is one of the most absentee companies I have had the displeasure to be a customer of.  If you choose
+to use their service and you "mine" more than a couple different coins, enabling the unmineable module in WTH
+will likely get your IP address black listed for no good reason.
+
+While their API documents were available (before they were banned from Github), the documents said no more than
+500 requests per minute, which is kind of absurdly large amount.  However, more than 12 calls within 30 seconds
+will actually get you banned, and each coin to monitor with WITH require two calls, so 3 coins = 6 calls.
+
+After myself and another developer of another project have attempted to contact them to resolve this issue
+every way we could several times, we have heard nothing.  I was tempted to drop unmineable all together, but
+instead offer a new way, via Tor socks proxy (or HTTP proxy if you want to add more work for yourself).
+
+The following options can be added to unmineable module config:
+
+# This is necessary
+tor_socks: true
+
+# Only necessary if you need to change the defaults
+tor_host: <ip_address> - Default = 127.0.0.1
+tor_port: <port#> - Default 9050
+
+More documentation is available in the tor_socks_config file under the docs directory.

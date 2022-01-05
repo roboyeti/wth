@@ -47,7 +47,7 @@ class Core
     'conemu' => 'ConEmu',
     'con_emu' => 'ConEmu',
     'what_to_mine' => 'WhatToMine',
-    
+    'coin_gecko' => 'CoinGecko',
   }.freeze
 
   attr :verbose
@@ -71,6 +71,7 @@ class Core
     end
     @start_page = @cfg["start_page"] || 1
     @header_short = @cfg["header_short"] ? true : false
+    @store = Concurrent::Hash.new()
     @log = {}
     @modules = {}
     @module_instances = {}
@@ -336,7 +337,7 @@ class Core
     load "#{file}.rb"
     obj = "Modules::#{mod["name"]}".constantize
     puts "Init Module: #{name} => #{obj.name}"
-    obj = @module_instances[name] = obj.new(config: cfg.merge({name: name}))
+    obj = @module_instances[name] = obj.new(config: cfg.merge({name: name}), store: @store)
     plugins.each_pair{|p,e|
       e.register.each_pair{|m,t|
         if obj.respond_to?(m)
@@ -358,19 +359,18 @@ class Core
   #
   # @param [Hash] cfg The config section for modules
   #
-  def init_wth_modules(h_mods)
+  def init_wth_modules(h_mods=nil)
+    h_mods ||= config["modules"]
     return nil if !h_mods
     h_mods.each_pair {|m,p|
       init_wth_module(m,p) if check_wth_module?(m,p)  
     }
-    module_instances
+    true
+#    module_instances
   end
 
   def init_cfg_modules()
-    config["modules"].each_pair {|m,p|
-      init_wth_module(m,p) if check_wth_module?(m,p)  
-    }
-    module_instances
+   init_wth_modules(config["modules"])
   end
 
   # Run modules, unthreaded
@@ -459,14 +459,20 @@ class Core
 			threads << thread
     }
 		page_out = 10.times.map{|| []}
-		threads.each {|t|
-			t.join;
-			page = (t["me"].page || 1) - 1
-			page_out[page] ||= []
-			t["mypage"].each {|l| page_out[page] << l }    
-			t["events"].each {|event| add_log('events',event) }
-      t.exit
-		}
+#		while !threads.empty?
+      threads.each_with_index {|thr,idx|
+#        thr = t.join(0.25);
+        thr.join
+        if thr
+          page = (thr["me"].page || 1) - 1
+          page_out[page] ||= []
+          thr["mypage"].each {|l| page_out[page] << l }    
+          thr["events"].each {|event| add_log('events',event) }
+          thr.exit
+#          threads.delete(idx)
+        end
+      }
+#    end
 		page_out
 	end
 
