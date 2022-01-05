@@ -26,6 +26,7 @@ By default, WTH offers the following modes:
 * Web Interface that is a mirror of the console interface
     - http://localhost:8080/
 * JSON API of all modules
+    - http://localhost:8080/api?module=list
     - http://localhost:8080/api?module=<your_module_entry_name|list>
 
 ## Installation - Windows
