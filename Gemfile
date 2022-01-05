@@ -59,5 +59,6 @@ end
 
 # TODO: Add other OS gems as needed
 install_if -> { RUBY_PLATFORM =~ /mswin|mingw|cygwin/i } do
+  gem 'winrm'
   gem 'ruby-pwsh' # Interface to powershell ... may not end up using it.  So far, hasn't done what I needed it for.
 end
