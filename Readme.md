@@ -169,10 +169,10 @@ adding something I don't need myself.
 - RTM: RCMPMeSS2CYSbepTEbR5X3dNpwDQFZxnHM
 - XMR: 85AUKf2jByxRy884ebLagvToXmTW4hYmrhQUxvudKsvwWKpdKt1xMatargMD4DQTCCZgoxtiyrz6RTUXeciKGdz8Vqd9Ly8
 
-## Example Console View
+## Example Web View
 ![Example](/screenshots/wth_con01.png)
 ![Example](/screenshots/wth_con02.png)
-## Example Web View
+## Example Console View
 ![Example](/screenshots/wth_web01.png)
 ![Example](/screenshots/wth_web02.png)
 
