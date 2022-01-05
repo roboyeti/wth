@@ -1,4 +1,5 @@
-![WTH - What the Hash?](/web/favicon/android-chrome-192x192.png) ## WTH - What the Hash?
+![WTH - What the Hash?](/web/favicon/android-chrome-192x192.png) 
+## WTH - What the Hash?
 
 WTH was designed with the goal of providing an expandable, quick
 health status / earnings viewer for cryptocurrency related interests, miners, etc.
