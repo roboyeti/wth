@@ -1,7 +1,7 @@
 ![WTH - What the Hash?](/web/favicon/android-chrome-192x192.png)
 ## WTH - What the Hash?
 
-WTH was designed with the goal of providing a expandable quick
+WTH was designed with the goal of providing an expandable, quick
 health status / earnings viewer for cryptocurrency related interests, miners, etc.
 
 It isn't meant to compete with fancy web UIs with charts and graphs.  It was originally
@@ -12,7 +12,7 @@ Mostly, I was frustrated at looking at half a dozen or more web pages just to ch
 
 With very little interaction, you should be able to see the basics of your cryptocurrency
 world.  Adding more mining pools, staking & liquidity pools, crypto portfolios, and more
-is the plan.
+is the plan.  You can help us and add your own modules as well!  The coding required can be fairly simplistic, depending on the remote API, and current  modules and help from us can get your module added quickly.
 
 What the hash also offers an API for other systems to use the collected data.  The primary
 goal of this is so we can offer a more advanced Web UI in the future, but it also tries
@@ -30,6 +30,8 @@ By default, WTH offers the following modes:
 * JSON API of all modules
     - http://localhost:8080/api?module=list
     - http://localhost:8080/api?module=<your_module_entry_name|list>
+
+## Coming soon! - Install scripts for linux and win32.
 
 ## Installation - Windows
 - Install Ruby: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.0.2-1/rubyinstaller-3.0.2-1-x64.exe
@@ -83,11 +85,11 @@ By default, WTH offers the following modes:
 - Specific configuration options can be found in the example config.
 - Brief documentation for how to enable APIs for a specific module target can be found in docs/modules/<target_name>.
 
-List of supported modules
+List of supported modules and the config "api" entry for them:
 
 GPU Miners
 - Excavator (Nicehash Nvidia Miner) = "nice_hash"
-- Claymore Miner = "phoenix" (untested)
+- Claymore Miner = "claymore" (untested)
 - Phoenix Miner = "phoenix"
 - T-Rex Miner = "t_rex_unm"
 - GMiner = "g_miner"
@@ -105,28 +107,28 @@ Harddrive Miners
 Pools
 - Signum Pool API = "signum_pool_view"
 - Flock Pool (RTM) = "flock_pool"
-- Unmineable (Address API) = "unmineable"
+- Unmineable (Address API) = "unmineable" (best with local Tor installation for socks poxying)
 
 Tokens
 - Signum Tokens = "signum_tokens"
 
 Portfolio
-- Coingecko + personal coin portfolio
+- Coingecko + personal coin portfolio = "coin_gecko"
 
 Hardware
-- OpenHardwareMonitor +WMI GPU monitoring on Win32 and JSON API on all platforms OHM supports.  (Experimental)
-- LibreHardwareMonitor +WMI GPU monitoring on Win32 and JSON API on all platforms OHM supports.  (Experimental)
--- These are not currently documented or formaly supported
+- LibreHardwareMonitor +WMI GPU/CPU monitoring on Win32 = "ohm_gpu_w32"  (Experimental)
+-- Comaptibility with OpenHardwareMonitor possible, but  untested.  (Experimental)
 
 WTH Link
-- WTH can pull data from another WTH instance.
+- WTH can pull data from another WTH instance = "wth_link"
     
 ## Configuration - Plugins
 - Specific configuration options can be found in the example config.
 
 List of supported plugins
 * what_to_mine : Enables what to mine revenue calculations on supporting modules
-
+* coin_gecko : Enables value calculations for modules to convert to USD (more currencies supported soon)
+    
 ## Configuration - Global
 console_out: [true|false] = Enable console output.
 
@@ -167,10 +169,11 @@ adding something I don't need myself.
 - RTM: RCMPMeSS2CYSbepTEbR5X3dNpwDQFZxnHM
 - XMR: 85AUKf2jByxRy884ebLagvToXmTW4hYmrhQUxvudKsvwWKpdKt1xMatargMD4DQTCCZgoxtiyrz6RTUXeciKGdz8Vqd9Ly8
 
-## [Feature Screenshots](/docs/features.md)
 ## Example Console View
 ![Example](/screenshots/wth_con01.png)
 ![Example](/screenshots/wth_con02.png)
 ## Example Web View
 ![Example](/screenshots/wth_web01.png)
 ![Example](/screenshots/wth_web02.png)
+
+## [See More Feature Screenshots](/docs/features.md)
