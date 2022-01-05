@@ -1,6 +1,6 @@
 # Author: BeRogue01
 # License: See LICENSE file
-# Date: 10/12/2021
+# Date: 1/2022
 #
 # Love everybody,but never sell your sword.  ~ Paulo Coelho
 #
@@ -23,6 +23,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
   GPU_MANUFACTURER = {
     'nvidia' => 'nvidia',
     'intel corporation' => 'intel',
+    'amd' => 'amd'
   }
 
   PNPDEVKEYS = [
@@ -418,7 +419,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       h["gpu"].keys.sort.each_with_index{|bus,i|
         g = h["gpu"][bus]
         rows << [
-          h.name.capitalize, g.name, g.type.upcase, g.pci, g.bios, g.driver, g.memory_total.round, g.power,
+          h.name.capitalize, g.name, colorize(g.type.upcase,:bright_cyan), g.pci, g.bios, g.driver, g.memory_total.round, g.power,
           g.temperature, g.temperature_hotspot, g.fan_rpm, g.fan_percent,
           g.clock, g.memory_clock, g.bus_load, g.core_load, g.memory_load
         ]
@@ -426,7 +427,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       h["cpu"].keys.sort.each_with_index{|bus,i|
         g = h["cpu"][bus]
         rows << [
-          h.name.capitalize, g.name, g.type.upcase, g.id, "#{g.cores} cores", "", g.memory_total.round, g.power,
+          h.name.capitalize, g.name, colorize(g.type.upcase,:bright_magenta), g.id, "#{g.cores} cores", "", g.memory_total.round, g.power,
           g.temperature, g.temperature_max, g.fan_rpm, g.fan_percent,
           g.clock, "", g.bus_speed, g.core_load, g.memory_load
         ]

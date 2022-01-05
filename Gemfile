@@ -49,15 +49,16 @@ gem 'coingecko_ruby'
   # Pushover client for notifications
 group :pushover, optional: true do gem 'rushover'; end
 
-group :lab, optional: true do
-  gem 'irbtools'    # Interactive ruby console
-end
+#group :lab, optional: true do
+gem 'irbtools'    # Interactive ruby console
+#end
 
-group :tor, :socksify, optional: true do
-  gem 'socksify'
-end
+#group :tor, :socksify, optional: true do
+gem 'socksify'
+#end
 
 # TODO: Add other OS gems as needed
 install_if -> { RUBY_PLATFORM =~ /mswin|mingw|cygwin/i } do
+  gem 'winrm'
   gem 'ruby-pwsh' # Interface to powershell ... may not end up using it.  So far, hasn't done what I needed it for.
 end

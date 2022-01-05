@@ -7,11 +7,12 @@
 class RunService < PluginBase
 
   def initialize(p={})
-	super
+  	#super
+    warn "RunService is not currently implemented"
   end
   
   def start
-	
+    Process.spawn(@cmd)
   end
   
   def checkup

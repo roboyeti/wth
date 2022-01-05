@@ -12,4 +12,4 @@ wth.log
 wth.log.bck
 .bundle
 vendor
-data
+data/*
