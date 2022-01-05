@@ -6,7 +6,9 @@ health status / earnings viewer for cryptocurrency related interests, miners, et
 
 It isn't meant to compete with fancy web UIs with charts and graphs.  It was originally
 developed to allow me to get a fast view on the health of all my GPU/CPU miners, especially
-for things that wouldn't get alerts generated from on one stop shop mining pools.
+for things that wouldn't get alerts generated from a one stop shop mining pools.
+
+Mostly, I was frustrated at looking at half a dozen or more web pages just to check in on miners, pools, and portfolios.
 
 With very little interaction, you should be able to see the basics of your cryptocurrency
 world.  Adding more mining pools, staking & liquidity pools, crypto portfolios, and more
