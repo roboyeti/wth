@@ -300,6 +300,17 @@ modules:
 ## Source is "ohm" or "lhm".  Only "lhm" is tested.
 #      <hostname>: <ip address>:<option port>:<optional source>:<optional user>:<optional password>
 ##-------------------------------------------------------------------------------------------
+# WTH Link
+# Data can be pulled from remote WTH services. More documentation tbd.
+##-------------------------------------------------------------------------------------------
+#  remote_wth:
+#    api: wth_link
+#    page: 6
+#    remote_module: <remote_api_module>
+#    remote_key: <remote_api_key>
+#    nodes:
+#      <unique_key>: <ip address>::<remote_module_key>
+##-------------------------------------------------------------------------------------------
 ##===========================================================================================
 ## Plugins
 ##

@@ -32,5 +32,5 @@
 # Hardware
     ['OhmGpuWin32','hardware','ohm_gpu_w32','lhm_gpu_win32'],
 # Blockchain
-    ['Ethplorer','blockchain','ethplorer'],
+#    ['Ethplorer','blockchain','ethplorer'],
 ]

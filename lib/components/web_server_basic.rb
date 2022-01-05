@@ -79,7 +79,7 @@ class WebServerBasic
     @api  = @config["api"] || false
     @key  = @config["key"] || nil
     @html_out = @config["html_out"] || true
-    @cert_file = @config["cert_file"] || 'data/wth.crt'
+    @cert_file = @config["cert_file"] || 'data/ssl/wth.crt'
   end
   
   # Spin up the server in a thread and connect
