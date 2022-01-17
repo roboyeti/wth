@@ -1,4 +1,4 @@
-![WTH - What the Hash?](/web/favicon/android-chrome-192x192.png) 
+![WTH - What the Hash?](/web/favicon/android-chrome-32x32.png) [Example](/screenshots/wth_web001.png)
 ## WTH - What the Hash?
 
 WTH was designed with the goal of providing an expandable, quick
@@ -170,10 +170,10 @@ adding something I don't need myself.
 - XMR: 85AUKf2jByxRy884ebLagvToXmTW4hYmrhQUxvudKsvwWKpdKt1xMatargMD4DQTCCZgoxtiyrz6RTUXeciKGdz8Vqd9Ly8
 
 ## Example Web View
-![Example](/screenshots/wth_con01.png)
-![Example](/screenshots/wth_con02.png)
+![Example](/screenshots/wth_web001.png)
+![Example](/screenshots/wth_web002.png)
 ## Example Console View
-![Example](/screenshots/wth_web01.png)
-![Example](/screenshots/wth_web02.png)
+![Example](/screenshots/wth_console01.png)
+![Example](/screenshots/wth_console02.png)
 
 ## [See More Feature Screenshots](/docs/features.md)
