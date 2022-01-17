@@ -96,7 +96,7 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
         item.algo, item.coin, item.estimated_revenue,
         item.difficulty, item.total_shares,item.rejected_shares,item.failed_shared,
         item.combined_speed, item.accept_rate,
-        item.pool, item.cpu.threads_used, item.cpu.name
+        item.pool.split(':')[0], item.cpu.threads_used, item.cpu.name
       ]
     end
     tables

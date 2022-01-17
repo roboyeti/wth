@@ -10,7 +10,7 @@ class Modules::Xmrig < Modules::CpuMinerBase
   def initialize(p={})
     super
     @title = config["title"] || 'XMRig'    
-    @headers = [ 'Node', "Uptime", "Miner", 'Algo', 'Coin', 'ERev$', "Accpt","Rjct","Fail", "Avg H/s","Max H/s","Total KH","Pool","Th#","CPU" ]
+    @headers = [ 'Node', "Uptime", "Miner", 'Algo', 'Coin', 'ERev$', "Accpt","Rjct","Fail", "Avg H/s","Max H/s","Pool","Th#","CPU" ]
   end
 
   def check(addr,host)
@@ -58,8 +58,8 @@ class Modules::Xmrig < Modules::CpuMinerBase
         item.name.capitalize, uptime_seconds(item.uptime), item.miner,
         item.algo, item.coin, item.estimated_revenue,
         item.total_shares,item.rejected_shares,item.failed_shared,
-        item.combined_speed, item.max_speed, item.hashes_total/1000.0,
-        item.pool, "#{item.cpu.threads_used}/#{item.cpu.threads}", item.cpu.name
+        item.combined_speed, item.max_speed,
+        item.pool.split(':')[0], "#{item.cpu.threads_used}/#{item.cpu.threads}", item.cpu.name
       ]
     end
     tables
