@@ -105,7 +105,7 @@ class Modules::GpuMinerBase < Modules::Base
 
       i_row = [
         item.uptime,
-        ite.version,
+        item.version,
         sprintf("$%0.2f",mine_revenue(coin,item.combined_speed).to_f), # h[:coin] ||  .... erg
         item.combined_speed.round(0),
         format_power(item.power_total),

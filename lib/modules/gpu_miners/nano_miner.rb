@@ -22,6 +22,7 @@ class Modules::NanoMiner < Modules::GpuMinerBase
 
   def format(name,ip,res)
     host,port,algo = ip.split(':')
+    algo = 'Ethash' if algo.blank?
     algo = algo.downcase.capitalize
 
     alg = res["Algorithms"][0][algo]

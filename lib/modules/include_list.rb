@@ -23,7 +23,8 @@
     ['Cpuminer','cpu_miners','raptoreum','cpuminer'],
 # Miner Pools
     ['Unmineable','miner_pools','unmineable'],
-    ['FlockPool','miner_pools','flock_pool'],
+    ['FlockPool','miner_pools','flock_pool','flockpool'],
+    ['NanoPool','miner_pools','nano_pool','nanopool'],
 # Portfolio
     ['CoinGeckoTracker','other','coin_gecko','portfolio'],
 # PoC+/PoC/PoCC miners
