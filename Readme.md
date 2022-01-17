@@ -1,4 +1,4 @@
-## WTH - What the Hash?
+## WTH - What the Hash?![WTH](/web/favicon/favicon-32x32.png)
 ![WTH - What the Hash?](/screenshots/wth_web001.png)
 
 WTH was designed with the goal of providing an expandable, quick
