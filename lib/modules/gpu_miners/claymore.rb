@@ -62,7 +62,8 @@ class Modules::Claymore < Modules::GpuMinerBase
     o = worker_structure
     o.name = name
     o.address = name
-    o.miner = base[0].split(' - ')[0]
+    o.miner = title
+    o.version = base[0].split(' ')[1]
     o.coin = base[0].split(' - ')[1] || coin
     o.uptime = uptime
     o.pool = base[7]

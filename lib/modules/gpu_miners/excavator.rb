@@ -16,28 +16,24 @@ class Modules::Excavator < Modules::GpuMinerBase
 
   def initialize(p={})
     super
-    @title = p[:title] || "Excavator"    
+    @title = p[:title] || "Excavator"
+    @port = @config[:port] || 18000
   end
 
-  def check(ip,name)
-    host,port = ip.split(':')
-    port = port ? port : @port    
-    res  = simple_rest("http://#{host}:#{port}/api?command={%22id%22:1,%22method%22:%22algorithm.list%22,%22params%22:[]}")
-    res2 = simple_rest("http://#{host}:#{port}/api?command={%22id%22:1,%22method%22:%22worker.list%22,%22params%22:[]}")
-    res3 = simple_rest("http://#{host}:#{port}/api?command={%22id%22:1,%22method%22:%22devices.get%22,%22params%22:[]}")
-    format(name,ip,res,res2,res3)
-  end
+  def check(addr,host)
+    h = cm_node_structure(host,addr)
 
-  def format(name,ip,algos,workers,devices)
-    base = algos["algorithms"][0]
-    time = base["uptime"].to_f
-    uptime = uptime_minutes(time)
+    algo  = simple_rest("http://#{h.ip}:#{h.port}/api?command={%22id%22:1,%22method%22:%22algorithm.list%22,%22params%22:[]}")
+    workers = simple_rest("http://#{h.ip}:#{h.port}/api?command={%22id%22:1,%22method%22:%22worker.list%22,%22params%22:[]}")
+    devices = simple_rest("http://#{h.ip}:#{h.port}/api?command={%22id%22:1,%22method%22:%22devices.get%22,%22params%22:[]}")
+    info = simple_rest("http://#{h.ip}:#{h.port}/api?command={%22id%22:1,%22method%22:%22info%22,%22params%22:[]}")
 
-    h = worker_structure
-    h.name = name
-    h.address = ip
-    h.uptime = uptime
-    h.miner = "Excavator ETH #{base['name']}"
+    base = algo["algorithms"][0]
+    h.uptime = uptime_minutes(base["uptime"].to_f)
+    h.miner = "nhqm_excavator"
+    h.version = info["version"]
+    h.algo = base["name"]
+    h.pool = 'nicehash'
     h.combined_speed = base["speed"].to_f / 1000000.0
     h.total_shares = base["accepted_shares"].to_i
     h.rejected_shares = base["rejected_shares"].to_i
@@ -64,9 +60,11 @@ class Modules::Excavator < Modules::GpuMinerBase
         gpu_speed: alg["speed"].to_f / 1000000.0,
         gpu_temp: device[:temp],
         gpu_fan: device[:fan],
+        gpu_power: device[:power],
         speed_unit: 'Mh/s',
       }
     }
+
     h
   end
   

@@ -23,7 +23,7 @@ class Modules::GpuMinerBase < Modules::Base
 
     # Internal variables
     @devices = {}
-    @headers = ['Node','Uptime','ERev$','Speed','Power','Shares','Rjct','GPUs >']
+    @headers = ['Node','Uptime','Ver','ERev$','Speed','Power','Shares','Rjct','Pool','GPU#']
 
     register_config_option("standalone",false,[],"Optional display mode to show data using more vertical space for single screen per/node use for a head display.")
     register_config_option("gpu_row",5,[],"Optional value to set number of GPUs displayed per row.  Default is 5.")
@@ -41,6 +41,10 @@ class Modules::GpuMinerBase < Modules::Base
   #
   def mine_revenue(*p)
     self.respond_to?(:mine_revenue_hook) ? mine_revenue_hook(*p) : 0
+  end
+
+  def calc_estimated_revenue(item)
+    sprintf("$%0.2f",mine_revenue(item.coin,item.combined_speed).to_f)
   end
 
   def tableize(data)
@@ -62,12 +66,13 @@ class Modules::GpuMinerBase < Modules::Base
       reject_str = colorize_percent_of(item.total_shares,item.rejected_shares,0.10,0.50)
 
       row = [
-        item.name.capitalize, item.uptime,
+        item.name.capitalize, item.uptime, item.version,
         sprintf("$%0.2f",mine_revenue(coin,item.combined_speed).to_f), # h[:coin] ||  .... erg
         item.combined_speed.round(0),
         format_power(item.power_total),
         item.total_shares,
         reject_str,
+        item.pool,
         item.gpu.keys.count
       ]
 
@@ -100,6 +105,7 @@ class Modules::GpuMinerBase < Modules::Base
 
       i_row = [
         item.uptime,
+        ite.version,
         sprintf("$%0.2f",mine_revenue(coin,item.combined_speed).to_f), # h[:coin] ||  .... erg
         item.combined_speed.round(0),
         format_power(item.power_total),
@@ -109,8 +115,9 @@ class Modules::GpuMinerBase < Modules::Base
       item_hdrs = headers.dup
       item_hdrs.delete_at(0)
       item_hdrs.delete_at(-1)
+      item_hdrs.delete_at(-1)
       rows << [' ']
-      rows << [ table_out(item_hdrs,[i_row,[]],"#{item.name.capitalize}") ]
+      rows << [ table_out(item_hdrs,[i_row,[]],"#{item.name.capitalize} : #{item.pool}") ]
 
       gpu_hdrs = [' BusId','  Speed','  Temp','  Fan']
       gpu_rows = []
@@ -138,4 +145,18 @@ class Modules::GpuMinerBase < Modules::Base
     end  
   end
 
+  def cm_node_structure(host,addr)
+    node = node_structure()
+    ip,port,coin = addr.split(':')
+    node.name = host
+    node.ip = ip
+    node.port = port.blank? ? self.port : port
+    node.coin = coin.blank? ? self.coin : coin
+    node.address = "#{node.ip}:#{node.port}"
+    node.estimated_revenue = 0.0
+    node.pool = ""
+    node.miner = ""
+    node.version = ""
+    node
+  end
 end

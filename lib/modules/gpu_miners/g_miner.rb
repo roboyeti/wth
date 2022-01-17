@@ -14,22 +14,15 @@ class Modules::GMiner < Modules::GpuMinerBase
     @port = @config["port"] || 10555
   end
 
-  def check(ip,name)
-    host,port = ip.split(':')
-    port = port ? port : @port    
-    res = simple_rest("http://#{host}:#{port}/stat")
-    format(name,ip,res)
-  end
+  def check(addr,name)
+    h = cm_node_structure(name,addr)
 
-  def format(name,ip,res)
-    time = res["uptime"].to_f
-    uptime = uptime_seconds(time)
-    h = node_structure
-    h.name = name
-    h.address = ip
-    h.miner = res['miner']
+    res = simple_rest("http://#{h.ip}:#{h.port}/stat")
+
+    h.miner = res['miner'].split(' ')[0]
+    h.version = res['miner'].split(' ')[1]
     h.user = res['user']
-    h.uptime = uptime
+    h.uptime = uptime_seconds(res["uptime"].to_f)
     h.pool = res["server"]
     h.algo = res["algorithm"]
     h.pool_speed = res["pool_speed"].to_f / 1000000.0
@@ -41,10 +34,7 @@ class Modules::GMiner < Modules::GpuMinerBase
 
     res["devices"].each {|d|
       gpu = gpu_structure
-#bus_id	"0000:09:00.0"
-#name	"2060S"
-#core_clock	1080
-#memory_clock	7400
+      #bus_id	"0000:09:00.0"
       gpu.pci = d["bus_id"].split(':')[1].to_i
       gpu.id = d["gpu_id"]
       gpu.gpu_speed = d["speed"].to_f / 1000000.0

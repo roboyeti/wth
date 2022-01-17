@@ -17,6 +17,7 @@
     ['LolMiner','gpu_miners','lol_miner','lolminer'],
     ['NanoMiner','gpu_miners','nano_miner','nanominer'],
     ['TeamRedClaymore','gpu_miners','teamred','teamredminer','teamred_claymore'],
+    ['NBMiner','gpu_miners','nb_miner','nbminer'],
 # CPU Miners
     ['Xmrig','cpu_miners','xmrig'],
     ['Cpuminer','cpu_miners','raptoreum','cpuminer'],

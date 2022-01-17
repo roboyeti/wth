@@ -54,6 +54,7 @@ class Modules::CpuMinerBase < Modules::Base
     node.cpu = cpu_structure
     node.estimated_revenue = 0.0
     node.miner = ""
+    node.version = ""
     node
   end
 end

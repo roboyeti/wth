@@ -25,8 +25,8 @@ class Modules::Cpuminer < Modules::CpuMinerBase
 
   def initialize(p={})
     super
-    @title = config[:title] || 'Cpuminer'    
-    @headers = [ 'Node', "Uptime","Miner","Algo","Coin","ERev$","Diff","Accpt","Rjct","Sol","Avg H/s","Accept/Min","Pool","Th#","CPU" ]
+    @title = p[:title] || 'Cpuminer'    
+    @headers = [ 'Node', "Uptime","Ver","Algo","Coin","ERev$","Diff","Accpt","Rjct","Sol","Avg H/s","Accept/Min","Pool","Th#","CPU" ]
   end
 
   # Sends the totally annoying, 1990 way of communication...?!?!?!
@@ -75,7 +75,8 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
     h.combined_speed = h["hashrate"] = summary["HS"]
     h.algo = summary['ALGO']    
     h.pool   = summary["URL"]
-    h.miner = "#{summary["NAME"]}_#{summary["VERSION"]}"
+    h.miner = summary["NAME"]
+    h.version = summary["VERSION"]
     h.difficulty = summary["DIFF"].to_f.round(4)
     h.accept_rate = summary["ACCMN"].to_f.round(4)
     h.total_shares   = summary["ACC"].to_i
@@ -92,7 +93,7 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
     tables = []
     tables << super(data) do |item,rows,formats|
       rows << [
-        item.name.capitalize, uptime_seconds(item.uptime), item.miner,
+        item.name.capitalize, uptime_seconds(item.uptime), item.version,
         item.algo, item.coin, item.estimated_revenue,
         item.difficulty, item.total_shares,item.rejected_shares,item.failed_shared,
         item.combined_speed, item.accept_rate,

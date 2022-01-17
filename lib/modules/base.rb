@@ -236,6 +236,8 @@ OpenStruct.new({
       node = nil
 
       nodes.each {|nkey|
+        @request_counter = 0
+
         nval = @config['nodes'][nkey]
         begin
           # If still down (under recheck frequency), mark it as such, update recheck counter, else we delete the down entry
@@ -316,7 +318,8 @@ OpenStruct.new({
         end
     res = s && s.body ? JSON.parse(s.body) : {}
     file = url.split('?')[0].split('://')[1].gsub('/','_')
-    @dump && dump_response(file,["URL::#{url}",res])
+    @dump && dump_response("#{file}_#{@request_counter}",["URL::#{url}",res])
+    @request_counter += 1
 
     # Rescue on closed since we have better errors to catch...
     begin
@@ -387,7 +390,11 @@ OpenStruct.new({
   def uptime_minutes(time)
     uptime_seconds(time.to_f * 60)
   end
-  
+
+  def uptime_from_eseconds(time)
+    uptime_seconds(Time.now - Time.at(time))
+  end
+
   # Convert rfc3339 time format into a Time object
   def parse_rfc3339(time)
     DateTime.rfc3339(time).to_time  
