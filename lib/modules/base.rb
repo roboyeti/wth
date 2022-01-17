@@ -10,12 +10,16 @@ require 'pastel'
 require 'terminal-table'
 require 'concurrent'
 require 'pp'
+require 'lightly'
+require 'concurrent'
 
 class Modules::Base
   using IndifferentHash  
   include SemanticLogger::Loggable
+  include ModuleConsoleOutput
+  include ModuleStructures
 
-  attr_accessor :title
+  attr_accessor :title, :store
   attr_reader :config, :last_check, :last_check_ago, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :config_options, :tor_socks, :title
 
   @api_names = []  
@@ -31,35 +35,41 @@ class Modules::Base
   def initialize(p={})
     # Configuration set values
     @config = p[:config] || {}
-    @store = p[:store] || nil
+    @store = p[:store] || {}
 
-    @frequency = @config["every"] || @config["default_frequency"] || 12
-    @frequency = 6 if @frequency < 6
-    @port = @config["port"] || 0
-    @page = @config["page"] || 1
-    @extra = @config["extra"] || ""
+    @frequency  = @config["every"] || @config["default_frequency"] || 12
+    @frequency  = 6 if @frequency < 6
+    @port       = @config["port"] || 0
+    @page       = @config["page"] || 1
+    @extra      = @config["extra"] || ""
+    @columns = []
+    if @config["columns"] && !@config["columns"].empty?
+      @columns = @config["columns"].split(',').map(&:to_i)
+      @columns.unshift(0,1).uniq! #.sort
+    end
 
-    @dump = @config["dump"] || false
-    @coin    = @config["coin"] || ''
-    @tor_host = @config["tor_host"] || '127.0.0.1'
-    @tor_port = @config["tor_port"] || 9050
-    @tor_socks = @config["tor_socks"] || false
-    @proxy = @config["proxy"] || false
-    @proxy_url = @config["proxy_url"] || 'http://127.0.0.1:8080'
-    @pending = false
+    @dump       = @config["dump"] || false
+    @coin       = @config["coin"] || ''
+    @tor_host   = @config["tor_host"] || '127.0.0.1'
+    @tor_port   = @config["tor_port"] || 9050
+    @tor_socks  = @config["tor_socks"] || false
+    @proxy      = @config["proxy"] || false
+    @proxy_url  = @config["proxy_url"] || 'http://127.0.0.1:8080'
+    @pending    = false
 
     # Internal variables
-    @last_check = Time.now - (@frequency*2)
+    @last_check     = Time.now - (@frequency*2)
     @last_check_ago = 0 #Time.now - @last_check
 
-    @title = 'Undefined???'
-    @down = {}
-    @pending = []
-    @data = Concurrent::Hash.new()
-    @data[:address] = {}
-    @data[:module] = self.class.name
+    @title    = 'Undefined???'
+    @headers  = []
+    @down     = {}
+    @pending  = []
+    @data     = Concurrent::Hash.new()
+    @data[:addresses] = {}
+    @data[:module]    = self.class.name
     @data[:last_check_ago] = @last_check_ago
-    @events = []
+    @events    = []
     @responses = {}
     @config_options = {}
 
@@ -84,10 +94,6 @@ class Modules::Base
     @config_options
   end
 
-  [:check, :console_out, :format].each {|m|
-    # TODO - add error output for no default available...    
-  } 
-
   #----------------- Hooks ------------------------
   def coin_value_dollars(*p)
     v = self.respond_to?(:coin_value_dollars_hook) ? coin_value_dollars_hook(*p) : 0
@@ -96,14 +102,14 @@ class Modules::Base
 
   #----------------- Store ------------------------
   def store_it(key,value)
-    if store && !store.empty?
+    if store
       store[key] = value
     end
   end
 
   def store_get(key)
     if store && !store.empty?
-      store[key]
+      store.key?(key) ? store[key] : nil
     end
   end
 
@@ -117,7 +123,62 @@ class Modules::Base
   def clear_down
     @down = {}
   end
-  
+
+  #----------------- Output prep etc ------------------------
+  def out_headers
+    !@columns.empty? ? @headers.values_at(*@columns).dup : @headers.dup
+  end
+
+  def tableize(data,&block)
+    title = nice_title_with_timer
+    rows = []
+    tables = []
+    formats = []
+    hdr_cnt = out_headers.count
+    headers = out_headers
+
+    data.keys.sort.each{|addr|
+      item = data[addr]
+
+      if item.state == "down"
+        row = [ colorize(item.name.capitalize,$color_alert), colorize("Down!",$color_alert) ]
+        (hdr_cnt -2).times{ row << '' }
+        rows << row
+      elsif item.state =~ /^pending/
+        row = [ colorize(item.name.capitalize,$color_warn), colorize("Pending...",$color_warn) ]
+        (hdr_cnt -2).times{ row << '' }
+        rows << row
+      elsif block_given?
+        yield(item,rows,formats,headers)
+      else
+        row = []
+        item.each_pair{|k,v| row << v }
+        rows << row
+      end
+
+    }
+    if !@columns.empty?
+      formats.map!{|format| format.values_at(*@columns) }
+      rows.map!{|row| row.values_at(*@columns).compact }
+    end
+
+    Struct.new(:title, :headers, :rows, :formats, keyword_init: true).new({
+      title: title,
+      headers: headers,
+      rows: rows,
+      formats: formats
+    })
+  end
+
+  def table(p={})
+#    @table ||= Struct.better(
+OpenStruct.new({
+        title: p[:title] || '',
+        headers: p[:headers] || [],
+        rows: p[:rows] || []
+}) #.new(p)
+  end
+
   def nice_title
     if config['extra']
       "#{title}: #{config['extra']}"
@@ -128,73 +189,81 @@ class Modules::Base
     end
   end
 
+  def nice_title_with_timer
+    "#{nice_title} : Last Checked: #{data["last_check_ago"]} seconds ago"
+  end
+
   def standalone?
     @standalone == 1 || @standalone == true || @standalone == 'true'
   end
   
   # Add event
   def add_error(addr,message)
-    @events << $pastel.red(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
+    @events << pastel.red(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
   end
   # Add event
   def add_event(addr,message)
-    @events << $pastel.white(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
+    @events << pastel.white(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
   end
   # Add event
   def add_warn(addr,message)
-    @events << $pastel.yellow(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
+    @events << pastel.yellow(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
   end
   
   # Check all nodes provided in a module config.
+  # Unwieldy and strange... need to demystify and unf*ck after so many changes
+  #
+  # More or less...
+  # * Check if it is time to try a request (time rdy, no prior data, or data pending)
+  # * iterate thru nodes
+  # ** Catch errors ... handle with log and basic structure creation
+  # ** Pending results get added to a check queue ... but any other hosts are
+  #    forced checked again!!!! (ARG!)
+  # ** Data stored to thread safe instance var
+  # ** Set timer if needed...
   #
   def check_all
-    @events = []
+    clear_events
+    @data[:addresses] ||= {}
+
     tchk = (Time.now - @last_check)
     lcl_last_check = @last_check
     lcl_last_check_ago = @last_check_ago
 
     if !@pending.empty? || @data.empty? || tchk > @frequency
-      addresses = {}
-      address_list = @config['nodes'].keys.sort
-      
-      address_list.each {|k|
-        v = @config['nodes'][k]
-        addresses[k] = {}
+      have_pending = !@pending.empty?
+      nodes = @config['nodes'].keys.sort
+      node = nil
+
+      nodes.each {|nkey|
+        nval = @config['nodes'][nkey]
         begin
           # If still down (under recheck frequency), mark it as such, update recheck counter, else we delete the down entry
-          if @down[k]
-            if (Time.now - @down[k]) < 60
-              addresses[k] = down_handler(k,"Service recheck pending...")
-            else
-              @down.delete(k)
-            end
+          if @down[nkey] && (Time.now - @down[nkey]) < 60
+            @data[:addresses][nkey] = down_handler(nkey,"Service recheck pending...")
+            next
+          else
+            @down.delete(nkey)
           end
           
-          # We need to check again, since we may have deleted the down
-          if !@down[k]
-            logger.debug("Checking service #{k}")
-            h = self.check(v,k)
-            if h.state == 'pending_update'
-              @pending << k
-            else
-              @pending.delete(k)
-            end
-            if @data[:addresses] && @data[:addresses][k] && h.state == 'pending_update'
-              addresses[k] = @data[:addresses][k]
-            else
-              h["target"] = v
-              addresses[k] = h
-            end
-          end
+          logger.debug("Checking service #{nkey}")
+          next if have_pending && !@pending.include?(nkey)
+
+          node = check(nval,nkey)
+          node.target = nval ? nval.split(':')[0] : nkey
+          node.state == 'pending_update' ? @pending << nkey : @pending.delete(nkey)
+
+          next if @data[:addresses][nkey] && node.state == 'pending_update'
+
+          @data[:addresses][nkey] = node
           
         rescue => e
-          logger.error("Service down #{k}", e)
-          @down[k] = Time.now
-          addresses[k] = down_handler(k,"Service down!",false,e)
+          logger.error("Service down #{nkey}", e)
+          @down[nkey] = Time.now
+          @data[:addresses][nkey] = down_handler(nkey,"Service down!",false,e)
         end
 
       }
-      @data[:addresses] = addresses
       @last_check = Time.now
     end
 
@@ -221,7 +290,7 @@ class Modules::Base
     data.down     = true
     data.message  = message
     data.time     = Time.now
-    data.addr     = data.name = addr
+    data.address  = data.name = addr
     data.state    = 'down'
 
     if error
@@ -236,26 +305,12 @@ class Modules::Base
     data
   end
 
-  # TODO: Add timeout!!!
-  def proxy_request(url,timeout=30)
-    return "{}" if @proxy_url.empty?
-    RestClient::Request.execute(:method => :get, :url => url, :proxy => p_url, :headers => {}, :timeout => timeout)
-  end
-
-  # TODO: Add timeout!!!
-  def tor_request(url,timeout=30)
-    return "" if @tor_host.empty?
-    require 'socksify/http'
-    uri = URI.parse(url)
-    Net::HTTP.SOCKSProxy(@tor_host, @tor_port).get(uri)
-  end
-
   # Quick and simple rest call with URL.
-  def simple_rest(url,timeout=30)
+  def simple_rest(url,timeout=60)
     s = if proxy
-          proxy_request(url,timeout)
+          simple_proxy_request(url,timeout)
         elsif tor_socks
-          OpenStruct.new({ body: tor_request(url,timeout)})
+          OpenStruct.new({ body: simple_tor_request(url,timeout)})
         else
           RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => timeout)          
         end
@@ -263,12 +318,27 @@ class Modules::Base
     file = url.split('?')[0].split('://')[1].gsub('/','_')
     @dump && dump_response(file,["URL::#{url}",res])
 
+    # Rescue on closed since we have better errors to catch...
     begin
       s.closed
     rescue
     end
     return res
   end
+
+  def simple_proxy_request(url,timeout=30)
+    return "{}" if @proxy_url.empty?
+    RestClient::Request.execute(:method => :get, :url => url, :proxy => p_url, :headers => {}, :timeout => timeout)
+  end
+
+  # TODO: Add timeout!!!
+  def simple_tor_request(url,timeout=30)
+    return "" if @tor_host.empty?
+    require 'socksify/http'
+    uri = URI.parse(url)
+    Net::HTTP.SOCKSProxy(@tor_host, @tor_port).get(uri)
+  end
+
 
   # Dump data to tmp file
   def dump_response(file,data)
@@ -285,105 +355,9 @@ class Modules::Base
       }
     }
   end
-
-  def module_structure
-    OpenStruct.new({
-      module: self.class.name,
-      name: name,
-      addresses: {},
-    })
-  end
-
-  def root_structure
-    OpenStruct.new({
-      name:     "",
-      address:  "",
-      time:     Time.now,
-      state:    "",
-    })
-  end
-
-  # Structure of GPU workers
-  def node_structure
-    OpenStruct.new({
-      name:     "",
-      address:  "",
-      miner:    "",
-      user:     "",
-      uptime:   0,
-      algo:     "",
-      coin:     "",
-      pool:     "",
-      difficulty:     0,
-      combined_speed: 0.0,
-      total_shares:   0,
-      rejected_shares: 0,
-      stale_shares:   0,
-      invalid_shares: 0,
-      power_total:    0,
-      revenue:        0.0,
-      target:   "",
-      time:     Time.now,
-      gpu:      {},
-      cpu:      cpu_structure,
-      system:   {},
-    })
-  end
-
-  def worker_structure
-    node_structure
-  end  
-  def structure
-    node_structure
-  end  
-
-
-  # Structure of GPU data
-  # * GPU power may not be available
-  # * id may not match "system" id.  PCI bus id is more reliable.
-  def gpu_structure
-    OpenStruct.new({
-      pci: "0",
-      id: 0,
-      gpu_speed: 0.0,
-      gpu_temp: 0,
-      gpu_fan: 0,
-      gpu_power: 0,
-      speed_unit: "",
-      total_shares: 0,
-      rejected_shares: 0,
-      stale_shares: 0,
-      invalid_shares: 0,
-    })
-  end
-
-  # Structure of GPU device data
-  # * GPU power may not be available
-  # * id may not match "system" id.  PCI bus id is more reliable.
-  def gpu_device_structure
-    OpenStruct.new({
-      pci:        "0",
-      id:         0,
-      card:       "",
-      gpu_temp:   0,
-      gpu_fan:    0,
-      gpu_power:  0,
-      core_clock: 0,
-      memory_clock: 0,
-    })
-  end
-
-  def cpu_structure
-    OpenStruct.new({
-      :name       =>"",
-      :id         =>0,
-      :cpu_temp   =>0,
-      :cpu_fan    =>0,
-      :cpu_power  =>0,
-      :threads_used =>0,
-    })
-  end
   
+  #-------------------------- Various format helpers ----------------------
+
   # Try to clean up CPU text ...
   #
   def cpu_clean(cpu)
@@ -414,194 +388,18 @@ class Modules::Base
     uptime_seconds(time.to_f * 60)
   end
   
-  # Output a console table
-  def table_out(headers,rows,title=nil)
-    max_col = 1
-    rows.each {|row|
-      max_col = row.count if row.is_a?(Array) && row.count > max_col
-    } 
-
-    div = "│" #colorize("│",$color_divider)
-    table = Terminal::Table.new do |t|
-      t.headings = headers
-      t.style = {
-        :border_left => false, :border_right => false,
-        :border_top => false, :border_bottom => false,
-        :border_y => div,
-        :padding_left => 0, :padding_right => 0,
-        :border_x =>"─" , :border_i => "┼",
-      }      
-      if standalone?
-        t.style.width = 60
-      end
-      t.title = title if title
-    end
-
-    rows.each {|r|
-      if r.count < max_col
-        (max_col - r.count).times {|i| r << ''}
-      end
-      table << r.map{|c|
-        colorize(c,$color_row)        
-      }      
-    }
-
-    # Go thru all columns to set alignment because setting it
-    # in new overrides individual columns
-    table.columns.count.times{|col|
-      ori = col == 0 ? :left : :right
-      table.align_column(col, ori)
-    }
-    
-    tout = table.render
-    tarr = tout.split("\n")
-    idx = 0
-    len = tarr[1] ? tarr[1].length + 1 : 0
-
-    if title
-      tarr.delete_at(idx + 1)
-      tarr[idx] = colorize( sprintf("%-#{len}s",tarr[idx]),$color_standalone_title)
-      idx = idx + 1
-    end
-    tarr.delete_at(idx + 1)
-    tarr[idx].gsub!(/[\||\│]/,' ')
-    tarr[idx] = no_colors(tarr[idx])
-    diff = len - tarr[idx].length
-    tarr[idx] = colorize("#{tarr[idx]}#{' '*diff}",$color_header)
-    tarr.map!{|t|
-      t.gsub("│",colorize("│",$color_divider))
-    }
-    tout = tarr.join("\n")
-  end
-
-  # Color and style the speed value
-  #
-  def speed_style(speed)
-    str = sprintf("%2s","#{speed}#{$speed_sym}")
-    #sprintf("%3s#{$speed_sym}",speed)
-    if (speed <= 0)
-      colorize(str,$color_speed_alert)
-    else
-      colorize(str,$color_speed_ok)      
-    end     
-  end
-
-  # Color and style the power value
-  #
-  def format_power(v)
-    "#{v.to_f.round}w"
-  end
-
-  # Color and style the fan value
-  #
-  def fan_style(fan)
-    fan_str = sprintf("%2s","#{fan}#{$fan_sym}")
-    #sprintf("%3s#{$fan_sym}",fan)
-    
-    if (fan > $fan_alert) || (fan <= 0)
-      colorize(fan_str,$color_fan_alert)
-    elsif fan > $fan_warn
-      colorize(fan_str,$color_fan_warn)          
-    else
-      colorize(fan_str,$color_fan_ok)      
-    end     
-  end
-
-  # Color and style the temp value
-  #
-  def temp_style(temp)
-    temp_str = sprintf("%2s","#{temp}#{$temp_sym}")
-    #sprintf("%3s#{$temp_sym}",temp)
-    if ( temp > $temp_alert ) || (temp <= 0)
-      temp = colorize(temp_str,$color_temp_alert)
-    elsif temp > $temp_warn
-      temp = colorize(temp_str,$color_temp_warn)
-    else
-      temp = colorize(temp_str,$color_temp_ok)
-    end
-  end
-
-  # Colorize for simple threshold ... kind of lame... mileage may vary...
-  #
-  # @params [Numeric] value What you need to compare and color 
-  # @params [String] comparator Comparators: "<","<=",">",">=","=="
-  # @params [Numeric] warn_value Value for yellow color
-  # @params [Numeric] alert_value Value for red color
-  #
-  def colorize_simple_threshold(value,comparator,warn_value,alert_value)
-    if eval("#{value} #{comparator} #{alert_value}")
-      colorize(value,$color_red)
-    elsif eval("#{value} #{comparator} #{warn_value}")
-      colorize(value,$color_warn)
-    else
-      colorize(value,$color_ok)
-    end      
-  end
-  
-  # Colors s2
-  def colorize_percent_of(s1,s2,pwarn,palert)
-    color_str = if s2 > (s1 * palert)
-      $color_alert     
-    elsif s2 > (s1 * pwarn)
-      $color_warn
-    else
-      $color_ok
-    end
-    colorize(s2,color_str)
-  end
-
-  # Colors s2
-  def colorize_above_below(s1,value,round=nil)
-    color_str = if s1 == value
-      ""
-    elsif s1 > value
-  	  $color_ok
-    else
-      $color_alert
-    end
-    s1 = sprintf("%.#{round}f",s1) if round
-    colorize(s1,color_str)
-  end
-  alias_method :colorize_around, :colorize_above_below
-  
-  def colorobj
-    @pastel ||= Pastel.new
-  end
-  alias_method :pastel, :colorobj
-
-  def colorizer(colors)
-    m = colorobj
-    arc = *colors
-    arc.each {|c|
-      m = m.send(c)
-    }
-    lambda{|v| m.detach.(v)}
-  end
-  
-  def colorize(val,colors)
-    m = colorobj
-    arc = *colors
-    arc.each {|c|
-      m = m.send(c)
-    }
-    m.detach.(val)
-  rescue
-    val
-  end
-  
-  def no_colors(s)
-    s.gsub /\e\[\d+m/, ""
-  end
-
+  # Convert rfc3339 time format into a Time object
   def parse_rfc3339(time)
     DateTime.rfc3339(time).to_time  
   end
   
+  # Nice format for Time instance output
   def nice_time(time)
     return '' if !time.is_a?(Time)
     time.localtime.strftime "%Y-%m-%d %H:%M:%S"
   end
 
+  # Make keys in hash sane snake_case
   def fix_keys(hsh,*extra)
     new_hash = {}
     hsh.each_pair{|k,v|
@@ -610,6 +408,7 @@ class Modules::Base
     new_hash
   end
 
+  # Make key (string) into a sane snake_case
   def fix_key(k,*extra)
     key = k.dup
     if !extra.empty?

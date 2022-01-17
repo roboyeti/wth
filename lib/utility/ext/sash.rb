@@ -5,6 +5,6 @@
 require 'symbolized'
 class Sash < SymbolizedHash
   def initialize(p={})
-	super
+    super
   end
 end

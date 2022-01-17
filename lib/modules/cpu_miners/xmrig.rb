@@ -9,20 +9,21 @@ class Modules::Xmrig < Modules::CpuMinerBase
 
   def initialize(p={})
     super
-    @title = config["title"] || 'XMRig RandX'    
+    @title = config["title"] || 'XMRig'    
+    @headers = [ 'Node', "Uptime", "Miner", 'Algo', 'Coin', 'ERev$',"Diff","Accpt","Rjct","Fail", "Avg H/s","Max H/s","Total KH","Pool","Th#","CPU" ]
   end
 
-  def check(ip,host)
-    res = simple_rest(["http://#{ip}:#{@port}",'1','summary'].join('/'))
-    format(res)
-  end
+  def check(addr,host)
+    h = cm_node_structure(host,addr)
 
-  def format(res)
-    h = worker_structure
-    h.address = res["id"]
-    h.name = res["worker_id"] || res["id"]
+    res = simple_rest(["http://#{h.ip}:#{h.port}",'1','summary'].join('/'))
+
+    h.name = res["worker_id"] || host
     h.uptime = res["uptime"]
     h.pool   = res["connection"]["pool"]
+    h.algo = res["algo"]
+    h.miner = "#{res["kind"]}_#{res["version"]}"
+
     h.difficulty = res["connection"]["diff"].to_i
     h.total_shares   = res["connection"]["accepted"].to_i
     h.rejected_shares= res["connection"]["rejected"].to_i
@@ -41,49 +42,36 @@ class Modules::Xmrig < Modules::CpuMinerBase
     else
       h.hashrate_10s
     end
+    h.estimated_revenue = calc_estimated_revenue(h)
 
-    h.cpu = cpu_structure
     h.cpu.name = cpu_clean(res["cpu"]["brand"])
     h.cpu.threads_used = res["hashrate"]["threads"].count
+    h.cpu.cores = res["cpu"]["cores"]
+    h.cpu.threads = res["cpu"]["threads"]
     h
   end
 
-  def console_out(data)
-    hash = data[:addresses]
-    rows = []
-    
-    headers = [
-      nice_title, "Uptime","Diff","Accpt","Rjct","Fail",
-      "Avg H/s","Max H/s","Total KH","Pool","Th#","CPU"
-    ]
-    uptime = colorize("down",$color_alert)
-
-    hash.keys.sort.map{|addr|
-      h = hash[addr]
-      if h.down == true
-        h.cpu = cpu_structure
-      else
-        uptime = uptime_seconds(h.uptime)
-      end
-      
+  def tableize(data)
+    tables = []
+    tables << super(data) do |item,rows,formats|
       rows << [
-        h.name.capitalize, uptime,
-        h.difficulty, h.total_shares,h.rejected_shares,h.failed_shared,
-        h.combined_speed, h.max_speed, h.hashes_total/1000.0,
-        h.pool, h.cpu.threads_used, h.cpu.name
+        item.name.capitalize, uptime_seconds(item.uptime), item.miner,
+        item.algo, item.coin, item.estimated_revenue,
+        item.difficulty, item.total_shares,item.rejected_shares,item.failed_shared,
+        item.combined_speed, item.max_speed, item.hashes_total/1000.0,
+        item.pool, "#{item.cpu.threads_used}/#{item.cpu.threads}", item.cpu.name
       ]
-    }
-    table_out(headers,rows)
+    end
+    tables
   end
 
-  def node_structure
-    struct = super
-    struct.hashes_total = 0
-    struct.max_speed = 0
-    struct.hashrate_10s = 0
-    struct.hashrate_60s = 0
-    struct.hashrate_15m = 0
-    struct.max_speed = 0
-    struct
+  def cm_node_structure(host,addr)
+    node = super(host,addr)
+    node.hashes_total = 0
+    node.max_speed = 0
+    node.hashrate_10s = 0
+    node.hashrate_60s = 0
+    node.hashrate_15m = 0
+    node
   end
 end

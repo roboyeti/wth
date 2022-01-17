@@ -7,9 +7,7 @@
 # https://api.unminable.com/v4/address/0xBC31664a2200643Bc0C7884E8c59531B1e0B2c1d?coin=etc
 # https://api.unminable.com/v4/account/88577ee8-2d8d-433b-ae44-2a4da69c155d/workers
 # https://api.unminable.com/v4/account/88577ee8-2d8d-433b-ae44-2a4da69c155d/stats
-require 'rest-client'
-require 'json'
-
+#
 class Modules::Unmineable < Modules::MinerPoolBase
   using IndifferentHash  
   
@@ -19,6 +17,7 @@ class Modules::Unmineable < Modules::MinerPoolBase
     super
     @title = p[:title] || 'Unmineable'
     @threads = {}
+    @headers = ['Address','Status','Coin','$ Avail','Balance','Network','Algo','Fee%','Auto Pay','Combined Speed','Calculated Speed', 'Workers Up/Dwn']
   end
 
   def check(target,type)
@@ -96,30 +95,19 @@ class Modules::Unmineable < Modules::MinerPoolBase
     h
   end
 
-  # TODO: rework to be generic table to be rendered in console or html
-  def console_out(data)
-    hash = data[:addresses]
-    rows = []
-    title = "Unmineable : Last checked #{data[:last_check_ago].ceil(2)} seconds ago"
-    headers = ['Address','Status','Coin','$ Avail','Balance','Network','Algo','Fee','Auto Pay','Combined Speed','Calculated Speed', 'Workers Up/Dwn']
-      
-    hash.keys.sort.map{|addr|
-      h = hash[addr]
-
-      if h["down"] == true
-        h.status = colorize("down",$color_alert)
-      end
-      
-      worker_str = colorize_workers(h)
-      calc_str = colorize_speed_compare(h.speed.round,h.calc_speed.round)
-
+  def tableize(data)
+    tables = []
+    tables << super(data) do |item,rows,formats|
+      worker_str = colorize_workers(item)
+      calc_str = colorize_speed_compare(item.speed.round,item.calc_speed.round)
+      mining_fee = colorize_simple_threshold(item.mining_fee.to_f,">",0.5,0.75)
       rows << [
-        colorize(h.private_address,$color_pool_id), h.status,
-        h.coin, coin_value_dollars(h.available_balance.to_f, h.coin), h.available_balance, h.network, h.algo, h.mining_fee, h.auto_pay,
-        h.speed.round,calc_str, worker_str
+        colorize(item.private_address,$color_pool_id), item.status,
+        item.coin, coin_value_dollars(item.available_balance.to_f, item.coin), item.available_balance,
+        item.network, item.algo, mining_fee, item.auto_pay,
+        item.speed.round,calc_str, worker_str
       ]
-    }
-    table_out(headers,rows,title)
+    end
+    tables
   end
-
 end

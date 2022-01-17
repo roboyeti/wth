@@ -23,7 +23,7 @@ gem 'lightly' # File cache
 
 # Deep state gems
 gem 'rest-client'
-gem 'concurrent-ruby', require: 'concurrent' # Used for thread safe vars
+gem 'concurrent-ruby', require: 'concurrent' # Used for threads
 gem 'symbolized'  # For the love of ... Ruby hash needs help
 gem 'zeitwerk'    # Code auto loader/reloader magic
 gem 'semantic_logger'
@@ -31,16 +31,13 @@ gem 'semantic_logger'
 # Misc
 gem 'lucky_case'  # Adds various "case" conversions (snake, camel, etc)
 gem 'sorted_set'  # Sort AoA?
+gem 'deep_dup'
 
 # Server gems
 gem 'daemons'
 
 # Web server (wthd)
 gem 'webrick'   # Current web server.  Should rpelace with thin or puma or unicorn
-#gem 'sinatra'   # DSL for web routes
-#gem 'puma'
-#gem 'opal' # Someday ...
-#gem 'rack'
 
 # Modules / Plugins
 gem 'coingecko_ruby'

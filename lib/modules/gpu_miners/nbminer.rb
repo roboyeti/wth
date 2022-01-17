@@ -1,21 +1,20 @@
 # Author: BeRogue01
 # License: See LICENSE file
-# Date: 12/10/2021
+# Date: 2021/01
 #
-# Love everybody,but never sell your sword.  ~ Paulo Coelho
-#
-class Modules::LolMiner < Modules::GpuMinerBase
+class Modules::NbMiner < Modules::GpuMinerBase
   using IndifferentHash  
 
   def initialize(p={})
     super
-    @title = p[:title] || "LolMiner"
-    @port = @config["port"] || 9095
+    @title = p[:title] || "NBMiner"
+    @port = @config["port"] || ""
   end
 
   def check(addr,name)
     ip,port = addr.split(':')
 		port = self.port if port.blank?
+
     res = simple_rest("http://#{ip}:#{port}")
     format(name,addr,res)
   end
@@ -58,5 +57,3 @@ class Modules::LolMiner < Modules::GpuMinerBase
     h.revenue = mine_revenue(h.coin,h.combined_speed).to_f
     h
   end
-
-end

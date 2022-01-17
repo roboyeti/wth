@@ -34,7 +34,7 @@ load './lib/modules/include_list.rb'
 class Core
   using IndifferentHash  
   include WthConfig
-  include ConsoleInit
+  include WthConsole
   include Sys
   include SemanticLogger::Loggable
   
@@ -50,8 +50,8 @@ class Core
     'coin_gecko' => 'CoinGecko',
   }.freeze
 
-  attr :verbose
-  attr_reader :config_file, :cfg, :module_instances, :plugins, :console_out, :os, :start_page
+  attr_accessor :verbose, :current_page
+  attr_reader :config_file, :cfg, :module_instances, :plugins, :console_out, :os
   
   # TODO: Document
   def initialize(p={})
@@ -69,7 +69,7 @@ class Core
         @page_titles[pn.to_i - 1] = pt
       }
     end
-    @start_page = @cfg["start_page"] || 1
+    @current_page = @cfg["start_page"] || 1
     @header_short = @cfg["header_short"] ? true : false
     @store = Concurrent::Hash.new()
     @log = {}
@@ -366,14 +366,13 @@ class Core
       init_wth_module(m,p) if check_wth_module?(m,p)  
     }
     true
-#    module_instances
   end
 
   def init_cfg_modules()
    init_wth_modules(config["modules"])
   end
 
-  # Run modules, unthreaded
+  # Run modules to populate data, unthreaded, no output
   #
   # @return [Array] The pages to render form module pulse
   #
@@ -382,16 +381,10 @@ class Core
 
 		page_out = 10.times.map{|| []}
 		module_instances.each_pair {|k,v|
-#      a =
       v.check_all
-#      c = a.is_a?(Array) ? a : a.split("\n")
-#      page = (v.page || 1) - 1
-#      page_out[page] ||= []
-#      c.each {|l| page_out[page] << l }
       v.events.each {|event| add_log('events',event) }
       v.clear_events
     }      
-#		page_out
     true
   end
   
@@ -540,13 +533,14 @@ class Core
     ff.close
   end
 
-  def page_title(idx)
-    @page_titles[idx] || "Page #{idx + 1}"
+  def page_title(page)
+    idx = page - 1
+    "#{@page_titles[idx]} (#{page})" || "Page #{page}"
   end
 
   def page_titles()
     10.times.map{|idx|
-      @page_titles[idx] || "Page #{idx + 1}"
+      page_title(idx + 1)
     }
   end
   

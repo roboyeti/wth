@@ -23,6 +23,7 @@ class Modules::GpuMinerBase < Modules::Base
 
     # Internal variables
     @devices = {}
+    @headers = ['Node','Uptime','ERev$','Speed','Power','Shares','Rjct','GPUs >']
 
     register_config_option("standalone",false,[],"Optional display mode to show data using more vertical space for single screen per/node use for a head display.")
     register_config_option("gpu_row",5,[],"Optional value to set number of GPUs displayed per row.  Default is 5.")
@@ -41,108 +42,89 @@ class Modules::GpuMinerBase < Modules::Base
   def mine_revenue(*p)
     self.respond_to?(:mine_revenue_hook) ? mine_revenue_hook(*p) : 0
   end
-  
-  # General console out creation.
-  # See 'templates/gpu_worker.rb' and 'templates/table.rb' for magic global style stuff
-  def console_out(data)
-    hosts = data['addresses']
-    rows = []
-    max_gpu = 0 # Track largest number of GPU per row
-    
-    headers = ['Uptime','Est.Rev','Speed','Power','Shares','Rjct','GPUs >']
-    
-    hosts.keys.sort.each{|addr|
-      h = hosts[addr]
-      h = OpenStruct.new(h) if !h.is_a?(OpenStruct)
 
-      if h["down"] == true
-        h.name = addr
-        h.uptime = colorize("down",$color_alert)
-      end
+  def tableize(data)
+    tables = []
+    @max_gpu = 0
+    gpu_cnt = 0
 
-      reject_str = colorize_percent_of(h[:total_shares],h[:rejected_shares],0.10,0.50)
+    table = super(data) do |item,rows,formats,headers|
+      standalone? ? tableize_standalone(item,rows,formats,headers) : tableize_normal(item,rows,formats,headers)
+    end
+    table.headers = [' '] if standalone?
+    @max_gpu.times {|i|
+      table.headers.concat [' Id','Spd','Tmp','Fan']
+    }
+    tables << table
+  end
+
+  def tableize_normal(item,rows,formats,headers)
+      reject_str = colorize_percent_of(item.total_shares,item.rejected_shares,0.10,0.50)
 
       row = [
-        h.uptime,
-        sprintf("$%0.2f",mine_revenue(coin,h.combined_speed).to_f), # h[:coin] ||  .... erg
-        h.combined_speed.round(0),
-        format_power(h.power_total),
-        h.total_shares,
+        item.name.capitalize, item.uptime,
+        sprintf("$%0.2f",mine_revenue(coin,item.combined_speed).to_f), # h[:coin] ||  .... erg
+        item.combined_speed.round(0),
+        format_power(item.power_total),
+        item.total_shares,
         reject_str,
-        h.gpu.keys.count
+        item.gpu.keys.count
       ]
-      if !standalone?
-        row.unshift(h.name.capitalize)
-      else
-        row.unshift('')
-      end
-      rows << row
-    }
 
-    if standalone?
-      headers.unshift("")
-      k = hosts.keys.sort.first
-      o = table_out(headers,rows,"#{hosts[k]["name"].upcase} - #{title} : #{config['extra']}")
-      gheaders = []
-      grows = []
-      gpu_grid(hosts,gheaders,grows)
-      o << "\n"
-      o << table_out(gheaders,grows)
-      o
-    else
-      headers.unshift("#{title}:#{config['extra']}")
-      gpu_grid(hosts,headers,rows)
-      table_out(headers,rows)    
-    end
-  end
-    
-  def gpu_grid(hash,headers,rows)
-    # GPU routine
-    row_headers = headers.count
-    row_cnt = 0
-
-    max_gpu = 0
-
-    hash.keys.sort.each{|addr|
-      h = hash[addr]    
-      row = []
-      gpu_col = 0
       gpu_cnt = 0
-      rows << [] if !row[row_cnt]
-      
-      h[:gpu].each_pair {|id,v|
-        gpu_cnt = gpu_cnt + 1 # if gpu_cnt < gpu_row
-        if gpu_col == gpu_row
-          rows[row_cnt].concat row
-          row_cnt = row_cnt + 1
-          row = []
-          rows.insert(row_cnt,row_headers.times.map{ ' ' })
-          gpu_col = 0
-          gpu_cnt = 1
-          max_gpu = gpu_row
+      item.gpu.each_pair {|id,v|
+        gpu_cnt += 1
+        # We have reached default or user defined max of gpu per row
+        # Finish row and start a new one with padding
+        if gpu_cnt > gpu_row
+          gpu_cnt = 0
+          rows << row
+          row = headers.count.times.map{ ' ' }
         end
         $id_format = "%-s"
         row.concat([
-          sprintf("#{$id_format}",id),
+          sprintf(" #{$id_format}",id),
           sprintf("#{$id_format}",speed_style(v[:gpu_speed].to_f.round(1))),
           sprintf("#{$id_format}",temp_style(v[:gpu_temp].to_i)),
           sprintf("#{$id_format}",fan_style(v[:gpu_fan].to_i))
         ])
-        gpu_col = gpu_col + 1
-        
-      } # End every GPU
-      rows[row_cnt].concat row
-      row_cnt = row_cnt + 1
-    
-      if gpu_cnt > max_gpu
-        max_gpu = gpu_cnt
-      end
-    }
+        if gpu_cnt > @max_gpu
+          @max_gpu = gpu_cnt
+        end
+      }
+      rows << row
+  end
 
-    max_gpu.times {|i|
-      headers.concat ['Id','Spd','Tmp','Fan']
-    }
-    return headers,rows
+  def tableize_standalone(item,rows,formats,headers)
+      reject_str = colorize_percent_of(item.total_shares,item.rejected_shares,0.10,0.50)
+
+      i_row = [
+        item.uptime,
+        sprintf("$%0.2f",mine_revenue(coin,item.combined_speed).to_f), # h[:coin] ||  .... erg
+        item.combined_speed.round(0),
+        format_power(item.power_total),
+        item.total_shares,
+        reject_str,
+      ]
+      item_hdrs = headers.dup
+      item_hdrs.delete_at(0)
+      item_hdrs.delete_at(-1)
+      rows << [' ']
+      rows << [ table_out(item_hdrs,[i_row,[]],"#{item.name.capitalize}") ]
+
+      gpu_hdrs = [' BusId','  Speed','  Temp','  Fan']
+      gpu_rows = []
+      item.gpu.each_pair {|id,v|
+        $id_format = "%-s"
+        gpu_rows << [
+          sprintf(" #{$id_format}",id),
+          sprintf("#{$id_format}",speed_style(v[:gpu_speed].to_f.round(1))),
+          sprintf("#{$id_format}",temp_style(v[:gpu_temp].to_i)),
+          sprintf("#{$id_format}",fan_style(v[:gpu_fan].to_i))
+        ]
+      }
+      rows << [' ']
+      rows << [ table_out(gpu_hdrs,gpu_rows,"GPU Devices").split("\n").map{|t| "\t\t#{t}\n"} ]
   end
 
   # Colors s2

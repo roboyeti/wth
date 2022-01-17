@@ -12,10 +12,8 @@
 # NOT NEEDED?  Get-PNPDevice -InstanceID '#{g1}' | ConvertTo-Json
 #
 # TODO - add OpenHardwareMonitor link and test
-# TODO - performance issue ... probably need to extract the requests into a gather job thread
 #
 require 'winrm'
-require 'lightly'
 
 class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
   using IndifferentHash  
@@ -61,7 +59,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     super
     @user = @config[:user] || 'administrator'
     @password = @config[:password] || ''
-    @source = "LibraHardwareMonitor"
+    @source = @title = "LibraHardwareMonitor"
     if !@password
       puts "Password for Ohm User #{@user}:"
       @password = ARGF.gets
@@ -78,6 +76,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       default: Lightly.new(dir: cache_dir, life: @lifespan, hash: false),
       sensors: Lightly.new(dir: cache_dir, life: 12, hash: false),
     })
+    @headers = ['Name','Device','Type','Bus/Id','Bios/Cores','Driver Version','Mem(GB)','Pwr(W)','Temp','HotSpot','Fan(rpm)','Fan%','Clk','MemClk','BusLoad/Speed','CoreLoad','MemLoad']
   end
 
   def flush
@@ -149,9 +148,8 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     hardware.each{|h|
       ohm_id = h["ohm_identifier"]
       next if ohm_id !~ /\/*cpu/
-      store_it("#{host}_cpu",h["ohm_name"]) if @store_cpu
+      store_it("#{host}_cpu_name",h["ohm_name"])# if @store_cpu
       dnil,dman,did = ohm_id.split('/')
-#      dman = "/#{dman}"
       cpus[did] = {}
       cpus[did].merge!(h)
       cpus[did]["device_id"] = did
@@ -271,76 +269,14 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     gpus
   end
 
-  def node_structure
-    OpenStruct.new({
-      name:     "",
-      address:  "",
-      target:   "",
-      time:     Time.now,
-      gpu:      {},
-      cpu:      {},
-      mem:      {}
-    })
-  end
+  def format(name,addr,res)
+    host,port,src,user,pass = addr.split(':')
 
-  def gpu_structure
-    OpenStruct.new({
-      name: "",
-      manufacturer: "",
-      id: "",
-      pci: "",
-      type: "gpu",
-      location: "",
-      bios: "",
-      driver_date: "",
-      driver: "",
-      memory_free: 0,
-      memory_used: 0,
-      memory_total: 0,
-      memory_size: "GB",
-      temperature: 0,
-      temperature_hotspot: 0,
-      power: 0,
-      fan_rpm: 0,
-      fan_percent: 0,
-      clock: 0,
-      memory_clock: 0,
-      bus_load: 0,
-      core_load: 0,
-      memory_load: 0,
-      pci_rx: 0,
-      pci_tx: 0,
-    })
-  end
-
-  def cpu_structure
-    OpenStruct.new({
-      name: "",
-      id: 0,
-      type: "cpu",
-      cores: 0,
-      memory_free: 0,
-      memory_used: 0,
-      memory_total: 0,
-      memory_size: "MB",
-      temperature: 0,
-      temperature_max: 0,
-      power: 0,
-      fan_rpm: 0,
-      fan_percent: 0,
-      clock: 0,
-      bus_speed: 0,
-      core_load: 0,
-      memory_load: 0
-    })
-  end
-
-  def format(name,ip,res)
     o = node_structure
     o.name = name
-    o.address = ip
+    o.address = host
     res["gpus"].each_pair{|gk,gv|
-      g = gpu_structure
+      g = GpuDevice.new
       g.name = gv["name"]
       g.manufacturer = gv["device_manufacturer"]
       g.id = gv["device_id"]
@@ -368,7 +304,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     }
 
     res["cpus"].each_pair{|ck,cv|
-      c = cpu_structure
+      c = CpuDevice.new
       c.name = cv["ohm_name"]
       c.manufacturer = cv["device_manufacturer"]
       c.id = cv["device_id"]
@@ -394,48 +330,42 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
   end
 
   def warn_structure(h)
-    h.gpu[0] = gpu_structure
+    h.gpu[0] = GpuDevice.new
     h.gpu[0].name = colorize("pending...",$color_warn)
     h.state = 'pending_update'
     h
   end
 
   def down_structure(h)
-    h.gpu[0] = gpu_structure
+    h.gpu[0] = GpuDevice.new
     h.gpu[0].name = colorize("down",$color_alert)
     h
   end
 
-  def console_out(data)
-    hash = data[:addresses]
-    rows = []
-    title = "LibreHardwareMonitor" #Coin Portfolio: https://www.coingecko.com : Last checked #{data[:last_check_ago].ceil(2)} seconds ago"
-    headers = ['Name','Device','Type','Bus/Id','Bios/Cores','Driver Version','Mem(GB)','Pwr(W)','Temp','HotSpot','Fan(rpm)','Fan%','Clk','MemClk','BusLoad/Speed','CoreLoad','MemLoad']
-
-    hash.keys.sort.each_with_index{|addr,i|
-      h = hash[addr]  
-      h = down_structure(h) if h.down == true
-
-      h["gpu"].keys.sort.each_with_index{|bus,i|
-        g = h["gpu"][bus]
+  def tableize(data)
+    tables = []
+    tables << super(data) do |item,rows,formats|
+      item["gpu"].keys.sort.each_with_index{|bus,i|
+        g = item["gpu"][bus]
         rows << [
-          h.name.capitalize, colorize(g.name,:bright_cyan), colorize(g.type.upcase,:bright_cyan), g.pci, g.bios, g.driver, g.memory_total.round, g.power,
+          item.name.capitalize, colorize(g.name,:bright_cyan), colorize(g.type.upcase,:bright_cyan), g.pci, g.bios, g.driver, g.memory_total.round, g.power,
           g.temperature, g.temperature_hotspot, g.fan_rpm, g.fan_percent,
           g.clock, g.memory_clock, g.bus_load, g.core_load, g.memory_load
         ]
       }
-      h["cpu"].keys.sort.each_with_index{|bus,i|
-        g = h["cpu"][bus]
+      item["cpu"].keys.sort.each_with_index{|bus,i|
+        g = item["cpu"][bus]
         rows << [
-          h.name.capitalize, colorize(g.name,:bright_magenta), colorize(g.type.upcase,:bright_magenta), g.id, "#{g.cores} cores", "", g.memory_total.round, g.power,
+          item.name.capitalize, colorize(g.name,:bright_magenta), colorize(g.type.upcase,:bright_magenta), g.id, "#{g.cores} cores", "", g.memory_total.round, g.power,
           g.temperature, g.temperature_max, g.fan_rpm, g.fan_percent,
           g.clock, "", g.bus_speed, g.core_load, g.memory_load
         ]
       }
+    end
+  end
 
-    }
-
-    table_out(headers,rows,title)
+  def node_structure
+    HostStructure.new
   end
 
 end

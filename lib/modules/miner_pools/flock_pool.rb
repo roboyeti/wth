@@ -7,9 +7,7 @@
 # https://api.unminable.com/v4/address/0xBC31664a2200643Bc0C7884E8c59531B1e0B2c1d?coin=etc
 # https://api.unminable.com/v4/account/88577ee8-2d8d-433b-ae44-2a4da69c155d/workers
 # https://api.unminable.com/v4/account/88577ee8-2d8d-433b-ae44-2a4da69c155d/stats
-require 'rest-client'
-require 'json'
-
+#
 class Modules::FlockPool < Modules::MinerPoolBase
   using IndifferentHash  
   
@@ -17,8 +15,10 @@ class Modules::FlockPool < Modules::MinerPoolBase
 
   def initialize(p={})
     super
-    @title = p[:title] || 'Flock Pool'
+    @title = p[:title] || 'Flock (https://flockpool.com)'
     @coin = 'RTM'
+    @headers = ['Address','Status','Coin','Avail $','Avail Amt','Unpaid','Pending','Auto Pay#','Combined Speed','Avg Speed', 'Accepted','Rejected','Stale', 'Workers Up/Dwn']
+
   end
 
   def check(empty,addr)
@@ -61,33 +61,24 @@ class Modules::FlockPool < Modules::MinerPoolBase
     h
   end
 
-  def console_out(data)
-    hash = data[:addresses]
-    rows = []
-    title = "#{nice_title} : https://flockpool.com : Last checked #{data[:last_check_ago].ceil(2)} seconds ago"
-    headers = ['Address','Status','Coin','Avail $','Avail Amt','Unpaid','Pending','Auto Pay#','Combined Speed','Avg Speed', 'Accepted','Rejected','Stale', 'Workers Up/Dwn']
-
-    hash.keys.sort.map{|addr|
-      h = hash[addr]
-
-      if h.down == true
-        h.status = colorize("down",$color_alert)
-      end
-
-      worker_str = colorize_workers(h)
-      speed_str = colorize_speed_compare(h.avg_speed.round(2),h.speed.round(2))
-      stale_str = colorize_percent_of(h.accepted,h.stale,0.10,0.50)
-      reject_str = colorize_percent_of(h.accepted,h.rejected,0.10,0.50)
+  def tableize(data)
+    tables = []
+    tables << super(data) do |item,rows,formats|
+      worker_str = colorize_workers(item)
+      speed_str = colorize_speed_compare(item.avg_speed.round(2),item.speed.round(2))
+      stale_str = colorize_percent_of(item.accepted,item.stale,0.10,0.50)
+      reject_str = colorize_percent_of(item.accepted,item.rejected,0.10,0.50)
       
-      private_address = " #{h.name[0..2]} ... #{h.name[-3..-1]} "
+      private_address = " #{item.name[0..2]} ... #{item.name[-3..-1]} "
       rows << [
-        colorize(h.private_address,$color_pool_id), h.status,
-        h.coin, coin_value_dollars(h.available_balance,@coin), h.available_balance.round(2), h.unpaid_balance.round(2), h.pending_balance.round(2),
-        h.auto_pay, speed_str, h.avg_speed.round(2), 
-        h.accepted, reject_str, stale_str, worker_str
+        colorize(item.private_address,$color_pool_id), item.status,
+        item.coin, coin_value_dollars(item.available_balance,@coin), item.available_balance.round(2),
+        item.unpaid_balance.round(2), item.pending_balance.round(2),
+        item.auto_pay, speed_str, item.avg_speed.round(2), 
+        item.accepted, reject_str, stale_str, worker_str
       ]
-    }
-    table_out(headers,rows,title)
+    end
+    tables
   end
 
 end

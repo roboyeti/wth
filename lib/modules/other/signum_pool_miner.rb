@@ -28,6 +28,11 @@ class Modules::SignumPoolMiner < Modules::Base
     @signum_api_node = @config["api_node"] || SIGNUM_API_NODE
     @title = @config["title"] || 'Signum Pool Miner'
     @coin = "signa"
+    @headers = [
+      "Account","Avail Bal",'Avail $',"Committed",'Commit $',"Blks","Pool%","Position",
+      "Cnf","Pend Pay","Best","PoC+","PhCap","EfCap","ShCap"
+    ]
+
   end
   
   def check(url,addr)
@@ -47,7 +52,7 @@ class Modules::SignumPoolMiner < Modules::Base
       pos = pos + 1
       a["address"] == res["address"]
     } 
-    h = structure
+    h = node_structure
     h.name              = res["name"] || res["addressRS"]        
     h.address           = res["address"]
     h.address_rs        = res["addressRS"]      
@@ -73,7 +78,7 @@ class Modules::SignumPoolMiner < Modules::Base
     h
   end
 
-  def structure
+  def node_structure
     OpenStruct.new({
       "name"              => "",             
       "address"           => "",
@@ -99,57 +104,40 @@ class Modules::SignumPoolMiner < Modules::Base
       "pool_miner_count"  => 0
     })   
   end
-  
-  def console_out(data)
-    hash = data[:addresses]
-    out = []
 
-    headers = [
-      "Account","Avail Bal",'Avail $',"Committed",'Commit $',"Blks","Pool%","Position",
-      "Cnf","Pend Pay","Best","PoC+","PhCap","EfCap","ShCap"
-    ]
-
-    title = sprintf "#{nice_title} %30s","Last Checked: #{last_check_ago.ceil(2)} seconds ago"
-
-    rows = []
-    hash.keys.sort.map{|addr|
-      h = hash[addr]
-
-      if h["down"] == true
-        h.name = h.address = addr
-        h.uptime  = colorize("down",$color_alert)
-      end
-
-      nconf = h.confirmations.to_i || 0
+  def tableize(data)
+    tables = []
+    tables << super(data) do |item,rows,formats|
+      addr = item.address
+      nconf = item.confirmations.to_i || 0
       nconf_str = colorize_simple_threshold(nconf,"<",115,110)
       
-      phycap = (h.physical_capacity).to_f.ceil(2)
-      phycap_str = @config["capacity"] && @config["capacity"][addr] && (phycap < @config["capacity"][addr]) ? pastel.yellow.bold(phycap) : pastel.green.bold(phycap)
+      phycap = (item.physical_capacity).to_f.ceil(2)
+      phycap_str = config["capacity"] && config["capacity"][addr] && (phycap < config["capacity"][addr]) ? pastel.yellow.bold(phycap) : pastel.green.bold(phycap)
 
-      effcap = (h.effective_capacity).to_f.ceil(2)
+      effcap = (item.effective_capacity).to_f.ceil(2)
       effcap_str = phycap > effcap ? pastel.yellow.bold(effcap) : pastel.green.bold(effcap)
       
-      boost = h.boost_pool.to_f.round(3)
+      boost = item.boost_pool.to_f.round(3)
       boost_str = boost <= 1 ? pastel.yellow.bold(boost) : pastel.green.bold(boost)
       
-      deadline = if h.current_best_deadline.to_f > 0.01
-        (h.current_best_deadline.to_f / 60).round(2)
+      deadline = if item.current_best_deadline.to_f > 0.01
+        (item.current_best_deadline.to_f / 60).round(2)
       else
         'wait'
       end
       
-      position = "#{h.pool_position} / #{h.pool_miner_count}"
+      position = "#{item.pool_position} / #{item.pool_miner_count}"
       rows << [
-        h.name,
-        h.available_balance.ceil(4), coin_value_dollars(h.available_balance,@coin),
-        h.total_commitment.ceil(4), coin_value_dollars(h.total_commitment,@coin),
-        h.blocks, h.pool_share.ceil(4),position,nconf_str,
-        h.pending_balance, deadline,
-        boost_str, phycap_str, effcap_str, h.shared_capacity.to_f.ceil(2)
+        item.name,
+        item.available_balance.ceil(4), coin_value_dollars(item.available_balance,@coin),
+        item.total_commitment.ceil(4), coin_value_dollars(item.total_commitment,@coin),
+        item.blocks, item.pool_share.ceil(4),position,nconf_str,
+        item.pending_balance, deadline,
+        boost_str, phycap_str, effcap_str, item.shared_capacity.to_f.ceil(2)
       ]
-      
-    }
-    table_out(headers,rows,title)
+    end
+    tables
   end
-   
+     
 end

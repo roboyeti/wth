@@ -6,12 +6,12 @@
   # @return [String] The directory name
   #
   def self.dyno_dir(d)
-	return nil unless d
-	if !Dir.exist?(d)
-	  warn "Creating missing directory #{d}"
-	  Pathname.new(d).mkpath
-	end
-	d
+    return nil unless d
+    if !Dir.exist?(d)
+      warn "Creating missing directory #{d}"
+      Pathname.new(d).mkpath
+    end
+    d
   end
 
 #  def self.load_relative(file,safe=nil)
@@ -41,4 +41,4 @@
 #	puts "Reloaded lib files.  Might have worked... good luck!"
 #	return true
 #  end
-end
+#end

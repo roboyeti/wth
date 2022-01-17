@@ -14,8 +14,8 @@
 # https://whattomine.com/coins.json?eth=true&factor[eth_hr]=155.0&factor[cost]=0.0&sort=Profitability24&volume=0&revenue=24h&dataset=Main
 #
 # The request we use, which allows us to do our own math, so we can cache the request and make it still useful
-# URL: https://whattomine.com/coins/151.json?hr=100.0&p=0.0&fee=0.0&cost=0.0&hcost=0.0&span_br=24&span_d=24
-# Note: We request 100 speed units / divide by 100 and multiply by speed 
+# URL: https://whattomine.com/coins/151.json?hr=10000.0&p=0.0&fee=0.0&cost=0.0&hcost=0.0&span_br=24&span_d=24
+# Note: We request 10000 speed units / divide by 10000 and multiply by speed 
 #
 # TODO: enable power cost
 #
@@ -30,14 +30,19 @@ class WhatToMine < PluginBase
 	URL = "https://whattomine.com"
 	CMD = {
 		coins: 	"calculators.json",
-		calc: 	"coins/@coin_id.json?hr=100&p=@power&fee=0.0&cost=@cost&hcost=0.0&span_br=24&span_d=24",
-		'NICEHASH_ETH': "coins.json?eth=true&factor[eth_hr]=100.0&factor[cost]=0.0&sort=Profitability24&volume=0&revenue=24h&dataset=Main"
+		calc: 	"coins/@coin_id.json?hr=10000&p=@power&fee=0.0&cost=@cost&hcost=0.0&span_br=24&span_d=24",
+		'NICEHASH_ETH': "coins.json?eth=true&factor[eth_hr]=10000.0&factor[cost]=0.0&sort=Profitability24&volume=0&revenue=24h&dataset=Main"
 	}
 
   FIXUPS = {
     'NICEHASH_ETH': ['ETH','nicehash_eth_fix'],
   }
 
+  # Divisor for revenue call...grrr
+  COIN_SPEED_DIV = {
+    'RTM' => 1000
+  }
+  
 	def initialize(p={})
 		super
 		@sema_calc = Concurrent::Semaphore.new(1)
@@ -58,13 +63,17 @@ class WhatToMine < PluginBase
 		@cache.flush
 	end
 
+  def coin_divisor(coin)
+    COIN_SPEED_DIV[coin.upcase] || 1
+  end
+
 	def revenue(coin,speed)
 		profit(coin,speed,0,0)
 	end
 
 	def revenue_dollars(coin,speed)
 		h = revenue(coin,speed)
-		h.dollar_revenue.round(2)
+		h.dollar_revenue.round(4)
 	end
 
 	def profit(coin,speed,power=0,cost=0.0)
@@ -73,7 +82,7 @@ class WhatToMine < PluginBase
 
 		coin_id = coin_id(chk_coin)
 		return reward_structure if !coin_id
-
+    speed = speed / coin_divisor(coin)
 		@sema_calc.acquire
 		resp = @cache.get "coin_calc_#{coin_id}" do
 			req = CMD[:calc].dup
@@ -85,9 +94,9 @@ class WhatToMine < PluginBase
 		end
 		@sema_calc.release
 		ret = reward_structure
-		ret.coin_rewards = speed * (resp["estimated_rewards"].to_f / 100)
-		ret.btc_revenue = speed * (resp["btc_revenue"].to_f / 100)
-		ret.dollar_revenue = speed * ((resp["revenue"].gsub(/\$|\,/,'')).to_f / 100).round(4)
+		ret.coin_rewards = speed * (resp["estimated_rewards"].to_f / 10000)
+		ret.btc_revenue = speed * (resp["btc_revenue"].to_f / 10000)
+		ret.dollar_revenue = (speed * (resp["revenue"].gsub(/\$|\,/,'')).to_f / 10000).round(4)
 
     if FIXUPS[coin]
       self.send(FIXUPS[coin][1],ret)
@@ -98,7 +107,7 @@ class WhatToMine < PluginBase
 
 	def profit_dollars(coin,speed,power=0,cost=0.0)
 		h = profit(coin,speed,power,cost)
-		h.dollar_revenue.round(2)
+		h.dollar_revenue.round(4)
 	end
 
 	def reward_structure

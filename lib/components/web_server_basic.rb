@@ -66,7 +66,7 @@ end
 
 class WebServerBasic
   using IndifferentHash  
-  include ConsoleInit
+  include WthConsole
   
   attr_reader :config, :io_read, :io_write, :web_thread , :port, :host, :ssl, :api, :version, :cert_file
   
@@ -163,12 +163,7 @@ class WebServerBasic
       }
       pages.each_with_index {|e,i|
         idx = i + 1
-        web_hdr_out = console_header(titles[i])
         write_html_file("page_#{idx}",titles[i],e)
-        
-#        ff = File.open("./web/generated/page_#{idx}.html", 'w')
-#        ff.write(Terminal.render((web_hdr_out + e).join("\n")))
-#        ff.close
       }
   end
 end

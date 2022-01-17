@@ -5,6 +5,7 @@
 # Fix issue when merging open struct with hash...??? Why is this
 # missing in core ruby modules?
 #
+#module FixStruct
 class OpenStruct   
   def to_h
     self.marshal_dump_recursive
@@ -20,10 +21,12 @@ class OpenStruct
 
   def marshal_dump_recursive
     self.each_pair.with_object({}) do |(key, value), hash|
-      hash[key] = if value.is_a?(OpenStruct)
+      hash[key] = if value.is_a?(OpenStruct) || value.is_a?(Struct)
         value.marshal_dump_recursive
+      elsif value.is_a?(Hash)
+        OpenStruct.new(value).marshal_dump_recursive
       elsif value.is_a?(Array)
-        if value[0].is_a?(OpenStruct)
+        if value[0].is_a?(OpenStruct) || value[0].is_a?(Struct)
           value.each.map{|v| v.to_h }
         else
           value
@@ -43,6 +46,7 @@ class OpenStruct
       [
         key,
         case value
+          when Struct then value.deep_to_h
           when OpenStruct then value.deep_to_h
           when Hash then OpenStruct.deep_to_h(value) 
           when Array then value.map {|el| el.class == OpenStruct ? el.deep_to_h : el}
@@ -61,3 +65,5 @@ class OpenStruct
   end
 
 end
+#Struct.extend FixStruct
+#OpenStruct.extend FixStruct

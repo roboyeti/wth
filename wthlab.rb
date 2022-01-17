@@ -7,11 +7,13 @@
 #
 require 'irbtools'
 load './lib/common.rb'
-
+include Kernel
 clear
 
 $app = app = Core.new(
     :config_file => "wth_config.yml"                 
 )
+$app.init_cfg_modules
+
 puts "Use $app for access to WTH core app."
 binding.irb

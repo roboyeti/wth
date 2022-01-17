@@ -13,6 +13,9 @@
 # and a no-op rescue to let the system keep working.  This will have the effect of making the node appear to be down
 # until the next check (which is delayed for downed nodes).
 #
+# Note:  If you are running a hardware monitor, like LibreHardwareMonitor on the nodes running this miner, the cpu
+# field should get filled in (via store_get() ), but it may take a round or two
+#
 require 'socket'
 
 class Modules::Cpuminer < Modules::CpuMinerBase
@@ -20,16 +23,17 @@ class Modules::Cpuminer < Modules::CpuMinerBase
 
   URL = "https://github.com/WyvernTKC/cpuminer-gr-avx2/releases"
 
-  CMDS = {
-    'summary': '/summary',
-    'threads': '/threads'
-  }
-  
   def initialize(p={})
     super
     @title = config[:title] || 'Cpuminer'    
+    @headers = [ 'Node', "Uptime","Miner","Algo","Coin","ERev$","Diff","Accpt","Rjct","Sol","Avg H/s","Accept/Min","Pool","Th#","CPU" ]
   end
 
+  # Sends the totally annoying, 1990 way of communication...?!?!?!
+  # This socket is touchy and rude.  Do our best to read from it.
+  # Well, maybe not our best, but certainly more than this awful
+  # API deserves.
+  #
 	def send_command(host,port,cmd)
 		@socket = Socket.tcp(host, port, connect_timeout: 5)
 		@socket.puts %Q[GET #{cmd} HTTP/1.1
@@ -46,83 +50,63 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
     rescue => e
     end
 		line.chomp!
+
 		return line
   end
 
   def check(addr,host)
-		(ip,port) = addr.split(':')
-		port = port ? port : @port 
-    @responses["#{host}:#{port}"] = {}
+    h = cm_node_structure(host,addr)
 
-    CMDS.each_pair{|k,v|
-  		@responses["#{host}:#{port}"]["#{k}"] = send_command(ip,port,v)
-    }
-		format(host,@responses["#{host}:#{port}"])
-  end
+    res = send_command(h.ip,h.port,'/summary')
+    res2 = send_command(h.ip,h.port,'/threads')
+    @dump && dump_response("#{h.ip}_#{h.port}",[res,res2])
 
-  def format(host,responses)
-    res = responses["summary"]
-    res2 = responses["threads"]
-
-		s = res.split(/\;/)
 		summary = {}
-			s.each{|r|
+    res.split(/\;/).each{|r|
 			k,v = r.split(/\=/)
 			summary[k]=v
 		}
 	
 		threads = []
-		t = res2.split(/\|/)
-		t.each{|r|
+		res2.split(/\|/).each{|r|
 			threads << r.split(/\=/)[1]
 		}
 	
-    h = worker_structure
-    h.address = host
-    h.name = host
     h.combined_speed = h["hashrate"] = summary["HS"]
     h.algo = summary['ALGO']    
     h.pool   = summary["URL"]
+    h.miner = "#{summary["NAME"]}_#{summary["VERSION"]}"
     h.difficulty = summary["DIFF"].to_f.round(4)
-    h.rate = summary["ACCMN"].to_f.round(4)
+    h.accept_rate = summary["ACCMN"].to_f.round(4)
     h.total_shares   = summary["ACC"].to_i
     h.rejected_shares= summary["REJ"].to_i
-    h.failed_shared  = summary["SOL"]
-      
+    h.failed_shared  = summary["SOL"]      
     h.uptime = summary["UPTIME"].to_i
-    h.cpu = cpu_structure
-#    h.cpu.name = cpu_clean(res["cpu"]["brand"])
+    h.cpu.name = store_get("#{ip}_cpu_name") || ''
     h.cpu.threads_used = summary["CPUS"].to_i
+    h.estimated_revenue = calc_estimated_revenue(h)
     h
   end
 
-  def console_out(data)
-    hash = data[:addresses]
-    rows = []
-    
-    headers = [
-      nice_title, "Uptime","Algo","Diff","Accpt","Rjct","Sol?",
-      "Avg H/s","Accept/Min","Pool","Th#","CPU"
-    ]
-    hash.keys.sort.map{|addr|
-      h = hash[addr]
-      uptime = colorize("down",$color_alert)
-
-      if h.down == true
-        h.cpu = cpu_structure
-      else
-        uptime = uptime_seconds(h.uptime) if h.uptime != "down"
-      end
-      
+  def tableize(data)
+    tables = []
+    tables << super(data) do |item,rows,formats|
       rows << [
-        h.name.capitalize, uptime, h.algo,
-        h.difficulty, h.total_shares,h.rejected_shares,h.failed_shared,
-        h.combined_speed, h.rate,
-        h.pool, h.cpu.threads_used, ''
+        item.name.capitalize, uptime_seconds(item.uptime), item.miner,
+        item.algo, item.coin, item.estimated_revenue,
+        item.difficulty, item.total_shares,item.rejected_shares,item.failed_shared,
+        item.combined_speed, item.accept_rate,
+        item.pool, item.cpu.threads_used, item.cpu.name
       ]
-        #h["hashrate_max"],h["hashes_total"]/1000.0,
-        #h.cpu.name
-    }
-    table_out(headers,rows)
+    end
+    tables
+  end
+
+  def cm_node_structure(host,addr)
+    struct = super(host,addr)
+    struct.hashes_total = 0
+    struct.max_speed = 0
+    struct.accept_rate = 0
+    struct
   end
 end

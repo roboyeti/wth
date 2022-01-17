@@ -40,11 +40,9 @@ app.start
 puts "Loading data into modules..."
 
 numcols = TTY::Screen.cols
-# TODO : Fix $page global, move page state to app
-$page = last_page = app.start_page
 last_run = Time.now - 100
 threaded = true # Turn into config option
-page_out = 10.times.map{|i| ['Loading data.  Could take some time ...'] }
+pages_out = 10.times.map{|i| ['Loading data.  Could take some time ...'] }
 
 # Endless good times.
 # - add web logs to web channel
@@ -55,7 +53,7 @@ page_out = 10.times.map{|i| ['Loading data.  Could take some time ...'] }
 thread = nil
 loop do
 
-  last_page = $page
+#  last_page = $page
 
   if !thread && ( (Time.now - last_run > 8) || app.down_reset? )
     thread = Thread.new {
@@ -64,8 +62,8 @@ loop do
         trap(signal){ exit; }
       end
       app.down_reset_clear
-      Thread.current["page_out"] = threaded ? app.thread_wth_modules : app.run_wth_modules
-      app.webserver_pulse(page_out)
+      Thread.current["pages_out"] = threaded ? app.thread_wth_modules : app.run_wth_modules
+      app.webserver_pulse(pages_out)
       app.pulse
       true
     }
@@ -74,23 +72,12 @@ loop do
   end
 
   if thread && !thread.status
-      page_out = thread["page_out"]
-      thread.exit
-      thread = nil
+    pages_out = thread["pages_out"]
+    thread.exit
+    thread = nil
   end
   
-  out = page_out[$page - 1] || ['Nothing to show']
-
-  if app.console_out
-    app.reposition
-    app.cursor_hide
-    app.console_header(app.page_title($page - 1)).each {|o| app.clear_line; puts o; }
-    out.each {|o|
-      app.clear_line
-      puts "#{o}"
-    }
-    app.clear_screen_down
-  end
+  app.output_page(pages_out[app.current_page - 1] || ['Nothing to show'])
   
   # Sleep with keyboard responsiveness
   24.times {

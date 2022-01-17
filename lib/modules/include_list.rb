@@ -31,6 +31,7 @@
     ['SignumAssetView','other','signum_asset_view'],
 # Hardware
     ['OhmGpuWin32','hardware','ohm_gpu_w32','lhm_gpu_win32'],
+    ['SmiRest','hardware','smirest','smi_rest'],
 # Blockchain
 #    ['Ethplorer','blockchain','ethplorer'],
 ]

@@ -23,12 +23,23 @@ Using the following prefab config file contents, the web server will be auto sta
 LHM, and it's predecessor, OHM, also have built in web servers that can be enables and opened for
 remote access via:
  #> netsh advfirewall firewall add rule name="ALLOW TCP PORT 8085 : Openhardware Web" dir=in action=allow protocol=TCP localport=8085
+*** NOTE *** Apparently the config file doesn't really work to set all of these values.  Verify by menu options as well.
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <appSettings>
     <add key="listenerPort" value="8085" />
+    <add key="runWebServerMenuItem" value="true" />
+    <add key="startMinMenuItem" value="true" />
+    <add key="hiddenMenuItem" value="true" />
+    <add key="listenerPort" value="8085" />
+    <add key="authenticationEnabled" value="false" />
   </appSettings>
 </configuration>
 
-Again, WTH does not use this interface at this time, but we may add one, plus, it is cool and allows remote viewing, albiet in
+Again, WTH does not use this interface at this time, but we may add one, plus, it is cool and allows remote viewing, albeit in
 possibly the worst JSON structure you have ever witnessed!
+
+We highly recommend that you also turn down the frequency of log sensor reporting, the time frame window, and disable the network checks under hardware.
+It can consume a lot of CPU on slower systems.
+
+There appear to be some issues running LHM on machines running nicehash and older versions of xmrig, possibly others.

@@ -7,8 +7,6 @@
 # Portfolio plugin using coingecko.com
 #
 require 'coingecko_ruby'
-require 'lightly'
-require 'concurrent'
 
 class Modules::CoinGeckoTracker < Modules::PortfolioBase
   using IndifferentHash  
@@ -24,9 +22,9 @@ class Modules::CoinGeckoTracker < Modules::PortfolioBase
     @currency = @config["currency"] || 'usd'
     @round = @config["round"] || 8
     @profit_round = @config["profit_round"] || 2
-  #	@lifespan += rand(0..30)
     @lifeinc = 0
     @cache = {}
+    @headers = ['Name','Rank','Price','24h∆%','24h Hgh','24h Low','Hodl','Avg Cost','Value','Profit','   ','Last Updated'] #,'Cached Time']
   end
 
   def check(data,name)
@@ -85,57 +83,46 @@ class Modules::CoinGeckoTracker < Modules::PortfolioBase
     h
   end
 
-  def console_out(data)
-    hash = data[:addresses]
-    rows = []
-    title = "Coin Portfolio: https://www.coingecko.com : Last checked #{data[:last_check_ago].ceil(2)} seconds ago"
-    headers = ['Name','Rank','Price','24h∆%','24h Hgh','24h Low','Hodl','Avg Cost','Value','Profit','   ','Last Updated'] #,'Cached Time']
-
+  def tableize(data)
+    tables = []
     total_value = 0.0
     total_profit = 0.0
-	
-    hash.keys.sort.each_with_index{|addr,i|
-      h = hash[addr]
+    i = 0
+    table = super(data) do |item,rows,formats|
+      i = i == 0 ? 1 : 0
   
-      if h.down == true
-        h.status = colorize("down",$color_alert)
-      else
-        h.status = h.market_rank
-      end
-  
-      value = (h.price * h.holding)
+      value = (item.price * item.holding)
       total_value += value
-      profit = (value - (h.holding * h.cost)).round(@round)
+      profit = (value - (item.holding * item.cost)).round(@round)
       total_profit += profit
   
       c = colorizer((i % 2) == 0 ? $color_row_odd : $color_row_even)
 
-      price = sprintf("%.#{h.round}f #{h.currency.upcase}",h.price)
-      high_24h = sprintf("%.#{h.round}f #{h.currency.upcase}",h.high_24h)
-      low_24h = sprintf("%.#{h.round}f #{h.currency.upcase}",h.low_24h)
+      price = sprintf("%.#{item.round}f #{item.currency.upcase}",item.price)
+      high_24h = sprintf("%.#{item.round}f #{item.currency.upcase}",item.high_24h)
+      low_24h = sprintf("%.#{item.round}f #{item.currency.upcase}",item.low_24h)
 
       rows << [
-        c.call("#{h.name} (#{h.symbol.upcase})"),
-        c.call(h.status),
+        c.call("#{item.name} (#{item.symbol.upcase})"),
+        c.call(item.market_rank),
         c.call(price),
-        colorize_around(h.price_change_percent_24h.round(2),0,2) ,
+        colorize_around(item.price_change_percent_24h.round(2),0,2) ,
         c.call(high_24h), c.call(low_24h),
-        c.call(h.holding), c.call(h.cost), c.call(sprintf("%.#{@profit_round}f",value)), colorize_around(profit,0,@profit_round),
-        ' ',c.call(h.last_updated) #,c.call(h.cached_time)
+        c.call(item.holding), c.call(item.cost), c.call(sprintf("%.#{@profit_round}f",value)), colorize_around(profit,0,@profit_round),
+        ' ',c.call(item.last_updated) #,c.call(h.cached_time)
       ]
-    }
-  
+
+    end
+
     c = colorizer(total_profit >= 0 ? :bright_green : :bright_red)
-  
-    rows << headers.map{|m| ' ' }
-    rows << [
+    table.rows << headers.map{|m| ' ' }
+    table.rows << [
       c.call("Total"),"","","","","","","",c.call(total_value.round(@profit_round)),colorize_around(total_profit.round(@profit_round),0,@profit_round),' ',' '#,' '
     ]
-
-    table_out(headers,rows,title)
+    tables << table
+    tables
   end
 
-  
 #=> [{
 #"id"=>"bitcoin",
 #  "symbol"=>"btc",

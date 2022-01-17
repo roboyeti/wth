@@ -8,7 +8,7 @@ class Modules::CpuMinerBase < Modules::Base
   using IndifferentHash  
 
   attr_reader :standalone
-  
+
   def initialize(p={})
     super
     @standalone = @config["standalone"]
@@ -20,6 +20,10 @@ class Modules::CpuMinerBase < Modules::Base
 
   def mine_revenue(*p)
     self.respond_to?(:mine_revenue_hook) ? mine_revenue_hook(*p) : 0
+  end
+
+  def calc_estimated_revenue(item)
+    sprintf("$%0.2f",mine_revenue(item.coin,item.combined_speed).to_f)
   end
 
   # TODO: Add cpu gathering to a remote service version
@@ -36,7 +40,20 @@ class Modules::CpuMinerBase < Modules::Base
     else
 	  $color_miner_ok
     end
-    colorize(s2,color_str)
+    colorit(s2,color_str)
   end
 
+  def cm_node_structure(host,addr)
+    node = node_structure()
+    ip,port,coin = addr.split(':')
+    node.name = host
+    node.ip = ip
+    node.port = port.blank? ? self.port : port
+    node.coin = coin.blank? ? self.coin : coin
+    node.address = "#{node.ip}:#{node.port}"
+    node.cpu = cpu_structure
+    node.estimated_revenue = 0.0
+    node.miner = ""
+    node
+  end
 end

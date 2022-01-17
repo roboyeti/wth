@@ -20,7 +20,6 @@
 #  end
 # Doesn't work...
 #trap 'INT' do
-#  puts "!!!!!!"
 #  `ConEmuC -guimacro FontSetSize(0,18)`
 #  exit
 #end

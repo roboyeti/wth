@@ -9,7 +9,6 @@
 # TODO:
 #       Make optional
 #       Clean up
-#       Web output on other pages pre-rendered at app startup
 #       See other TODOs below.
 #
 require 'tty-cursor'
@@ -19,10 +18,7 @@ require 'tty-spinner'
 require 'terminal-table'
 require 'pastel'
 
-# TODO: Eliminate
-$pastel ||= Pastel.new
-
-module ConsoleInit
+module WthConsole
 
   # Command help for console.
   def cmd_list
@@ -78,7 +74,7 @@ module ConsoleInit
       end
     
       if ['1','2','3','4','5','6','7','8','9','0'].include? event.value
-        $page = event.value.to_i >= 1 ? event.value.to_i : 10
+        current_page = event.value.to_i >= 1 ? event.value.to_i : 10
         puts clear
         @loop_int = true
       end
@@ -144,6 +140,22 @@ module ConsoleInit
     end
     return reader
   end
+
+  def output_page(out)
+    return if !console_out
+    reposition
+    cursor_hide
+    console_header(page_title(current_page)).each {|o| clear_line; puts o; }
+    out.each {|o|
+      lines = o.split("\n")
+      lines = [" "] if lines.empty? 
+      lines.each{|l|
+        clear_line
+        puts "#{l}"
+      }
+    }
+    clear_screen_down
+  end
   
   # Loop interrupt flag
   # TODO: is lame
@@ -198,14 +210,12 @@ module ConsoleInit
     stuff = border.("#{time} | #{version}v | e: View Commands")
     info = [page,stuff].join(' ')    
   
-    # TODO: Simplify, gotten out of control... 
     mycols = 90
     title_length = no_ascii(title).length
     info_length = no_ascii(info).length
     
     longer = title_length > info_length ? title_length : info_length
 
-#    longer = title.length > info.length ? title.length : info.length
     mycols = longer if longer > mycols
     
     top = border.( sprintf("╭%#{mycols-2}s╮",'─'*(mycols-2)) )
@@ -231,7 +241,6 @@ module ConsoleInit
     stuff = border.("#{time} | e:Commands")
     info = [page,stuff].join(' ')    
   
-    # TODO: Simplify, gotten out of control... 
     mycols = 60
     title_length = no_ascii(title).length
     info_length = no_ascii(info).length
@@ -280,8 +289,11 @@ module ConsoleInit
   # Clear current text line
   #
   def clear_line
-    return false if !console_out
-    printf cursor.clear_line
+#    return false if !console_out
+     printf cursor.clear_line
+#    cursor.save
+#    printf cursor.clear_lines(2, :down)
+#    printf cursor.restore
   end
   
   # Clear from current line down
@@ -301,12 +313,10 @@ module ConsoleInit
 
   def update_screen
     return false if !console_out
-
-    if @numcols && screen_columns != @numcols
+    @numcols ||= screen_columns
+    if screen_columns != @numcols
       @numcols = screen_columns
       clear
-    else
-      @numcols = screen_columns
     end
   end
 end

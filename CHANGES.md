@@ -1,6 +1,6 @@
 # Change Log
 
-## VERSION 0.19c - 2022-1-5
+## VERSION 0.19d - 2022-1-16
 - Added: Tor SOCKS proxy option for Tor installs.  Currently limited to per module config
 - Change: Made WTH more responsive to changes in displays (data is now gathered in a master thread and screen updated regardless)
 - Change: Changed how proxy works.  Mostly untested, but you now are expected to provide a proxy rather than WTH finding one for you
@@ -14,6 +14,16 @@
 - Fixed: Performance blocking issues on some modules
 - Fixed: Threading deadlock
 - Change: Improved config documentation... I think.
+- Change: Some general code cleanup
+- Added: estimated revenue to xmrig / cpuminer, plus some other add/fixes/streamlines
+- Added: other coin support for xmrig (and cpuminer) - for display and revenue calcs
+- Change: working on module structs to be faster ... work in progress
+- Change: Changed almost all modules to more flexible and streamlined design
+- Change: Added column selection from config file for most modules (work in progress)
+-- This will not have any effect on standalone or mining gpu data (per gpu that is)
+- Change: Changed standalone look
+- Added: Module for Nvidia-SMI-Rest (https://github.com/lampaa/nvidia-smi-rest)
+- Change: Re-org on some code to reduce large files
 
 ## VERSION 0.18 - 2021-12-27
 - Docs: More documentation / error corrections

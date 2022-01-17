@@ -141,8 +141,9 @@ class Modules::SignumPoolView < Modules::Base
 
       # Fix DOWN...
       if h["down"] == true
-        #out << sprintf("%15s - %s",addr,h["message"])
-        #next
+        ms = miner_structure
+        ms.name = colorize("down",$color_alert)
+        h.miners = [ ms ]
       end
   
       my_title = " #{title}: #{h["name"]} #{@config[:extra]} : Top #{pool_records} Records : Last Checked: #{@last_check} (#{data["last_check_ago"]} seconds ago)"
@@ -215,8 +216,6 @@ class Modules::SignumPoolView < Modules::Base
   end
   
   # Get the block winner data at any index
-  # TODO: This isn't really needed anymore, as it was created when a block line
-  #       had to be appended to a miner line pre-table design
   #
   # @params [Hash|OpenStrust] data The specific address structure being processed
   # @params [Integer] idx The index of the block to process
