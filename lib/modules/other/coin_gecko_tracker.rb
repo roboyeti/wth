@@ -115,7 +115,7 @@ class Modules::CoinGeckoTracker < Modules::PortfolioBase
     end
 
     c = colorizer(total_profit >= 0 ? :bright_green : :bright_red)
-    table.rows << headers.map{|m| ' ' }
+    table.rows << @headers.map{|m| ' ' }
     table.rows << [
       c.call("Total"),"","","","","","","",c.call(total_value.round(@profit_round)),colorize_around(total_profit.round(@profit_round),0,@profit_round),' ',' '#,' '
     ]
