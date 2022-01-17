@@ -158,7 +158,7 @@ class Modules::SignumPoolView < Modules::Base
         nconf_str = colorize_simple_threshold(nconf,"<",115,110)
                     
         boost = m.boost_pool.round(3)
-        boost_str = boost <= 1 ? $pastel.yellow.bold(boost) : $pastel.green.bold(boost)
+        boost_str = boost <= 1 ? pastel.yellow.bold(boost) : pastel.green.bold(boost)
           
         deadline = if m.current_best_deadline.to_f > 0.01
           (m.current_best_deadline.to_f / 60).round(2)
@@ -169,7 +169,7 @@ class Modules::SignumPoolView < Modules::Base
         name = safe_miner_address(m)
         
         if @highlight_nodes.include?(m.address_rs)
-          name = $pastel.green(name)
+          name = pastel.green(name)
         end
           
         rows << [
@@ -231,7 +231,7 @@ class Modules::SignumPoolView < Modules::Base
 
     addr = b["generatorRS"]    
     if @highlight_nodes.include?(addr)
-      addr = $pastel.green(addr)
+      addr = pastel.green(addr)
     end
 
     [ b["height"],addr,reward ]

@@ -10,7 +10,7 @@ class Modules::Xmrig < Modules::CpuMinerBase
   def initialize(p={})
     super
     @title = config["title"] || 'XMRig'    
-    @headers = [ 'Node', "Uptime", "Miner", 'Algo', 'Coin', 'ERev$',"Diff","Accpt","Rjct","Fail", "Avg H/s","Max H/s","Total KH","Pool","Th#","CPU" ]
+    @headers = [ 'Node', "Uptime", "Miner", 'Algo', 'Coin', 'ERev$', "Accpt","Rjct","Fail", "Avg H/s","Max H/s","Total KH","Pool","Th#","CPU" ]
   end
 
   def check(addr,host)
@@ -22,7 +22,7 @@ class Modules::Xmrig < Modules::CpuMinerBase
     h.uptime = res["uptime"]
     h.pool   = res["connection"]["pool"]
     h.algo = res["algo"]
-    h.miner = "#{res["kind"]}_#{res["version"]}"
+    h.miner = "xmrig_#{res["version"]}"
 
     h.difficulty = res["connection"]["diff"].to_i
     h.total_shares   = res["connection"]["accepted"].to_i
@@ -57,7 +57,7 @@ class Modules::Xmrig < Modules::CpuMinerBase
       rows << [
         item.name.capitalize, uptime_seconds(item.uptime), item.miner,
         item.algo, item.coin, item.estimated_revenue,
-        item.difficulty, item.total_shares,item.rejected_shares,item.failed_shared,
+        item.total_shares,item.rejected_shares,item.failed_shared,
         item.combined_speed, item.max_speed, item.hashes_total/1000.0,
         item.pool, "#{item.cpu.threads_used}/#{item.cpu.threads}", item.cpu.name
       ]

@@ -74,7 +74,7 @@ module WthConsole
       end
     
       if ['1','2','3','4','5','6','7','8','9','0'].include? event.value
-        current_page = event.value.to_i >= 1 ? event.value.to_i : 10
+        @current_page = event.value.to_i >= 1 ? event.value.to_i : 10
         puts clear
         @loop_int = true
       end
@@ -145,7 +145,7 @@ module WthConsole
     return if !console_out
     reposition
     cursor_hide
-    console_header(page_title(current_page)).each {|o| clear_line; puts o; }
+    console_header(page_title(@current_page)).each {|o| clear_line; puts o; }
     out.each {|o|
       lines = o.split("\n")
       lines = [" "] if lines.empty? 
