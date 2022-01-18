@@ -14,7 +14,7 @@ class GpuShark < PluginBase
   VERSION = "0.25.0.0"
   
   def initialize(p={})
-	super
+  	super
   end
 
 end

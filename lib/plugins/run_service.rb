@@ -1,13 +1,11 @@
 # Author: BeRogue01
 # License: See LICENSE file
-# Date: 11/2021
-#
-# Love everybody,but never sell your sword.  ~ Paulo Coelho
+# Date: 2022/01
 #
 class RunService < PluginBase
 
   def initialize(p={})
-  	#super
+  	super
     warn "RunService is not currently implemented"
   end
   

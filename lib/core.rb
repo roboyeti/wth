@@ -535,7 +535,7 @@ class Core
 
   def page_title(page)
     idx = page - 1
-    "#{@page_titles[idx]} (#{page})" || "Page #{page}"
+    @page_titles[idx] ? "#{@page_titles[idx]} (#{page})" : "Page #{page}"
   end
 
   def page_titles()

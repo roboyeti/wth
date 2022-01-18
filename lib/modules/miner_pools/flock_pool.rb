@@ -17,17 +17,15 @@ class Modules::FlockPool < Modules::MinerPoolBase
     super
     @title = p[:title] || 'Flock (https://flockpool.com)'
     @coin = 'RTM'
-    @headers = ['Address','Status','Coin','Avail $','Avail Amt','Unpaid','Pending','Auto Pay#','Combined Speed','Avg Speed', 'Accepted','Rejected','Stale', 'Workers Up/Dwn']
+    @headers = ['Address','Status','Coin','Paid $','Paid Amt','Unpaid','Pending','Auto Pay#','Combined Speed','Avg Speed', 'Accepted','Rejected','Stale', 'Workers Up/Dwn']
 
   end
 
   def check(empty,addr)
     req1 = [API_HOST,addr].join('/')
     res1 = simple_rest(req1)
-    format(addr,res1)
-  end
-  
-  def format(name,res1)
+    name = addr
+
     balance_mod = 100000000
     data = res1
     h = pool_structure
@@ -43,7 +41,7 @@ class Modules::FlockPool < Modules::MinerPoolBase
     data["workers"].each{|w|
       worker = worker_structure
       worker.last_seen = Time.at(w["last_seen_secs"].to_i)
-      worker.online = (Time.now - worker.last_seen) < 600
+      worker.online = (Time.now - worker.last_seen) < 900
       worker.online == true ? h.workers_up = h.workers_up + 1 : h.workers_down = h.workers_down + 1
       worker.name = w["name"]
       worker.speed = w["hashrate"]["now"].to_f

@@ -1,28 +1,24 @@
 #Todo List, kind of in order
 
 ## In Progess
-- Add: Adding smirest interface / module / startup
-- Add: Signum tokens module
 - Add: Wonderland basic info ...
-- Add: Openhardware module
+- Do: Test OpenHardwareMonitor against module
+- Add: Cmd startup
+- Fix: Standalone issue when host down
+- Change: Add algo when and where possible
 
 ## Easiest / highest prio
 - Do More: https://bundler.io/guides/groups.html
 - Add: URL to node in json data
 - Add: name to json
 - Add: GPU CAPS XML parser / module
-- Change: web real certs
 - Fix: standalone
     - Auto font sizing of Single node to user defined size in config
     - Add single node support to cpu miners
 - Add: Rainbow miner module
 - Add: Conemu start script (load config xml with background etc)
-- Misc: Allow plugins to do something useful (part II)
+- Misc: Make plugins more robust and satndardized
 - Add: Document document document
-- Change: Add algo when and where possible
-- Change: More logging
-- Add: wonderland support module
-- Add: GPU CAPS XML parser
 
 ## Medium / important
 - ?: finish universal color

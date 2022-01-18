@@ -78,8 +78,9 @@ class WebServerBasic
     @ssl  = @config["ssl"] || false
     @api  = @config["api"] || false
     @key  = @config["key"] || nil
+    @cert  = ''
     @html_out = @config["html_out"] || true
-    @cert_file = @config["cert_file"] || 'data/ssl/wth.crt'
+    #@cert_file = @config["cert_file"] || 'data/ssl/wth.crt'
   end
   
   # Spin up the server in a thread and connect
@@ -87,13 +88,16 @@ class WebServerBasic
   def start
     # IO Pipes to connect to thread IO
     @io_read, @io_write = IO.pipe
-    cert = if File.exist?(cert_file)
-      File.read(cert_file)
-    else
-      crt = [['CN', WEBrick::Utils::getservername, OpenSSL::ASN1::PRINTABLESTRING ]]
-      File.write(cert_file,crt)
-      crt
-    end
+    @cert = [['CN', WEBrick::Utils::getservername, OpenSSL::ASN1::PRINTABLESTRING ]]
+    #@cert = if File.exist?(cert_file)
+    #  puts "Reading cert file ..."
+    #  OpenSSL::X509::Certificate.new File.read(cert_file)
+    #else
+    #  crt = [['CN', WEBrick::Utils::getservername, OpenSSL::ASN1::PRINTABLESTRING ]]
+    #  puts "Writing cert file ..."
+    #  File.write(cert_file,crt)
+    #  crt
+    #end
     access_log = [ [ @io_write, WEBrick::AccessLog::COMMON_LOG_FORMAT ] ]
     
     # Basic web server thread   
@@ -106,7 +110,7 @@ class WebServerBasic
                 :AccessLog => access_log,
                 :Logger => WEBrick::Log.new("tmp/webservice.log",10),
                 :SSLEnable => @ssl,
-                :SSLCertName => cert
+                :SSLCertName => @cert
               )
 
       @fh = WEBrick::HTTPServlet::FileHandler.new(server,'web')

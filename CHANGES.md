@@ -24,6 +24,11 @@
 - Change: Changed standalone look
 - Added: Module for Nvidia-SMI-Rest (https://github.com/lampaa/nvidia-smi-rest)
 - Change: Re-org on some code to reduce large files
+- Added: NanoPool Module (nano pool reporting kind of sucks)
+- Added: 2Miners Pool Module
+- Change: Fixed self signed cert for running WTH in SSL
+- Added: NBMiner module
+- Changes: Lots of column adds/changes/smoothing out things
 
 ## VERSION 0.18 - 2021-12-27
 - Docs: More documentation / error corrections
