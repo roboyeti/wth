@@ -8,3 +8,17 @@ Find and edit the 'config.txt', with minimum config as follows:
 -cdmport 0.0.0.0:33433
 
 Port number above can be whatever you want it to be, but it must then match what is specified in the WTH config.
+
+Example WTH minimal config entry
+
+  claymore_example:
+    port: #
+    coin: ETH
+    api: claymore
+    nodes:
+      hostname1: ip_address1
+      hostname2: ip_address2
+      ...
+      hostnameN: ip_addressN
+
+See documentation on other options.

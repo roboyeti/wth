@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     binding.repl (3.0.0)
+    builder (3.2.4)
     cd (1.0.1)
     clipboard (1.3.6)
     code (0.9.3)
@@ -14,22 +15,29 @@ GEM
     debugging (1.1.2)
       binding.repl (~> 3.0)
       paint (>= 0.9, < 3.0)
+    deep_dup (0.0.3)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
+    erubi (1.10.0)
     escape_utils (1.2.1)
     every_day_irb (2.1.1)
       cd (~> 1.0)
     fancy_irb (1.4.3)
       paint (>= 0.9, < 3.0)
       unicode-display_width (>= 1.1)
-    ffi (1.15.4-x64-mingw32)
+    ffi (1.15.5-x64-mingw32)
+    gssapi (1.3.1)
+      ffi (>= 1.0.1)
+    gyoku (1.3.1)
+      builder (>= 2.1.2)
     hirb (0.7.3)
     http-accept (1.7.0)
     http-cookie (1.0.4)
       domain_name (~> 0.5)
+    httpclient (2.8.3)
     interactive_editor (0.0.11)
       spoon (>= 0.0.1)
-    io-console (0.5.9)
+    io-console (0.5.11)
     irb (1.4.1)
       reline (>= 0.3.0)
     irbtools (3.0.5)
@@ -54,13 +62,19 @@ GEM
       wirb (~> 2.0, >= 2.2.1)
     json (2.6.1)
     lightly (0.3.3)
+    little-plugger (1.1.4)
+    logging (2.3.0)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.14)
     lucky_case (1.1.0)
     method_source (1.0.0)
     methodfinder (2.2.3)
     mime-types (3.4.1)
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2021.1115)
+    mime-types-data (3.2022.0105)
+    multi_json (1.15.0)
     netrc (0.11.0)
+    nori (2.6.0)
     object_shadow (1.1.1)
     openssl (3.0.0)
     ori (0.1.0)
@@ -69,7 +83,7 @@ GEM
     pastel (0.8.0)
       tty-color (~> 0.5)
     rbtree (0.4.4)
-    reline (0.3.0)
+    reline (0.3.1)
       io-console (~> 0.5)
     rest-client (2.1.0-x64-mingw32)
       ffi (~> 1.9)
@@ -81,6 +95,7 @@ GEM
     ruby_engine (1.0.1)
     ruby_info (1.0.1)
     ruby_version (1.0.2)
+    rubyntlm (0.6.3)
     rushover (0.3.0)
       json
       rest-client
@@ -114,10 +129,19 @@ GEM
     unf_ext (0.0.8-x64-mingw32)
     unicode-display_width (2.1.0)
     webrick (1.7.0)
+    winrm (2.3.6)
+      builder (>= 2.1.2)
+      erubi (~> 1.8)
+      gssapi (~> 1.2)
+      gyoku (~> 1.0)
+      httpclient (~> 2.2, >= 2.2.0.2)
+      logging (>= 1.6.1, < 3.0)
+      nori (~> 2.0)
+      rubyntlm (~> 0.6.0, >= 0.6.3)
     wirb (2.2.2)
       paint (>= 0.9, < 3.0)
     wisper (2.0.1)
-    zeitwerk (2.5.2)
+    zeitwerk (2.5.3)
 
 PLATFORMS
   x64-mingw32
@@ -126,6 +150,7 @@ DEPENDENCIES
   coingecko_ruby
   concurrent-ruby
   daemons
+  deep_dup
   irbtools
   lightly
   lucky_case
@@ -147,7 +172,8 @@ DEPENDENCIES
   tty-screen
   tty-spinner
   webrick
+  winrm
   zeitwerk
 
 BUNDLED WITH
-   2.2.22
+   2.2.32

@@ -1,0 +1,30 @@
+# NBMiner
+
+NBMiner may not come with a default config file.  You can generate one as follows:
+
+#> nbminer --generate-config config.json
+
+Edit the 'config.json', with minimum config as follows:
+
+    "api": "0.0.0.0:22333",
+
+Port number above can be whatever you want it to be, but it must then match what is specified in the WTH config.
+
+Run the miner using the config:
+
+#> nbminer --config config.json
+
+Example WTH NBMiner minimal config entry
+
+  nbminer_example:
+    port: 22333
+    coin: ETH
+    api: nbminer
+    nodes:
+      hostname1: ip_address1
+      hostname2: ip_address2
+      ...
+      hostnameN: ip_addressN
+
+See documentation on other options.
+

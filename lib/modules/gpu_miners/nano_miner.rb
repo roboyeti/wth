@@ -17,11 +17,7 @@ class Modules::NanoMiner < Modules::GpuMinerBase
     host,port,algo = ip.split(':')
     port = port && !port.empty? ? port : @port    
     res = simple_rest("http://#{host}:#{port}/stats")
-    format(name,ip,res)
-  end
 
-  def format(name,ip,res)
-    host,port,algo = ip.split(':')
     algo = 'Ethash' if algo.blank?
     algo = algo.downcase.capitalize
 

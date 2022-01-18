@@ -31,20 +31,22 @@ By default, WTH offers the following modes:
     - http://localhost:8080/api?module=list
     - http://localhost:8080/api?module=<your_module_entry_name|list>
 
-## Coming soon! - Install scripts for linux and win32.
-
 ## Installation - Windows
+- Run the following to install automatically: #> .\install_win.ps1
+- Copy wth_config_example.yml to wth_config.yml
+- Edit config file (see Configuration)
+- #> .\wth.rb (or double click in file window)
+    - If .\wth.rb doesn't work, try 'ruby .\wth.rb'
+
+Manual installation can be done as:
 - Install Ruby: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.0.2-1/rubyinstaller-3.0.2-1-x64.exe
 - Optional: Install ConEmu: https://conemu.github.io/
 - Open shell (power shell pref, even inside ConEmu)
 - cd to installation directory
 - #> bundle install --deployment
-- Copy wth_config_example.yml to wth_config.yml
-- Edit config file (see Configuration)
-- #> .\wth.rb (or double click in file window)
-    - If .\wth.rb doesn't work, try 'ruby .\wth.rb'
     
 ## Installation - Linux
+- Coming soon! - Install script for linux
 - Install Ruby dependencies
     -  sudo apt install curl g++ gcc autoconf automake bison libc6-dev libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev libreadline-dev libssl-dev
 - Install ruby 2.7+ for your platform

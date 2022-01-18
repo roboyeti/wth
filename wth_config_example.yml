@@ -23,10 +23,8 @@ default_module_frequency: 8
 # pages:
 #    1: Overview
 #    2: Pools
-#    3: Standalone Testing
-#    4: I was here
-#    5: GPUs
-#    6: System
+#    ...
+#    10: System Info
 ##===========================================================================================
 ## Web server settings
 ##===========================================================================================
@@ -38,12 +36,19 @@ web_server:
 ## Examples: 127.0.0.1, localhost, 192.168.0.10, 0.0.0.0 (all interfaces).
 ## Default is 127.0.0.1, meaning only accessible on the local machine
   host: 127.0.0.1
-## Currently experimental with known issues.  Contact if prirority
+## Enabled SSL using self signed cert.  This may cause browsers to complain and require an
+## exception or approval
   ssl: false
 ## Change api to true if you want to access JSON formatted collected data in WTH
+## Url: http://127.0.0.1:8080/api?module=<module_name>
+## To show module names:
+##      http://127.0.0.1:8080/api?module=list
   api: false
-## Uncomment to enable
+## Uncomment to require a unique key to access web interface.
+## Examples: http://127.0.0.1:8080?key=<my_unique_key>
+##           http://127.0.0.1:8080/api?module=list&key=<my_unique_key>
 #  key: <your_unique_key_here_with_no_spaces_or_special_characters>
+#
 ##===========================================================================================
 ## Modules && Settings
 ##===========================================================================================
@@ -64,54 +69,36 @@ modules:
 ##
 ## your_unique_key_here:
 ##   api: <api_name> - REQUIRED! - This actually identifies the module to load for this entry.
-##   debug: true/false - Optional: Enables logged output of requested data into tmp folder
+##   dump: true/false - OPTIONAL: Enables logged output of requested data into tmp folder
 ##   extra: <your_mini_note> - Optional: Small note for on display title
 ##   coin: <coin_symbol> - REQUIRED! - Used in display and price predictions.  Where
 ##         specified in the config, required, but consider it required for all miners
-##   every: <integer> Optional: number of seconds between checks.  Some modules enforce
+##   every: <integer> - OPTIONAL: number of seconds between checks.  Some modules enforce
 ##          minimums, so be aware of that.
-##   page: <integer> Optional: Integer, what page number to display on (1-10).  Default = 1
-##   port: <integer> DEPENDS: Target service port number as integer, if required by module.  
+##   page: <integer> - OPTIONAL: Integer, what page number to display on (1-10).  Default = 1
+##   port: <integer> - DEPENDS: Target service port number as integer, if required by module.  
 ##         In some cases, mod developer may have added common port as default for that miner.
+##   columns: <comma list of column #s> - OPTIONAL: Show only columns designated, starting with
+##            second column (numbered 1).  Example: 1,2,5,8.  Some modules may not respect this
+##            option or ignore it for mandatory columns, like gpu data.
 ##   nodes: Key/Value address pairs for module.  Could be name/ip or wallet_waddress/URL as
 ##          examples.
 ##     <name1>: <ip_address1>[:port#][:module_required_options per host]
 ##     <name2>: <ip_address2>
 ##     <name3>: <ip_address3>
-##   <module_settings1>: example of a module with unique setting. Described below per mod
+##   <module_settings1>: example of a module with unique setting. See module documentation
 ##   <module_settings2>: example of a module with key/value unique setting.
 ##      <key1>: <value1>
 ##      <key2>: <value2>
 ##
 ## GPU module options:
-##   gpu_rows: <Integer> - Optional, defaults to 5, specifies GPUS to show per row
+##   gpu_rows: <Integer> - OPTIONAL, defaults to 5, specifies GPUS to show per row
+##   standalone: <true/false> - OPTIONAL - Display in narrow format for small screens.
 ##
-## Unique optional modules settings will be provided in this example config for each module
-## (for now), as this example config is the documentation for module config.
+## Unique optional modules settings will be provided for each module in the docs directory.
 ##
 ##===========================================================================================
 ##
-##-------------------------------------------------------------------------------------------
-## T-Rex GPU iner
-##-------------------------------------------------------------------------------------------
-#  t_rex_example1:
-#    api: t_rex
-#    port: 4067
-#    coin: ETH
-#    gpu_row: 4
-#    nodes:
-#      <my_node>: <192.168.0.x>
-##-------------------------------------------------------------------------------------------
-## Phoenix GPU Miner
-##-------------------------------------------------------------------------------------------
-#  phoenix_example:
-#    api: phoenix
-#    port: 33440
-#    coin: ETH
-#    gpu_row: 5
-#    nodes:
-#      <my_node>: <192.168.0.x>:<port#>
-#      <my_node2>: <192.168.0.x>
 ##-------------------------------------------------------------------------------------------
 ## Claymore GPU Miner (and EThman/Ethermine API compatible miners)
 ##-------------------------------------------------------------------------------------------
@@ -119,9 +106,49 @@ modules:
 #    api: claymore
 #    port: 3333
 #    coin: ETH
-#    gpu_row: 5
 #    nodes:
-#      <my_node>: <192.168.0.x>
+#      <my_node1>: <ip_address1>:[optional port or leave empty]
+#      <my_node2>: <ip_address2>:[optional port or leave empty]
+##-------------------------------------------------------------------------------------------
+## GMiner GPU Miner
+##-------------------------------------------------------------------------------------------
+#  gminer_example:
+#    api: g_miner
+#    port: 10555
+#    coin: ETH
+#    nodes:
+#      <my_node1>: <ip_address1>:[optional port or leave empty]
+#      <my_node2>: <ip_address2>:[optional port or leave empty]
+##-------------------------------------------------------------------------------------------
+##  Lol GPU Miner
+##-------------------------------------------------------------------------------------------
+#  lol_miner_example:
+#    api: lol_miner
+#    port: 9095
+#    coin: ETH
+#    nodes:
+#      <my_node1>: <ip_address1>:[optional port or leave empty]
+#      <my_node2>: <ip_address2>:[optional port or leave empty]
+##-------------------------------------------------------------------------------------------
+## Nano GPU Miner
+##-------------------------------------------------------------------------------------------
+#  nano_miner_example:
+#    api: nano_miner
+#    port: 9090
+#    coin: ETH
+#    nodes:
+#      <my_node>: <ip_address>:[optional port or leave empty]:<algorithm> (see nano pool docs)
+#      <my_node>: <ip_address>:[optional port or leave empty]:<algorithm> (see nano pool docs)
+##-------------------------------------------------------------------------------------------
+## NBMiner GPU Miner
+##-------------------------------------------------------------------------------------------
+#  nbminer_example:
+#    port: 22333
+#    coin: ETH
+#    api: nbminer
+#    nodes:
+#      <my_node1>: <ip_address1>:[optional port or leave empty]
+#      <my_node2>: <ip_address2>:[optional port or leave empty]
 ##-------------------------------------------------------------------------------------------
 ## Nice Hash Quick Miner
 ##-------------------------------------------------------------------------------------------
@@ -131,35 +158,28 @@ modules:
 #    coin: NICEHASH_ETH
 #    extra: ETH
 #    nodes:
-#      <my_node>: <192.168.0.x>
-#      <my_node2>: <192.168.0.x>
+#      <my_node1>: <ip_address1>:[optional port or leave empty]
+#      <my_node2>: <ip_address2>:[optional port or leave empty]
 ##-------------------------------------------------------------------------------------------
-## GMiner GPU Miner
+## Phoenix GPU Miner
 ##-------------------------------------------------------------------------------------------
-#  gminer_unm_example:
-#    api: g_miner
-#    port: 10555
+#  phoenix_example:
+#    api: phoenix
+#    port: 33440
 #    coin: ETH
 #    nodes:
-#      <my_node>: <192.168.0.x>
+#      <my_node1>: <ip_address1>:[optional port or leave empty]
+#      <my_node2>: <ip_address2>:[optional port or leave empty]
 ##-------------------------------------------------------------------------------------------
-##  Lol GPU Miner
+## T-Rex GPU iner
 ##-------------------------------------------------------------------------------------------
-#  lol_miner_example:
-#    api: lol_miner
-#    port: 9095
+#  t_rex_example1:
+#    api: t_rex
+#    port: 4067
 #    coin: ETH
+#    gpu_row: 4
 #    nodes:
-#      <my_node>: <192.168.0.x>
-##-------------------------------------------------------------------------------------------
-## Nano GPU Miner
-##-------------------------------------------------------------------------------------------
-#  nano_miner_example:
-#    api: nano_miner
-#    port: 9090
-#    coin: ETH
-#    nodes:
-#      <my_node>: <192.168.0.x>:[optional port or leave empty]:<algorithm> (see nano pool docs)
+#      <my_node1>: <ip_address1>:[optional port or leave empty]
 ##-------------------------------------------------------------------------------------------
 ## XMRig CPU Miner
 ##-------------------------------------------------------------------------------------------
@@ -169,7 +189,8 @@ modules:
 #    coin: XMR
 #    every: 12
 #    nodes:
-#      <my_node>: <192.168.0.x>
+#      <my_node1>: <ip_address1>:[optional port or leave empty]:[optional coin or leave empty]
+#      <my_node2>: <ip_address2>:[optional port or leave empty]:[optional coin or leave empty]
 ##-------------------------------------------------------------------------------------------
 ## Cpuminer
 ##-------------------------------------------------------------------------------------------
@@ -179,7 +200,8 @@ modules:
 #    coin: RTM
 #    every: 12
 #    nodes:
-#      <my_node>: <192.168.0.x>
+#      <my_node1>: <ip_address1>:[optional port or leave empty]
+#      <my_node2>: <ip_address2>:[optional port or leave empty]
 ##-------------------------------------------------------------------------------------------
 ## Signum Pool - Miner Information
 ##
