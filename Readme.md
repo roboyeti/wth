@@ -1,12 +1,13 @@
 ## ![WTH](/web/favicon/favicon-32x32.png) - What the Hash?
 ![WTH Web Interface](/screenshots/wth_web001.png)
 
+## PLEASE NOTE: This is beta software and may not work as intended.  Please file issues if you find something broken!
 WTH was designed with the goal of providing an expandable, quick
 health status / earnings viewer for cryptocurrency related interests, miners, etc.
 
-It isn't meant to compete with fancy web UIs with charts and graphs.  It was originally
-developed to allow me to get a fast view on the health of all my GPU/CPU miners, especially
-for things that wouldn't get alerts generated from a one stop shop mining pools.
+It isn't meant to compete with fancy web UIs with charts and graphs (yet).  It was originally
+developed to allow me to get a fast view on the health of all my GPU/CPU miners, regardless of
+miner software or pool software.
 
 Mostly, I was frustrated at looking at half a dozen or more web pages just to check in on miners, pools, and portfolios.
 
@@ -14,14 +15,16 @@ With very little interaction, you should be able to see the basics of your crypt
 world.  Adding more mining pools, staking & liquidity pools, crypto portfolios, and more
 is the plan.  You can help us and add your own modules as well!  The coding required can be fairly simplistic, depending on the remote API, and current  modules and help from us can get your module added quickly.
 
-What the hash also offers an API for other systems to use the collected data.  The primary
+WTH also offers an API for other systems to use the collected data.  The primary
 goal of this is so we can offer a more advanced Web UI in the future, but it also tries
 to serve as a single API protocol for many different miners and pools out in the wild.
 
-What the hash is in it's early phases.  I wrote it as a quick tool for myself, then it
-proved so helpful, I started to grow it, and then I decided to release it, but started
-a refactor that is ongoing.  Contributions to the code base are welcome, but this tool
-should be considered Beta stage at best.  Things will change.
+WTH should be considered beta software.  I wrote it as a quick tool for myself, then it
+proved so helpful, I started to grow it, and then I decided to release it.  Currently,
+a refactor is ongoing to make the system more modular or more than a quick dirty tool
+for me.  Contributions to the code base are welcome, but only do so if you understand
+that this software should be considered at beta.  Things will change and that might
+require changes to contributions.
 
 By default, WTH offers the following modes:
 * Console Interface
