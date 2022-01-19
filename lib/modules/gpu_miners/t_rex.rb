@@ -41,10 +41,10 @@ class Modules::TRexMiner < Modules::GpuMinerBase
       gpu = gpu_structure
       gpu.pci = d["pci_bus"]
       gpu.id = d["device_id"]
-      gpu.gpu_speed = d["hashrate"].to_f / 1000000.0
-      gpu.gpu_temp = d["temperature"].to_i
-      gpu.gpu_fan = d["fan_speed"].to_i
-      gpu.gpu_power = d["power"].to_f
+      gpu.speed = d["hashrate"].to_f / 1000000.0
+      gpu.temp = d["temperature"].to_i
+      gpu.fan = d["fan_speed"].to_i
+      gpu.power = d["power"].to_f
       gpu.speed_unit = 'Mh/s'
       h.power_total += d["power"].to_f
       h.gpu[gpu.pci] = gpu

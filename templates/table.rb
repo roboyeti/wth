@@ -8,3 +8,4 @@ $color_ok    = :bright_green
 $color_row_even = :cyan
 $color_row_odd  = :green
 $color_standalone_title = :white,:on_blue
+$color_banner = :black, :on_yellow, :dim

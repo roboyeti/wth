@@ -33,10 +33,10 @@ class Modules::NBMiner < Modules::GpuMinerBase
       gpu = gpu_structure
       gpu.pci = d["pci_bus_id"].to_i
       gpu.id = d["id"]
-      gpu.gpu_speed = d["hashrate"].to_f
-      gpu.gpu_temp = d["temperature"].to_i
-      gpu.gpu_fan = d["fan"].to_i
-      gpu.gpu_power = d["power"].to_f
+      gpu.speed = d["hashrate"].to_f
+      gpu.temp = d["temperature"].to_i
+      gpu.fan = d["fan"].to_i
+      gpu.power = d["power"].to_f
       gpu.speed_unit = 'Mh/s'
       gpu.total_shares = d["accepted_shares"].to_i
 #      gpu.stale_shares = d[""].to_i

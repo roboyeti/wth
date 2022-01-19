@@ -37,4 +37,6 @@
     ['SmiRest','hardware','smirest','smi_rest'],
 # Blockchain
 #    ['Ethplorer','blockchain','ethplorer'],
+# Formating
+    ['Banner','other','banner'],
 ]

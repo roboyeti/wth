@@ -78,9 +78,12 @@ class WebServerBasic
     @ssl  = @config["ssl"] || false
     @api  = @config["api"] || false
     @key  = @config["key"] || nil
+    @ssl_dir = @config["ssl_dir"] || 'data/ssl'
     @cert  = ''
+    @pkey  = ''
     @html_out = @config["html_out"] || true
-    #@cert_file = @config["cert_file"] || 'data/ssl/wth.crt'
+    @cert_file = @config["cert_file"] || "#{@ssl_dir}/wth_cert.pem"
+    @pkey_file = @config["cert_file"] || "#{@ssl_dir}/wth_pkey.pem"
   end
   
   # Spin up the server in a thread and connect
@@ -88,30 +91,40 @@ class WebServerBasic
   def start
     # IO Pipes to connect to thread IO
     @io_read, @io_write = IO.pipe
-    @cert = [['CN', WEBrick::Utils::getservername, OpenSSL::ASN1::PRINTABLESTRING ]]
-    #@cert = if File.exist?(cert_file)
-    #  puts "Reading cert file ..."
-    #  OpenSSL::X509::Certificate.new File.read(cert_file)
-    #else
-    #  crt = [['CN', WEBrick::Utils::getservername, OpenSSL::ASN1::PRINTABLESTRING ]]
-    #  puts "Writing cert file ..."
-    #  File.write(cert_file,crt)
-    #  crt
-    #end
+
+    if File.exist?(@cert_file) && File.exist?(@pkey_file)
+      puts "Loading cert file and public key ..."
+      @cert = OpenSSL::X509::Certificate.new File.read @cert_file
+      @pkey = OpenSSL::PKey::RSA.new File.read @pkey_file
+    else
+      # Generating cert and public key
+      puts "Generating and writing cert file and public key ..."
+      @cert, @pkey = WEBrick::Utils.create_self_signed_cert 1024,[['CN', WEBrick::Utils::getservername, OpenSSL::ASN1::PRINTABLESTRING ]], ""
+      @cert.public_key = @pkey
+      File.write(@cert_file,@cert)
+      File.write(@pkey_file,@pkey)      
+    end
+
     access_log = [ [ @io_write, WEBrick::AccessLog::COMMON_LOG_FORMAT ] ]
     
     # Basic web server thread   
     @web_thread = Thread.new{
-    
-      server = WEBrick::HTTPServer.new(
-                :Port => port,
-                :BindAddres => @host,
-                :DocumentRoot => 'web',
-                :AccessLog => access_log,
-                :Logger => WEBrick::Log.new("tmp/webservice.log",10),
-                :SSLEnable => @ssl,
-                :SSLCertName => @cert
-              )
+      params = {
+        :Port => port,
+        :BindAddres => @host,
+        :DocumentRoot => 'web',
+        :AccessLog => access_log,
+        :Logger => WEBrick::Log.new("tmp/webservice.log",10),
+      }
+      if @ssl
+        params.merge!({
+          :SSLEnable => @ssl,
+          :SSLCertificate => @cert,
+          :SSLPrivateKey => @pkey,
+        })
+      end
+
+      server = WEBrick::HTTPServer.new(params)
 
       @fh = WEBrick::HTTPServlet::FileHandler.new(server,'web')
 

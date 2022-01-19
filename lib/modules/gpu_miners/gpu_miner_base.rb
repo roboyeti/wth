@@ -63,41 +63,41 @@ class Modules::GpuMinerBase < Modules::Base
   end
 
   def tableize_normal(item,rows,formats,headers)
-      reject_str = colorize_percent_of(item.total_shares,item.rejected_shares,0.10,0.50)
+    reject_str = colorize_percent_of(item.total_shares,item.rejected_shares,0.10,0.50)
 
-      row = [
-        item.name.capitalize, item.uptime, item.version,
-        sprintf("$%0.2f",mine_revenue(coin,item.combined_speed).to_f), # h[:coin] ||  .... erg
-        item.combined_speed.round(0),
-        format_power(item.power_total),
-        item.total_shares,
-        reject_str,
-        item.pool,
-        item.gpu.keys.count
-      ]
+    row = [
+      item.name.capitalize, item.uptime, item.version,
+      sprintf("$%0.2f",mine_revenue(coin,item.combined_speed).to_f), # h[:coin] ||  .... erg
+      item.combined_speed.round(0),
+      format_power(item.power_total),
+      item.total_shares,
+      reject_str,
+      item.pool,
+      item.gpu.keys.count
+    ]
 
-      gpu_cnt = 0
-      item.gpu.each_pair {|id,v|
-        gpu_cnt += 1
-        # We have reached default or user defined max of gpu per row
-        # Finish row and start a new one with padding
-        if gpu_cnt > gpu_row
-          gpu_cnt = 0
-          rows << row
-          row = headers.count.times.map{ ' ' }
-        end
-        $id_format = "%-s"
-        row.concat([
-          sprintf(" #{$id_format}",id),
-          sprintf("#{$id_format}",speed_style(v[:gpu_speed].to_f.round(1))),
-          sprintf("#{$id_format}",temp_style(v[:gpu_temp].to_i)),
-          sprintf("#{$id_format}",fan_style(v[:gpu_fan].to_i))
-        ])
-        if gpu_cnt > @max_gpu
-          @max_gpu = gpu_cnt
-        end
-      }
-      rows << row
+    gpu_cnt = 0
+    item.gpu.each_pair {|id,v|
+      gpu_cnt += 1
+      # We have reached default or user defined max of gpu per row
+      # Finish row and start a new one with padding
+      if gpu_cnt > gpu_row
+        gpu_cnt = 0
+        rows << row
+        row = headers.count.times.map{ ' ' }
+      end
+      $id_format = "%-s"
+      row.concat([
+        sprintf(" #{$id_format}",id),
+        sprintf("#{$id_format}",speed_style(v[:speed].to_f.round(1))),
+        sprintf("#{$id_format}",temp_style(v[:temp].to_i)),
+        sprintf("#{$id_format}",fan_style(v[:fan].to_i))
+      ])
+      if gpu_cnt > @max_gpu
+        @max_gpu = gpu_cnt
+      end
+    }
+    rows << row
   end
 
   def tableize_standalone(item,rows,formats,headers)
@@ -125,13 +125,13 @@ class Modules::GpuMinerBase < Modules::Base
         $id_format = "%-s"
         gpu_rows << [
           sprintf(" #{$id_format}",id),
-          sprintf("#{$id_format}",speed_style(v[:gpu_speed].to_f.round(1))),
-          sprintf("#{$id_format}",temp_style(v[:gpu_temp].to_i)),
-          sprintf("#{$id_format}",fan_style(v[:gpu_fan].to_i))
+          sprintf("#{$id_format}",speed_style(v[:speed].to_f.round(1))),
+          sprintf("#{$id_format}",temp_style(v[:temp].to_i)),
+          sprintf("#{$id_format}",fan_style(v[:fan].to_i))
         ]
       }
       rows << [' ']
-      rows << [ table_out(gpu_hdrs,gpu_rows,"GPU Devices").split("\n").map{|t| "\t\t#{t}\n"} ]
+      rows << [ table_out(gpu_hdrs,gpu_rows,"GPU Devices").split("\n").map{|t| "\t\t#{t}\n"} ] 
   end
 
   # Colors s2

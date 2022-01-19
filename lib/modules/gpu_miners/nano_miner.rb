@@ -45,14 +45,14 @@ class Modules::NanoMiner < Modules::GpuMinerBase
       gpu = gpu_structure
       gpu.pci = d["Pci"].split(':')[0].to_i
       gpu.id = k.split(' ')[1]
-      gpu.gpu_speed = d2["Hashrate"].to_f / 1000000.0
-      gpu.gpu_temp = d["Temperature"].to_i
-      gpu.gpu_fan = d["Fan"].to_i
-      gpu.gpu_power = d["Power"].to_f
+      gpu.speed = d2["Hashrate"].to_f / 1000000.0
+      gpu.temp = d["Temperature"].to_i
+      gpu.fan = d["Fan"].to_i
+      gpu.power = d["Power"].to_f
       gpu.speed_unit = 'Mh/s'
       gpu.total_shares = d2["Accepted"].to_i
       gpu.rejected_shares = d2["Denied"].to_i
-      h.power_total += gpu.gpu_power
+      h.power_total += gpu.power
       h.gpu[gpu.pci] = gpu
     }
     h.revenue = mine_revenue(h.coin,h.combined_speed).to_f

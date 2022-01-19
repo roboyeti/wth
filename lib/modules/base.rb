@@ -143,10 +143,12 @@ class Modules::Base
       if item.state == "down"
         row = [ colorize(item.name.capitalize,$color_alert), colorize("Down!",$color_alert) ]
         (hdr_cnt -2).times{ row << '' }
+        row = [ row.join(' ') ] if standalone?
         rows << row
       elsif item.state =~ /^pending/
         row = [ colorize(item.name.capitalize,$color_warn), colorize("Pending...",$color_warn) ]
         (hdr_cnt -2).times{ row << '' }
+        row = [ row.join(' ') ] if standalone?
         rows << row
       elsif block_given?
         yield(item,rows,formats,headers)

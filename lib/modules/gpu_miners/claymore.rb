@@ -78,9 +78,9 @@ class Modules::Claymore < Modules::GpuMinerBase
       g = o.gpu[p] = gpu_structure
       g.pci = p
       g.id = i
-      g.gpu_speed = speed[i].to_f / 1000.0
-      g.gpu_temp = stats[i*2].to_i
-      g.gpu_fan = stats[i*2+1].to_i
+      g.speed = speed[i].to_f / 1000.0
+      g.temp = stats[i*2].to_i
+      g.fan = stats[i*2+1].to_i
       g.total_shares = shares[i].to_i
       g.rejected_shares = rejects[i].to_i
       g.invalid_shares = invalids[i].to_i

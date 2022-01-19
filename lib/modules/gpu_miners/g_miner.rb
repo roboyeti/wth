@@ -25,7 +25,7 @@ class Modules::GMiner < Modules::GpuMinerBase
     h.uptime = uptime_seconds(res["uptime"].to_f)
     h.pool = res["server"]
     h.algo = res["algorithm"]
-    h.pool_speed = res["pool_speed"].to_f / 1000000.0
+#    h.pool_speed = res["pool_speed"].to_f / 1000000.0
     h.total_shares = res["total_accepted_shares"].to_i
     h.rejected_shares = res["total_rejected_shares"].to_i
     h.stale_shares = res["total_stale_shares"].to_i
@@ -37,10 +37,10 @@ class Modules::GMiner < Modules::GpuMinerBase
       #bus_id	"0000:09:00.0"
       gpu.pci = d["bus_id"].split(':')[1].to_i
       gpu.id = d["gpu_id"]
-      gpu.gpu_speed = d["speed"].to_f / 1000000.0
-      gpu.gpu_temp = d["temperature"].to_i
-      gpu.gpu_fan = d["fan"].to_i
-      gpu.gpu_power = d["power_usage"].to_f
+      gpu.speed = d["speed"].to_f / 1000000.0
+      gpu.temp = d["temperature"].to_i
+      gpu.fan = d["fan"].to_i
+      gpu.power = d["power_usage"].to_f
       gpu.speed_unit = 'Mh/s'
       gpu.total_shares = d["accepted_shares"].to_i
       gpu.rejected_shares = d["rejected_shares"].to_i

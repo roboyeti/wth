@@ -29,6 +29,7 @@ class Modules::Excavator < Modules::GpuMinerBase
     info = simple_rest("http://#{h.ip}:#{h.port}/api?command={%22id%22:1,%22method%22:%22info%22,%22params%22:[]}")
 
     base = algo["algorithms"][0]
+    fail "Error in response from #{@title}." if base.blank?
     h.uptime = uptime_minutes(base["uptime"].to_f)
     h.miner = "nhqm_excavator"
     h.version = info["version"]
@@ -57,10 +58,10 @@ class Modules::Excavator < Modules::GpuMinerBase
       h[:gpu][device[:pci]] = {
         pci: device[:pci],
         id: p["device_id"],
-        gpu_speed: alg["speed"].to_f / 1000000.0,
-        gpu_temp: device[:temp],
-        gpu_fan: device[:fan],
-        gpu_power: device[:power],
+        speed: alg["speed"].to_f / 1000000.0,
+        temp: device[:temp],
+        fan: device[:fan],
+        power: device[:power],
         speed_unit: 'Mh/s',
       }
     }

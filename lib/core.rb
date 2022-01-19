@@ -92,7 +92,7 @@ class Core
     init_plugins(config["plugins"])
     init_wth_modules(config['modules'])
     @cfg["web_server_start"] && webserver_start      
-    sleep(0.5)
+    sleep(2)
     if @cfg["console_out"]
       logger.info("WTH started with console.")
       init_key_reader
@@ -249,6 +249,13 @@ class Core
     @log[type] ||= []    
   end
 
+  # Clears the logs of a 'type'
+  # @return [Array] Some logs, yo
+  #
+  def clear_log(type)
+    @log[type] = []    
+  end
+
   # Dynamic load and init plugins
   #
   # @param [Hash] cfg The config section for plugins
@@ -321,7 +328,8 @@ class Core
   #
   def check_wth_module?(name,cfg)
     api = cfg['api']
-    !cfg["nodes"].empty? && get_module(api)
+    #!cfg["nodes"].empty? &&
+    get_module(api)
   end
   
   # Dynamic load and init a module
@@ -469,6 +477,17 @@ class Core
 		page_out
 	end
 
+  def has_events?
+    !@log['events'].blank? && @log['events'].count > 0
+  end
+
+  def clear_all_events
+    module_instances.each_pair {|k,v|
+      v.clear_events
+    }
+    clear_log('events')
+  end
+
   def clear_all_down_nodes
     module_instances.each_pair {|k,v|
       v.clear_down
@@ -503,7 +522,6 @@ class Core
     wout << "\n"
     @webserver.write_html_file('command_list','Commands',wout)
     logger.info("WTH web service started on port: #{@webserver.port}")
-
     @webserver
   end
   

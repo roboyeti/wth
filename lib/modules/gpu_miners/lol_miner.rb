@@ -44,10 +44,10 @@ class Modules::LolMiner < Modules::GpuMinerBase
       gpu = gpu_structure
       gpu.pci = d["PCIE_Address"].split(':')[0].to_i
       gpu.id = d["Index"]
-      gpu.gpu_speed = d["Performance"].to_f
-      gpu.gpu_temp = d["Temp (deg C)"].to_i
-      gpu.gpu_fan = d["Fan Speed (%)"].to_i
-      gpu.gpu_power = d["Consumption (W)"].to_f
+      gpu.speed = d["Performance"].to_f
+      gpu.temp = d["Temp (deg C)"].to_i
+      gpu.fan = d["Fan Speed (%)"].to_i
+      gpu.power = d["Consumption (W)"].to_f
       gpu.speed_unit = 'Mh/s'
       gpu.total_shares = d["Session_Accepted"].to_i
       gpu.stale_shares = d["Session_Stale"].to_i

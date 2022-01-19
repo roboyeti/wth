@@ -26,8 +26,12 @@ module WthConsole
         "1,2,3,4,5,6,7,8,9,0: Display Pages 1-10",
         "r: Refresh Screen",
         "f: Force recheck of down nodes",
-        "c: Reload Config","s: Save Config","h: View Config",
-        "l: View Events","w: View Web Log",
+#        "c: Reload Config",
+        "s: Save Config",
+        "k: View Config",
+        "l: View Events",
+        "p: Clear Events",
+        "w: View Web Log",
         "q: Quit",
     ]    
   end
@@ -38,7 +42,9 @@ module WthConsole
         "1,2,3,4,5,6,7,8,9,0: Display Pages 1-10",
     #    "r: Refresh Screen",
     #    "c: Reload Config","s: Save Config","h: View Config",
-        "l: View Events","w: View Web Log",
+        "l: View Events",
+#        "p: Clear Events",
+        "w: View Web Log",
     ]    
   end
 
@@ -93,11 +99,11 @@ module WthConsole
         clear_all_down_nodes
         @loop_int = true
       end  
-      if event.value == "c"
-        clear
-        puts "Reloading config..."
-        load_config
-      end  
+      #if event.value == "c"
+      #  clear
+      #  puts "Reloading config..."
+      #  load_config
+      #end  
       if event.value == "s"
         clear
         puts "Saving config..."
@@ -105,7 +111,7 @@ module WthConsole
         puts "Reloading config..."
         load_config
       end
-      if event.value == "h"
+      if event.value == "k"
         clear
         pp config
         reader.read_line(" < Hit Return/Enter to continue >")
@@ -120,6 +126,14 @@ module WthConsole
         clear
         @loop_int = true
       end
+      if event.value == "p"
+        clear
+        clear_all_events
+        puts "Cleared events."
+        reader.read_line(" < Hit Return/Enter to continue >")
+        clear
+        @loop_int = true
+      end
       if event.value == "w"
         clear
         puts "Web Access Log:"
@@ -128,14 +142,14 @@ module WthConsole
         clear
         @loop_int = true
       end
-      if event.value == "v"
-        clear
-        puts "System Information:\n"
-        cpu_details
-        reader.read_line(" < Hit Return/Enter to continue >")
-        clear
-        @loop_int = true
-      end
+      #if event.value == "v"
+      #  clear
+      #  puts "System Information:\n"
+      #  cpu_details
+      #  reader.read_line(" < Hit Return/Enter to continue >")
+      #  clear
+      #  @loop_int = true
+      #end
   
     end
     return reader
@@ -143,9 +157,14 @@ module WthConsole
 
   def output_page(out)
     return if !console_out
+    out = out.dup
     reposition
     cursor_hide
     console_header(page_title(@current_page)).each {|o| clear_line; puts o; }
+    if has_events?
+      out.unshift("\n")
+      out.unshift(pastel.bright_red("Errors Detected! Hit 'e' to see event log."))
+    end
     out.each {|o|
       lines = o.split("\n")
       lines = [" "] if lines.empty? 

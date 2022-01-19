@@ -12,4 +12,5 @@ wth.log
 wth.log.bck
 .bundle
 vendor
+data/ssl/*.pem
 data/ssl/*.crt
