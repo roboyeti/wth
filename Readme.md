@@ -2,29 +2,38 @@
 ![WTH Web Interface](/screenshots/wth_web001.png)
 
 ## PLEASE NOTE: This is beta software and may not work as intended.  Please file issues if you find something broken!
+- This is a new release of software.  It will have bugs.
+- I mostly mine ETH, so mining other coins may or may not cause problems.  Report any you find, please.
+
+## What is "What the Hash?"
+WTH is a "consolidator", that gathers data from different APIs, such as those on miners and pools, to  bring it
+all together into one interface (console, web, and/or API).
+
 WTH was designed with the goal of providing an expandable, quick
 health status / earnings viewer for cryptocurrency related interests, miners, etc.
 
-It isn't meant to compete with fancy web UIs with charts and graphs (yet).  It was originally
-developed to allow me to get a fast view on the health of all my GPU/CPU miners, regardless of
-miner software or pool software.
+It was originally developed to allow me to get a fast view on the health of all my GPU/CPU miners, regardless of
+miner software or pool software.  Mostly, I was frustrated at looking at half a dozen or more web pages just to check in on miners, pools, and portfolios.
 
-Mostly, I was frustrated at looking at half a dozen or more web pages just to check in on miners, pools, and portfolios.
+It isn't meant to compete with fancy web UIs with charts and graphs (yet), but can easily run alongside those.  I have found that I rely less and less on the remote pool web interfaces to give me updates in addition to things like the portfolio not requiring me to share my holdings with external websites.
 
 With very little interaction, you should be able to see the basics of your cryptocurrency
 world.  Adding more mining pools, staking & liquidity pools, crypto portfolios, and more
-is the plan.  You can help us and add your own modules as well!  The coding required can be fairly simplistic, depending on the remote API, and current  modules and help from us can get your module added quickly.
+is the plan.  
 
 WTH also offers an API for other systems to use the collected data.  The primary
 goal of this is so we can offer a more advanced Web UI in the future, but it also tries
 to serve as a single API protocol for many different miners and pools out in the wild.
 
+You can help us and add your own modules as well!  The coding required can be fairly 
+simplistic, depending on the remote API, and help from us can get 
+your module added quickly.  Don't program?  You can request the new module, but those who
+donate get the most attention (see donation addresses below).
+
 WTH should be considered beta software.  I wrote it as a quick tool for myself, then it
-proved so helpful, I started to grow it, and then I decided to release it.  Currently,
-a refactor is ongoing to make the system more modular or more than a quick dirty tool
-for me.  Contributions to the code base are welcome, but only do so if you understand
-that this software should be considered at beta.  Things will change and that might
-require changes to contributions.
+proved so helpful, I started to grow it, and then I decided to release it.  Contributions 
+to the code base are welcome, but only do so if you understand that this software is beta and
+things will change.
 
 By default, WTH offers the following modes:
 * Console Interface
@@ -87,6 +96,7 @@ Manual installation can be done as:
     - Example: ruby wth.rb -c wth_my_other_config.yml
 
 ## Configuration - Modules
+- Modules are interfaces to software installed on your mining machines or remote APIs.  You may have to install software yourself on one or more machines to get the features of a module.
 - Specific configuration options can be found in the example config.
 - Brief documentation for how to enable APIs for a specific module target can be found in docs/modules/<target_name>.
 
@@ -100,16 +110,19 @@ GPU Miners
 - GMiner = "g_miner"
 - LolMiner = "lol_miner"
 - NanoMiner = "nano_miner"
-
+- NBMiner = "nbminer"
+    
 CPU Miners
 - XMRig = "xmrig"
 - Cpuminer-gr = "raptoreum"
 - Cpuminer-<algo> = "cpuminer" (Untested other than cpuminer-gr)
 
 Harddrive Miners
-- Signum Miner (pool API) = "signum_pool_miner"
+- Signum Miner (via pool API) = "signum_pool_miner"
 
 Pools
+- 2Miners = "2miners_pool"
+- Nano Pool = "nano_pool"
 - Signum Pool API = "signum_pool_view"
 - Flock Pool (RTM) = "flock_pool"
 - Unmineable (Address API) = "unmineable" (best with local Tor installation for socks poxying)
@@ -123,6 +136,7 @@ Portfolio
 Hardware
 - LibreHardwareMonitor +WMI GPU/CPU monitoring on Win32 = "ohm_gpu_w32"  (Experimental)
 -- Comaptibility with OpenHardwareMonitor possible, but  untested.  (Experimental)
+- Nvidia SMI Remote (https://github.com/lampaa/nvidia-smi-rest)
 
 WTH Link
 - WTH can pull data from another WTH instance = "wth_link"
