@@ -130,8 +130,8 @@ module WthConsole
         clear
         clear_all_events
         puts "Cleared events."
-        reader.read_line(" < Hit Return/Enter to continue >")
-        clear
+#        reader.read_line(" < Hit Return/Enter to continue >")
+#        clear
         @loop_int = true
       end
       if event.value == "w"
@@ -163,7 +163,7 @@ module WthConsole
     console_header(page_title(@current_page)).each {|o| clear_line; puts o; }
     if has_events?
       out.unshift("\n")
-      out.unshift(pastel.bright_red("Errors Detected! Hit 'e' to see event log."))
+      out.unshift(pastel.bright_red("Errors Detected! Hit 'l' to see event log."))
     end
     out.each {|o|
       lines = o.split("\n")
@@ -226,7 +226,7 @@ module WthConsole
     time = Time.now.strftime("%Y/%m/%d %H:%M:%S")
   
     page = pastel.bright_green("#{page_title}") 
-    stuff = border.("#{time} | #{version}v | e: View Commands")
+    stuff = border.("#{time} | v#{version} | e: View Commands")
     info = [page,stuff].join(' ')    
   
     mycols = 90
