@@ -1,13 +1,12 @@
 #Todo List, kind of in order
 
 ## In Progess
-- Add: Wonderland basic info ...
-- Do: Test OpenHardwareMonitor against module
 - Add: Cmd startup
-- Fix: Standalone issue when host down
 - Change: Add algo when and where possible
 
 ## Easiest / highest prio
+- Do: Test OpenHardwareMonitor against module
+- Add: Wonderland basic info ...
 - Do More: https://bundler.io/guides/groups.html
 - Add: URL to node in json data
 - Add: name to json
