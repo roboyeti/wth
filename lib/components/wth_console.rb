@@ -161,9 +161,10 @@ module WthConsole
     reposition
     cursor_hide
     console_header(page_title(@current_page)).each {|o| clear_line; puts o; }
+# TODO: We don't have a good idea when events are clear...fix that and then revisit this
     if has_events?
-      out.unshift("\n")
-      out.unshift(pastel.bright_red("Errors Detected! Hit 'l' to see event log."))
+#      out.unshift("\n")
+#      out.unshift(pastel.bright_red("Errors Detected! Hit 'l' to see event log."))
     end
     out.each {|o|
       lines = o.split("\n")
