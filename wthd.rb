@@ -15,9 +15,20 @@
 #   restart
 #   status
 #
+require 'os'
 require 'daemons'
-Daemons.run("wth.rb @ARGV[1..]")
 
+if OS.windows? #&& ARGV[0] == 'start'
+  warn("This does not work right in windows.  Please just run .\\wth.rb")
+  exit
+end
+pwd = Dir.pwd
+Daemons.run_proc('wth.rb') do
+  Dir.chdir(pwd)
+  exec "ruby ./wth.rb"
+end
+
+# TODO: Windoze will have to be done with spawn + fork emulation...?
 #Process.setproctitle("zzzzzz")
 #if $options.daemonize && app.os.windows?
 #  f = spawn('ruby', "wth.rb") #, :out=>'NUL:', :err=>'NUL:')

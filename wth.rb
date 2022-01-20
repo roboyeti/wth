@@ -14,7 +14,7 @@ app = Core.new(
 
 if $options.daemonize && app.os.windows?
   f = spawn('ruby', "#{__FILE__}", "-c $options.config_file") #, :out=>'NUL:', :err=>'NUL:')
-#  Process.detach(f)
+  # TODO: Process.detach(f)
   Process.wait(f)
   exit
 elsif $options.daemonize
@@ -22,7 +22,6 @@ elsif $options.daemonize
   init()
   Daemons.daemonize
   exit
-#  Daemons.run("#{__FILE__})
 end
 
 app.clear
@@ -41,7 +40,7 @@ puts "Loading data into modules..."
 
 numcols = TTY::Screen.cols
 last_run = Time.now - 100
-threaded = true # Turn into config option
+threaded = true # TODO: Turn into config option or just get rid of non-threaded code
 pages_out = 10.times.map{|i| ['Loading data.  Could take some time ...'] }
 
 # Endless good times.
@@ -52,9 +51,6 @@ pages_out = 10.times.map{|i| ['Loading data.  Could take some time ...'] }
 # - pulse web server so it can get some work done.
 thread = nil
 loop do
-
-#  last_page = $page
-
   if !thread && ( (Time.now - last_run > 8) || app.down_reset? )
     thread = Thread.new {
       # Trap signals so as to shutdown cleanly.
@@ -79,7 +75,7 @@ loop do
   
   app.output_page(pages_out[app.current_page - 1] || ['Nothing to show'])
   
-  # Sleep with keyboard responsiveness
+  # Sleep with keyboard responsiveness or thread wake up
   24.times {
     break if app.keypress_pulse
     app.update_screen

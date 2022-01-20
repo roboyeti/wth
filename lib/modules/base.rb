@@ -11,7 +11,6 @@ require 'terminal-table'
 require 'concurrent'
 require 'pp'
 require 'lightly'
-require 'concurrent'
 
 class Modules::Base
   using IndifferentHash  
