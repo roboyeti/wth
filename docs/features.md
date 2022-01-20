@@ -1,10 +1,10 @@
 Watch GPU, CPU, and other types of Miners:
 
-![GPU & CPU Miners](/screenshots/wth_con01.png)
+![GPU & CPU Miners](/screenshots/wth_console01.png)
 
 Identical web interfaces of console output:
 
-![Web GPU & CPU Miners](/screenshots/wth_web01.png)
+![Web GPU & CPU Miners](/screenshots/wth_web001.png)
 
 Watch Pools can be added:
 
