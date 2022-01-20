@@ -93,7 +93,6 @@ Manual installation can be done as:
 
 ## Configuration
 - The default config file is "wth_config.yml"
-- A default config can be created by running the program and then quiting (q)
 - Example config file is "wth_config_example.yml"
 - You can run with different config file using arguments to wth: -c <FILE> or --config <FILE>
     - Example: ruby wth.rb -c wth_my_other_config.yml
