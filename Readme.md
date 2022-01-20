@@ -139,7 +139,7 @@ Portfolio
 Hardware
 - LibreHardwareMonitor +WMI GPU/CPU monitoring on Win32 = "ohm_gpu_w32"  (Experimental)
 -- Comaptibility with OpenHardwareMonitor possible, but  untested.  (Experimental)
-- Nvidia SMI Remote (https://github.com/lampaa/nvidia-smi-rest)
+- Nvidia SMI Remote (https://github.com/lampaa/nvidia-smi-rest) = "smi_rest"
 
 Misc Modules
 - WTH can pull data from another WTH instance = "wth_link"
@@ -170,14 +170,14 @@ web_server:
   
   host: [network_addr] = For local machine access, set to 127.0.0.1 or localhost, 0.0.0.0 for all interfaces (default), or specific IP address for a specific interface.
   
-  ssl: [true|false] = Enables SSL, which is not fully functional at this time.  False default. (not fully functional yet)
+  ssl: [true|false] = Enables SSL.  Your SSL cert and pkey pem files will be generated for you and stored in "data/ssl/*.pem".  You can replace those with your own if you desire.
   
   api: [true|false] = Enable the API interface for the web server.  Default false.
   
-  key: [string] = User chosen string to act as you private web access string.  If you run wth without a config, one will be generated with a unique string here.
+  key: [string] = User chosen string to act as you private web access string.  Append all URL requests with &api_key=<your_key> if you set this.
 
 ## Configuration - Misc Notes
-- Tor SOCKS and Http Proxy is available, but currently is enabled per module with no global mechanism to set it yet.
+- Tor SOCKS and Http Proxy is available, but currently is enabled per module with no global mechanism to set it yet and not all modules support it (those who use custom network code: claymore, phoenix, cpuminer, zapper.fi).
 
 ## Donate!
 Donations are very welcome and if you find this program helpful.  If you want a
