@@ -1,6 +1,6 @@
 # Change Log
 
-## VERSION 0.19e - 2022-1-19
+## VERSION 0.19f - 2022-1-20
 - Added: Tor SOCKS proxy option for Tor installs.  Currently limited to per module config
 - Change: Made WTH more responsive to changes in displays (data is now gathered in a master thread and screen updated regardless)
 - Change: Changed how proxy works.  Mostly untested, but you now are expected to provide a proxy rather than WTH finding one for you
@@ -31,6 +31,9 @@
 - Changes: Lots of column adds/changes/smoothing out things
 - Added: User defined "banner" module
 - Fixed: Standalone fix
+- Added Zapper.FI
+- Removed: Save config option when config missing..
+- Added: Instructions to use the example config.
 
 ## VERSION 0.18 - 2021-12-27
 - Docs: More documentation / error corrections

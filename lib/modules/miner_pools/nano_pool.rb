@@ -26,7 +26,7 @@ class Modules::NanoPool < Modules::MinerPoolBase
     h = pool_structure
     h.name = name #data["account"]
     h.address = data["account"]
-    h.private_address = " #{h.address[0..3]}...#{h.address[-3..-1]} "
+    h.private_address = private_address(h.address)
 #    h.available_balance = data["balance"].to_f
     h.pending_balance = data["unconfirmed_balance"].to_f
     h.unpaid_balance = data["balance"].to_f

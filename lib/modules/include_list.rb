@@ -35,6 +35,8 @@
 # Hardware
     ['OhmGpuWin32','hardware','ohm_gpu_w32','lhm_gpu_win32'],
     ['SmiRest','hardware','smirest','smi_rest'],
+# DeFi
+    ['ZapperFi','defi','zapper_fi'],
 # Blockchain
 #    ['Ethplorer','blockchain','ethplorer'],
 # Formating

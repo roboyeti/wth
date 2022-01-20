@@ -201,15 +201,15 @@ OpenStruct.new({
   
   # Add event
   def add_error(addr,message)
-    @events << pastel.red(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
+    @events << pastel.red(sprintf("%-s : %s: %-22s: %-s",Time.now,self.class.name,addr,message))
   end
   # Add event
   def add_event(addr,message)
-    @events << pastel.white(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
+    @events << pastel.white(sprintf("%-s : %s: %-22s: %-s",Time.now,self.class.name,addr,message))
   end
   # Add event
   def add_warn(addr,message)
-    @events << pastel.yellow(sprintf("%-s : %-22s: %-s",Time.now,addr,message))
+    @events << pastel.yellow(sprintf("%-s : %s: %-22s: %-s",Time.now,self.class.name,addr,message))
   end
   
   # Check all nodes provided in a module config.
@@ -310,7 +310,7 @@ OpenStruct.new({
   end
 
   # Quick and simple rest call with URL.
-  def simple_rest(url,timeout=60)
+  def simple_rest(url,timeout=120)
     s = if proxy
           simple_proxy_request(url,timeout)
         elsif tor_socks
@@ -331,7 +331,7 @@ OpenStruct.new({
     return res
   end
 
-  def simple_proxy_request(url,timeout=30)
+  def simple_proxy_request(url,timeout=60)
     return "{}" if @proxy_url.empty?
     RestClient::Request.execute(:method => :get, :url => url, :proxy => p_url, :headers => {}, :timeout => timeout)
   end
@@ -428,4 +428,8 @@ OpenStruct.new({
     key.gsub(/\W/,'').snakecase  
   end
 
+  def private_address(addr)
+    return '' if addr.blank?
+    "#{addr[0..3]}...#{addr[-3..-1]}"
+  end
 end

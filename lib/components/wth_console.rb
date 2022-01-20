@@ -27,7 +27,7 @@ module WthConsole
         "r: Refresh Screen",
         "f: Force recheck of down nodes",
 #        "c: Reload Config",
-        "s: Save Config",
+#        "s: Save Config",
         "k: View Config",
         "l: View Events",
         "p: Clear Events",

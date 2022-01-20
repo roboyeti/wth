@@ -15,10 +15,11 @@ class Modules::CoinGeckoTracker < Modules::PortfolioBase
 
   def initialize(p={})
     super
-    @title = "CoinGecko"
+    @title = "CoinGecko (https://www.coingecko.com)"
     @client = CoingeckoRuby::Client.new
     @lifespan = @config["lifespan"] || 120
-    @lifespan = 60 if @lifespan < 120
+    @lifespan = 60 if @lifespan < 60
+    @frequency = 60 if @frequency < 60
     @currency = @config["currency"] || 'usd'
     @round = @config["round"] || 8
     @profit_round = @config["profit_round"] || 2
@@ -27,8 +28,8 @@ class Modules::CoinGeckoTracker < Modules::PortfolioBase
     @headers = ['Name','Rank','Price','24h∆%','24h Hgh','24h Low','Hodl','Avg Cost','Value','Profit','   ','Last Updated'] #,'Cached Time']
   end
 
-  def check(data,name)
-    (own,paid) = data.split('::')
+  def check(dat,name)
+    (own,paid,rnd) = dat.split('::')
     key = "#{name}_#{@currency}"
     @cache[key] = Lightly.new dir: 'tmp/coingecko_cache', life: @lifespan + @lifeinc, hash: false
     @lifeinc += 1
@@ -51,11 +52,11 @@ class Modules::CoinGeckoTracker < Modules::PortfolioBase
       r
     end
 
-    format(name,data,res)
+    format(name,dat,res)
   end
 
-  def format(name,data,res)
-    (own,paid,rnd) = data.split('::')
+  def format(name,dat,res)
+    (own,paid,rnd) = dat.split('::')
     rnd = @round if !rnd 
     res = res[0]
 

@@ -288,9 +288,10 @@ modules:
 ## profit_round:  Depending on your currency choice, you may want to change this.
 ## round: Default rounding for a crypto currency, override in the node list if needed.
 ##
+## Please note:  The node data fields are separated by double '::'.  This is due to
+## the YAML parser trying to turn number:number:number into some large integer. * shrug *
 ##-------------------------------------------------------------------------------------------
 # portfolio_example:
-#   every: 180
 #   api: coin_gecko
 #   page: <#>
 #   currency: usd
@@ -303,8 +304,22 @@ modules:
 #     <coin2_name>: <amount>::<avg_cost>::<optional decimal_places>
 #     ...
 ##-------------------------------------------------------------------------------------------
+## Zapper.fi Balances module
+##
+## Networks (specified below) is one of:
+##   ethereum, polygon, optimism, xdai, binance-smart-chain,
+##   fantom, avalanche, arbitrum, celo, harmony, moonriver
+##-------------------------------------------------------------------------------------------
+# zapper_fi:
+#   api: coin_gecko
+#   page: <#>
+#    nodes:
+#      unique_tag1: <network1>:<address1>
+#      unique_tag2: <network2>:<address2>
+#      ...
+##-------------------------------------------------------------------------------------------
 ## Libre Hardware Monitor
-## (maybe Open Hardware Monitor compatible ?)
+## (maybe Open Hardware Monitor compatible ???)
 ##
 ## See documentation for Libre setup.
 ##
@@ -321,6 +336,18 @@ modules:
 ## Advanced example.  To skip an option, leave empty (will look like "::" between options)
 ## Source is "ohm" or "lhm".  Only "lhm" is tested.
 #      <hostname>: <ip address>:<option port>:<optional source>:<optional user>:<optional password>
+##-------------------------------------------------------------------------------------------
+## Custom Visual Banner / Divider
+##
+## This banner is inserted on specified page in the order it is defined in the config file.
+## If you want it to display between two modules, it has to be inserted into this
+## config file between those two modules and have the same page# specified.
+##-------------------------------------------------------------------------------------------
+#  example_div1:
+#    text: Example Text!
+#    api: banner
+#    page: <page#>
+#    align: <center | left | right>
 ##-------------------------------------------------------------------------------------------
 # WTH Link
 # Data can be pulled from remote WTH services. More documentation tbd.

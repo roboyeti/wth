@@ -38,7 +38,7 @@ class Core
   include Sys
   include SemanticLogger::Loggable
   
-  VERSION = "0.19e"
+  VERSION = "0.19f"
   CONFIG_VERSION = 20211103
   @MODULES = []
 
@@ -142,18 +142,19 @@ class Core
     cfg = File.file?(file) ? load_yaml(file) : ''
 
     if cfg.empty?
-      puts "No config file found or is empty. Saving template config to '#{file}'..."
-      cfg = YAML.load(template_config)
-      dump_config(cfg,file)
+      fail("No such config file #{file}.  Please copy wth_example_config.yml to wth_config.yml and edit it.")
+#      puts "No config file found or is empty. Saving template config to '#{file}'..."
+#      cfg = YAML.load(template_config)
+#      dump_config(cfg,file)
     else
       puts "Configuration loaded..."
     end
 
-    if cfg["version"] < module_config_version
-      STDERR.puts "There is a newer version of the configuration format than what your config file is using."
-    end
-    YAML.load(template_config).merge!(cfg)
-    logger.info("Loaded from config file: #{file}")
+#   if cfg["version"] < module_config_version
+#     STDERR.puts "There is a newer version of the configuration format than what your config file is using."
+#   end
+#    YAML.load(template_config).merge!(cfg)
+#    logger.info("Loaded from config file: #{file}")
     cfg
   rescue => e
     logger.error("Unknown error loading config file '#{file}'",e)
@@ -478,7 +479,8 @@ class Core
 	end
 
   def has_events?
-    !@log['events'].blank? && @log['events'].count > 0
+    module_instances.any?{|k,v| !v.events.blank? }
+#    !@log['events'].blank? && @log['events'].count > 0
   end
 
   def clear_all_events

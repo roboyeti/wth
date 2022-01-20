@@ -5,9 +5,11 @@
 - This is a new release of software.  It will have bugs.
 - I mostly mine ETH, so mining other coins may or may not cause problems.  Report any you find, please.
 
-## What is "What the Hash?"
+## What is "What the Hash?"?
 WTH is a "consolidator", that gathers data from different APIs, such as those on miners and pools, to  bring it
 all together into one interface (console, web, and/or API).
+
+See: [More Feature Screenshots of Modules](/docs/features.md)
 
 WTH was designed with the goal of providing an expandable, quick
 health status / earnings viewer for cryptocurrency related interests, miners, etc.
@@ -28,7 +30,8 @@ to serve as a single API protocol for many different miners and pools out in the
 You can help us and add your own modules as well!  The coding required can be fairly 
 simplistic, depending on the remote API, and help from us can get 
 your module added quickly.  Don't program?  You can request the new module, but those who
-donate get the most attention (see donation addresses below).
+donate get the most attention (see donation addresses below).  Requests can go here:
+[Ideas](https://github.com/roboyeti/wth/discussions/categories/ideas)
 
 WTH should be considered beta software.  I wrote it as a quick tool for myself, then it
 proved so helpful, I started to grow it, and then I decided to release it.  Contributions 
@@ -129,6 +132,7 @@ Pools
 
 Tokens
 - Signum Tokens = "signum_tokens"
+- ZapperFi = "zapper_fi"
 
 Portfolio
 - Coingecko + personal coin portfolio = "coin_gecko"
@@ -138,9 +142,10 @@ Hardware
 -- Comaptibility with OpenHardwareMonitor possible, but  untested.  (Experimental)
 - Nvidia SMI Remote (https://github.com/lampaa/nvidia-smi-rest)
 
-WTH Link
+Misc Modules
 - WTH can pull data from another WTH instance = "wth_link"
-    
+- Banner = "banner" - Inserts a banner of text by position in config and page#
+
 ## Configuration - Plugins
 - Specific configuration options can be found in the example config.
 
@@ -194,5 +199,3 @@ adding something I don't need myself.
 ## Example Console View
 ![Example](/screenshots/wth_console01.png)
 ![Example](/screenshots/wth_console02.png)
-
-## [See More Feature Screenshots](/docs/features.md)

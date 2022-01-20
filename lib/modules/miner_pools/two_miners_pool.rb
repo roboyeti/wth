@@ -27,7 +27,7 @@ class Modules::TwoMinersPool < Modules::MinerPoolBase
     h = pool_structure
     h.name = name
     h.address = addr
-    h.private_address = " #{h.address[0..3]}...#{h.address[-3..-1]} "
+    h.private_address = private_address(h.address)
     h.available_balance = (data["paymentsTotal"].to_f / 1000000000).round(8)
     h.pending_balance = (data["stats"]["immature"].to_f / 1000000000).round(8)
     h.unpaid_balance = (data["stats"]["balance"].to_f / 1000000000).round(8)
