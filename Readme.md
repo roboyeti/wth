@@ -38,6 +38,8 @@ proved so helpful, I started to grow it, and then I decided to release it.  Cont
 to the code base are welcome, but only do so if you understand that this software is beta and
 things will change.
 
+Join the new [discord here](https://discord.gg/EZttsyQV)
+
 By default, WTH offers the following modes:
 * Console Interface
 * Web Interface that is a mirror of the console interface
