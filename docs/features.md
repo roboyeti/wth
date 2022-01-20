@@ -21,6 +21,9 @@ Standalone screen mode (best for running on a miner itself):
 
 ![StandAlone](/screenshots/standalone_example.png)
 
+And more ... always adding new crypto projects:
+![Signum](/screenshots/signum.png)
+
 Want to build a fancy Web UI?  WTH consolidates collected data and provides API interface for it:
 
 ![API](/screenshots/api_example.png)
