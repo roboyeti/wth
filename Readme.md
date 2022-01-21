@@ -65,17 +65,21 @@ Manual installation can be done as:
 ## Installation - Linux
 - Coming soon! - Install script for linux
 - Coming soon! - Install for ARM
-- # Ubuntu Server 20.04-3
+- Ubuntu Server 20.04-3
 - Install Ruby dependencies
     -  sudo apt install curl g++ gcc autoconf automake bison libc6-dev libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev libreadline-dev libssl-dev
 - Make sure your system is up-to-date
     -  sudo apt-get update -y && sudo apt-get upgrade -y
 - Install ruby 2.7+ for you Ubuntu
     -  sudo apt install ruby-full
+    -  Update your system:  sudo apt-get update -y && sudo apt-get upgrade -y
+    -  Confirm Ruby 2.7+: $ ruby --version
 - Download tar.gz from releases https://github.com/roboyeti/wth/releases/
     -  create a folder in /home called 'wth'
     -  copy release tar.gz to /home/wth
-    -  extract release tar.gz to /home/wth
+    -  cd /home/wth
+    -  tar -xf release.tar.gz (don't forget to replace release.tar.gz with actual filename)
+    -  extract release tar.gz to /home/wth with your favorite app or
 - cd to /home/wth
 - Install Ruby Bundler
     -  sudo apt install ruby-bundler 
