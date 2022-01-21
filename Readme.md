@@ -87,7 +87,8 @@ Manual installation can be done as:
 - cd to /home/wth
 - Install Ruby Bundler
     -  $ sudo apt install ruby-bundler 
-    -  $ sudo gem install bundler:2.2.32
+- Update your system
+    -  $ sudo apt-get update -y && sudo apt-get upgrade -y
 - $ bundle install --deployment
 - Copy wth_config_example.yml to wth_config.yml
 - Edit config file (see Configuration)
