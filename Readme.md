@@ -64,9 +64,13 @@ Manual installation can be done as:
     
 ## Installation - Linux
 - Coming soon! - Install script for linux
+- Ubuntu Server 20.04-3
 - Install Ruby dependencies
     -  sudo apt install curl g++ gcc autoconf automake bison libc6-dev libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev libreadline-dev libssl-dev
+- Make sure your system is up-to-date
+    -  sudo apt-get update -y && sudo apt-get upgrade -y
 - Install ruby 2.7+ for your platform
+    -  sudo apt install ruby-full
 - cd to directory where you extracted WTH 
 - #> bundle install --deployment
 - Copy wth_config_example.yml to wth_config.yml
