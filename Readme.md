@@ -62,11 +62,10 @@ Manual installation can be done as:
 - cd to installation directory
 - #> bundle install --deployment
     
-## Installation - Linux
+## Installation - Ubuntu 20.04/21.10
 - Coming soon! 
     - Install script for linux
     - Install for ARM
-- Ubuntu Desktop 20.04/21.10 & Ubuntu Server 20.04-3/21.10
 - Install Ruby dependencies
     -  sudo apt install curl g++ gcc autoconf automake bison libc6-dev libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev libreadline-dev libssl-dev
 - Make sure your system is up-to-date (we'll be doing this a lot)
