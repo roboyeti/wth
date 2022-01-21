@@ -133,10 +133,10 @@ Pools
 
 Tokens
 - Signum Tokens = "signum_tokens"
-- ZapperFi = "zapper_fi"
+- ZapperFi = "zapper_fi" - Includes ETH tokens, Avalanche, and more. See http://zapper.fi
 
 Portfolio
-- Coingecko + personal coin portfolio = "coin_gecko"
+- Coingecko = "coin_gecko" - Build your own personal portfolio without sharing your data.  Pricing is possible on any coin CoinGecko supports.  See http://coingecko.com
 
 Hardware
 - LibreHardwareMonitor +WMI GPU/CPU monitoring on Win32 = "ohm_gpu_w32"  (Experimental)
@@ -159,7 +159,7 @@ console_out: [true|false] = Enable console output.
 
 web_server_start: [true|false] = Run web server or not
 
-default_module_frequency: [integer] = Number of seconds between default module check.  Override in module with "every:" directive
+default_module_frequency: [integer] = Number of seconds between default module check.  Override per module with "every:" directive.  Some modules have minimums enforced to ensure you don't get yourself banned or overload remote APIs that are generously provided by others for free.
 
 ## Configuration - Web Server
 The following web server config options are:
