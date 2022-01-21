@@ -64,14 +64,21 @@ Manual installation can be done as:
     
 ## Installation - Linux
 - Coming soon! - Install script for linux
-- Ubuntu Server 20.04-3
+- Coming soon! - Install for ARM
+- # Ubuntu Server 20.04-3
 - Install Ruby dependencies
     -  sudo apt install curl g++ gcc autoconf automake bison libc6-dev libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev libreadline-dev libssl-dev
 - Make sure your system is up-to-date
     -  sudo apt-get update -y && sudo apt-get upgrade -y
-- Install ruby 2.7+ for your platform
+- Install ruby 2.7+ for you Ubuntu
     -  sudo apt install ruby-full
-- cd to directory where you extracted WTH 
+- Download tar.gz from releases https://github.com/roboyeti/wth/releases/
+    -  create a folder in /home called 'wth'
+    -  copy release tar.gz to /home/wth
+    -  extract release tar.gz to /home/wth
+- cd to /home/wth
+- Install Ruby Bundler
+    -  sudo apt install ruby-bundler 
 - #> bundle install --deployment
 - Copy wth_config_example.yml to wth_config.yml
 - Edit config file (see Configuration)
