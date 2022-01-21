@@ -63,27 +63,32 @@ Manual installation can be done as:
 - #> bundle install --deployment
     
 ## Installation - Linux
-- Coming soon! - Install script for linux
-- Coming soon! - Install for ARM
-- Ubuntu Server 20.04-3
+- Coming soon! 
+    - Install script for linux
+    - Install for ARM
+- Ubuntu Desktop 20.04/21.10 & Ubuntu Server 20.04-3/21.10
 - Install Ruby dependencies
     -  sudo apt install curl g++ gcc autoconf automake bison libc6-dev libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev libreadline-dev libssl-dev
-- Make sure your system is up-to-date
-    -  sudo apt-get update -y && sudo apt-get upgrade -y
-- Install ruby 2.7+ for you Ubuntu
-    -  sudo apt install ruby-full
-    -  Update your system:  sudo apt-get update -y && sudo apt-get upgrade -y
-    -  Confirm Ruby 2.7+: $ ruby --version
+- Make sure your system is up-to-date (we'll be doing this a lot)
+    -  $ sudo apt-get update -y && sudo apt-get upgrade -y
+- Install ruby 2.7+ for Ubuntu
+    -  $ sudo apt install ruby-full
+- Update your system    
+    -  $ sudo apt-get update -y && sudo apt-get upgrade -y
+- Confirm Ruby 2.7+: 
+    -  $ ruby --version
 - Download tar.gz from releases https://github.com/roboyeti/wth/releases/
     -  create a folder in /home called 'wth'
     -  copy release tar.gz to /home/wth
     -  cd /home/wth
-    -  tar -xf release.tar.gz (don't forget to replace release.tar.gz with actual filename)
     -  extract release tar.gz to /home/wth with your favorite app or
+- Extract from Terminal:
+    - $ tar -xf release.tar.gz (don't forget to replace release.tar.gz with actual filename)
 - cd to /home/wth
 - Install Ruby Bundler
-    -  sudo apt install ruby-bundler 
-- #> bundle install --deployment
+    -  $ sudo apt install ruby-bundler 
+    -  $ sudo gem install bundler:2.2.32
+- $ bundle install --deployment
 - Copy wth_config_example.yml to wth_config.yml
 - Edit config file (see Configuration)
 - #> .\wth.rb
