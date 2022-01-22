@@ -32,7 +32,7 @@ class Modules::ZapperFi < Modules::Base
     @frequency = 60 if @frequency < 60
     @cache = Lightly.new dir: 'tmp/zapper_fi_cache', life:300, hash: false
     @threads = {}
-    @headers = ['Name','Addr','Network','App','Label','Asset Type','Token Type','Category','Symbol','Source','Value$','Balance','Price','Tkn Addr']
+    @headers = ['Name','Addr','Network','App','Label','Asset Type','Token Type','Category','Symbol','Linked','Value$','Balance','Price','Tkn Addr']
   end
 
   def check(dat,name)
@@ -53,14 +53,14 @@ class Modules::ZapperFi < Modules::Base
       end
     else
       @threads[ckey] = Concurrent::Promises.future(ckey) do |ckey|
-        url = "#{API_HOST}/v1/balances?addresses[]=#{addr}&networks[]=#{network}&nonNilOnly=true&api_key=#{@api_key}"
-        # TODO: Cache data isn't working inside promise for some reason.          
-        #res1 = @cache.get "zapperfi_#{name}" do
-        res1 = RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => 180)
-        #end
-        file = url.split('?')[0].split('://')[1].gsub('/','_')
-        @dump && dump_response("#{file}_#{name}",["URL::#{url}",res1])
-        format(dat,name,res1)
+        resp = simple_http_request("#{API_HOST}/v1/balances?addresses[]=#{addr}&networks[]=#{network}&nonNilOnly=true&api_key=#{@api_key}",180)
+        lines = resp.body.split("\n")
+        resdata = []
+        lines.each{|l|
+          next if l !~ /data\:\s\{/
+          resdata << JSON.parse(l.split('data: ')[1])
+        }
+        format(dat,name,resdata)
       end
       warn_structure(name,dat)
     end
@@ -70,16 +70,9 @@ class Modules::ZapperFi < Modules::Base
     raise e
   end
 
-  def format(dat,name,resp)
+  def format(dat,name,resdata)
     network,addr = dat.split(':')
     addr = addr.downcase
-
-    lines = resp.body.split("\n")
-    resdata = []
-    lines.each{|l|
-      next if l !~ /data\:\s\{/
-      resdata << JSON.parse(l.split('data: ')[1])
-    }
 
     out = node_structure
     out.name = name

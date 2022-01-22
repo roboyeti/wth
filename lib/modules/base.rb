@@ -309,13 +309,13 @@ OpenStruct.new({
   end
 
   # Quick and simple rest call with URL.
-  def simple_rest(url,timeout=120)
+  def simple_rest(url,timeout=120,headers={})
     s = if proxy
           simple_proxy_request(url,timeout)
         elsif tor_socks
           OpenStruct.new({ body: simple_tor_request(url,timeout)})
         else
-          RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => timeout)          
+          RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => timeout, :headers => headers)          
         end
     res = s && s.body ? JSON.parse(s.body) : {}
     file = url.split('?')[0].split('://')[1].gsub('/','_')
@@ -336,13 +336,19 @@ OpenStruct.new({
   end
 
   # TODO: Add timeout!!!
-  def simple_tor_request(url,timeout=30)
+  def simple_tor_request(url,timeout=60)
     return "" if @tor_host.empty?
     require 'socksify/http'
     uri = URI.parse(url)
     Net::HTTP.SOCKSProxy(@tor_host, @tor_port).get(uri)
   end
 
+  def simple_http_request(url,timeout=60,headers={})
+    res = RestClient::Request.execute(:method => :get, :url => url, :headers => {}, :timeout => 60, :headers => {})
+    file = url.split('?')[0].split('://')[1].gsub('/','_')
+    @dump && dump_response("#{file}_#{name}",["URL::#{url}",res])
+    res.body
+  end
 
   # Dump data to tmp file
   def dump_response(file,data)

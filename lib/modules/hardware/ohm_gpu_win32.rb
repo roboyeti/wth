@@ -85,12 +85,11 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
     }
   end
 
-  def request(ckey,cmd)
- #   @debug = 1
-    @debug && puts("COMMAND: #{cmd}")
+  def request(ckey,name,cmd)
     out = @shell[ckey].run("#{cmd} | ConvertTo-Json").output
-    @debug && puts(out)
-    JSON.parse(out)
+    jout = JSON.parse(out)
+    @dump && dump_response("#{ckey}_#{name}",["URL::#{cmd}",jout])
+    jout
   end
   
   # The check for Open/Libre Hardware Monitors is complicated, because it doesn't provide that much data, but does
@@ -125,9 +124,9 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
         @shell[ckey] = @conn[ckey].shell(:powershell)
         
         cmd = CMDS["ohm_sensors"].gsub('%SOURCE%',@source)
-        sensors = cache.sensors.get("ohm_sensors_#{ckey}"){ request(ckey,cmd).map{|r| fix_keys(r,[/^/,'Ohm']) } }
+        sensors = cache.sensors.get("ohm_sensors_#{ckey}"){ request(ckey,'ohm_sensors',cmd).map{|r| fix_keys(r,[/^/,'Ohm']) } }
         cmd = CMDS["ohm_hardware"].gsub('%SOURCE%',@source)
-        hardware = cache.sensors.get("ohm_hardware_#{ckey}"){ request(ckey,cmd).map{|r| fix_keys(r,[/^/,'Ohm']) } }
+        hardware = cache.sensors.get("ohm_hardware_#{ckey}"){ request(ckey,'ohm_hardware',cmd).map{|r| fix_keys(r,[/^/,'Ohm']) } }
     
         res["gpus"] = check_gpu(host,port,sensors,hardware)
         res["cpus"] = check_cpu(host,port,sensors,hardware)
@@ -204,14 +203,14 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
 
     # Call CIM_PCVidController
     cmd = CMDS['gpu_wmi_cimvid']
-    wmi_vid = cache.default.get("gpu_wmi_cimvid_#{ckey}") { request(ckey,CMDS['gpu_wmi_cimvid']) }
+    wmi_vid = cache.default.get("gpu_wmi_cimvid_#{ckey}") { request(ckey,'gpu_cimvid',CMDS['gpu_wmi_cimvid']) }
     wmi_vid = wmi_vid.is_a?(Hash) ? [ wmi_vid ] : wmi_vid
     wmi_vid.each_with_index{|wv,idx|
       gpus_temp = {}
       # Use PNPDeviceID to find in PnpDeviceProperty
       cmd = CMDS['gpu_wmi_pnpdevprop'].gsub('%PNPDeviceID%',wv["PNPDeviceID"].gsub(/\\/) { |x| "\\#{x}" })
       cmd.gsub!('%KEYS%',PNPDEVKEYS.join(','))
-      wmi_pnpd = cache.default.get("gpu_wmi_pnpdevprop_#{ckey}_#{idx}"){|e| request(ckey,cmd); }
+      wmi_pnpd = cache.default.get("gpu_wmi_pnpdevprop_#{ckey}_#{idx}"){|e| request(ckey,'gpu_pnpdevprop',cmd); }
 
       gpus_temp = fix_keys(wv)
 
@@ -223,7 +222,7 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       # Lookup Win32 Registry entry
       cmd = CMDS['gpu_wmi_reg'].gsub('%DeviceDriver%',gpus_temp["device_driver"].gsub(/\\/) { |x| "\\#{x}" })
       reg_vid = cache.default.get "gpu_wmi_reg_#{ckey}_#{idx}" do
-        request(ckey,cmd)
+        request(ckey,'gpu_reg',cmd)
       end
       gpus_temp.merge!(fix_keys(reg_vid,['HardwareInformation.','']))
       if gpus_temp["bios_string"].is_a?(Array)
@@ -285,9 +284,10 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       g.bios = gv["bios_string"]
       g.driver_date = gv["driver_date"]
       g.driver = gv["driver_version"]
-      g.memory_free = gv["gpu_memory_free_small_data"].to_f / 1000
-      g.memory_used = gv["gpu_memory_used_small_data"].to_f / 1000
-      g.memory_total = gv["gpu_memory_total_small_data"].to_f / 1000
+#      g.memory_free = gv["gpu_memory_free_small_data"].to_f / 1024
+#      g.memory_used = gv["gpu_memory_used_small_data"].to_f / 1024
+#      g.memory_total = gv["gpu_memory_total_small_data"].to_f / 1024
+      g.memory_total = gv["qw_memory_size"].to_f / 1073741824
       g.temperature = gv["gpu_core_temperature"].to_i
       g.temperature_hotspot = gv["gpu_hot_spot_temperature"].to_i
       g.power = gv["gpu_package_power"].to_i
@@ -298,8 +298,8 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       g.bus_load = gv["gpu_bus_load"].to_i
       g.core_load = gv["gpu_core_load"].to_i
       g.memory_load = gv["gpu_memory_controller_load"].to_i
-      g.pci_rx = gv["gpu_pc_ie_rx_throughput"].to_f / 100000
-      g.pci_tx = gv["gpu_pc_ie_tx_throughput"].to_f / 100000
+      g.pci_rx = gv["gpu_pcie_rx_throughput"].to_f / 100000
+      g.pci_tx = gv["gpu_pcie_tx_throughput"].to_f / 100000
       o.gpu[gk] = g
     }
 

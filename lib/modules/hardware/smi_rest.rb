@@ -35,9 +35,9 @@ class Modules::SmiRest < Modules::Base
       g.location = gv["pci"]["pciBusId"]
       g.bios = gv["vbiosVersion"]
       g.driver = rdata["driverVersion"]
-      g.memory_free = gv["fbMemoryUsage"]["free"].to_f / 1000
-      g.memory_used = gv["fbMemoryUsage"]["used"].to_f / 1000
-      g.memory_total = gv["fbMemoryUsage"]["total"].to_f / 1000
+      g.memory_free = gv["fbMemoryUsage"]["free"].to_f / 1024
+      g.memory_used = gv["fbMemoryUsage"]["used"].to_f / 1024
+      g.memory_total = gv["fbMemoryUsage"]["total"].to_f / 1024
       g.temperature = gv["temperature"]["gpuTemp"].to_i
       g.power = gv["powerReadings"]["powerDraw"].split(" ")[0].to_i
       g.fan_percent = gv["fanSpeed"].to_i
