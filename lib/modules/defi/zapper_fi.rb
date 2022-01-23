@@ -54,7 +54,7 @@ class Modules::ZapperFi < Modules::Base
     else
       @threads[ckey] = Concurrent::Promises.future(ckey) do |ckey|
         resp = simple_http_request("#{API_HOST}/v1/balances?addresses[]=#{addr}&networks[]=#{network}&nonNilOnly=true&api_key=#{@api_key}",180)
-        lines = resp.body.split("\n")
+        lines = resp.split("\n")
         resdata = []
         lines.each{|l|
           next if l !~ /data\:\s\{/
