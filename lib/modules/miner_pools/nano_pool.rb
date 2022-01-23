@@ -14,7 +14,7 @@ class Modules::NanoPool < Modules::MinerPoolBase
     super
     @title = p[:title] || 'Nano (https://nanopool.org)'
     @coin = 'ETH'
-    @headers = ['Address','Status','Coin','Unpaid $','Unpaid','Unconfirmed','MinPayout','Calc Speed','Avg Speed','Accepted','Workers Up/Dwn']
+    @headers = ['Address','Status','Coin','Paid$','Paid','Unpaid$','Unpaid','Unconfirmed','MinPayout','Calc Speed','Avg Speed','Accepted','Workers Up/Dwn']
   end
 
   def check(opts,name)
@@ -22,12 +22,16 @@ class Modules::NanoPool < Modules::MinerPoolBase
     coin = self.coin if coin.blank?
     data = simple_rest("https://api.nanopool.org/v1/#{coin.downcase}/user/#{addr}")["data"]
     user = simple_rest("https://api.nanopool.org/v1/#{coin.downcase}/usersettings/#{addr}")["data"]
+    payments = simple_rest("https://api.nanopool.org/v1/#{coin.downcase}/payments/#{addr}")["data"]
 
     h = pool_structure
     h.name = name #data["account"]
     h.address = data["account"]
     h.private_address = private_address(h.address)
-#    h.available_balance = data["balance"].to_f
+    h.available_balance = payments.sum{|e|
+      e["amount"].to_f
+    }
+
     h.pending_balance = data["unconfirmed_balance"].to_f
     h.unpaid_balance = data["balance"].to_f
     h.auto_pay = user["payout"].to_f.round(3)
@@ -58,7 +62,10 @@ class Modules::NanoPool < Modules::MinerPoolBase
       
       rows << [
         colorize(item.private_address,$color_pool_id), item.status,
-        item.coin, coin_value_dollars(item.unpaid_balance,@coin), #item.available_balance.round(2),
+        item.coin,
+        coin_value_dollars(item.available_balance,item.coin),
+        item.available_balance.round(2),
+        coin_value_dollars(item.unpaid_balance,@coin),
         sprintf("%0.8f",item.unpaid_balance.round(8)),
         sprintf("%0.8f",item.pending_balance.round(8)),
         item.auto_pay,

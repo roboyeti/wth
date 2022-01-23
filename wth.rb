@@ -24,8 +24,6 @@ elsif $options.daemonize
   exit
 end
 
-app.clear
-
 if app.newer_config_version?
   puts "="*79
   puts "Press 's' after interface loads to save with newer version of config options."

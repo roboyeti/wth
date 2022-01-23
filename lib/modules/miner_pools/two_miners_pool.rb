@@ -15,7 +15,7 @@ class Modules::TwoMinersPool < Modules::MinerPoolBase
     @title = p[:title] || '2Miners (https://2miners.com)'
     @api_host = @config[:api_node] || API_HOST 
     @coin = @config[:coin] || 'ETH'
-    @headers = ['Address','Status','Coin','Paid $','Paid','Unpaid','Unconfirmed','MinPayout','Calc Speed','Avg Speed','Accepted','Rejected','Stale','Workers Up/Dwn']
+    @headers = ['Address','Status','Coin','Paid$','Paid','Unpaid$','Unpaid','Unconfirmed','MinPayout','Calc Speed','Avg Speed','Accepted','Rejected','Stale','Workers Up/Dwn']
   end
 
   def check(opts,name)
@@ -28,7 +28,10 @@ class Modules::TwoMinersPool < Modules::MinerPoolBase
     h.name = name
     h.address = addr
     h.private_address = private_address(h.address)
-    h.available_balance = (data["paymentsTotal"].to_f / 1000000000).round(8)
+    h.available_balance = data["payments"].sum{|p|
+      (p["amount"].to_f / 1000000000).round(8)
+    }
+
     h.pending_balance = (data["stats"]["immature"].to_f / 1000000000).round(8)
     h.unpaid_balance = (data["stats"]["balance"].to_f / 1000000000).round(8)
     h.auto_pay = (data["config"]["minPayout"].to_f / 1000000000).round(3)
@@ -38,6 +41,7 @@ class Modules::TwoMinersPool < Modules::MinerPoolBase
     h.accepted = data["sharesValid"].to_i
     h.stale = data["sharesStale"].to_i
     h.rejected = data["sharesInvalid"].to_i
+    h.paysin = data["config"]["paymentHubHint"]
 
     h.workers_up = data["workersOnline"].to_i
     h.workers_down = data["workersOffline"].to_i
@@ -67,7 +71,10 @@ class Modules::TwoMinersPool < Modules::MinerPoolBase
       
       rows << [
         colorize(item.private_address,$color_pool_id), item.status,
-        item.coin, coin_value_dollars(item.available_balance,@coin), item.available_balance.round(4),
+        item.coin,
+        coin_value_dollars(item.available_balance,item.coin),
+        item.available_balance.round(4),
+        coin_value_dollars(item.unpaid_balance,@coin),
         sprintf("%0.8f",item.unpaid_balance.round(8)),
         sprintf("%0.8f",item.pending_balance.round(8)),
         item.auto_pay,

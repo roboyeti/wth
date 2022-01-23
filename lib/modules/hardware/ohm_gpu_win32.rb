@@ -284,6 +284,8 @@ class Modules::OhmGpuWin32 < Modules::Base #Modules::OhmWin32
       g.bios = gv["bios_string"]
       g.driver_date = gv["driver_date"]
       g.driver = gv["driver_version"]
+# Bug in LHM: memory is duplicated from the first card detected. Filed bug @
+# https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/issues/636
 #      g.memory_free = gv["gpu_memory_free_small_data"].to_f / 1024
 #      g.memory_used = gv["gpu_memory_used_small_data"].to_f / 1024
 #      g.memory_total = gv["gpu_memory_total_small_data"].to_f / 1024
