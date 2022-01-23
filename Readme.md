@@ -60,7 +60,7 @@ Manual installation can be done as:
 - Optional: Install ConEmu: https://conemu.github.io/
 - Open shell (power shell pref, even inside ConEmu)
 - cd to installation directory
-- #> bundle install --deployment
+- #> bundle install
     
 ## Installation - Ubuntu 20.04/21.10
 - Coming soon! 
@@ -88,7 +88,7 @@ Manual installation can be done as:
     -  $ sudo apt install ruby-bundler 
 - Update your system
     -  $ sudo apt-get update -y && sudo apt-get upgrade -y
-- $ bundle install --deployment
+- $ bundle install
 - Copy wth_config_example.yml to wth_config.yml
 - Edit config file (see Configuration)
 - #> .\wth.rb
