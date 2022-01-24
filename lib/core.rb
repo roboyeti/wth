@@ -261,7 +261,8 @@ class Core
   #
   # @param [Hash] cfg The config section for plugins
   #
-  def init_plugins(cfg)
+  def init_plugins(cfg=nil)
+    cfg ||= config["plugins"]
     return nil if !cfg
     cfg.each_pair{|k,v|
       next if !PLUGINS[k]

@@ -21,6 +21,7 @@ class CoinGecko < PluginBase
     @sema_calc = Concurrent::Semaphore.new(1)
     @sema_coin = Concurrent::Semaphore.new(1)
     @client = CoingeckoRuby::Client.new
+    @coin_hash = {}
 
     @lifespan = p[:lifespan] || 180
     @coin_cache = Lightly.new dir: 'tmp/coingecko_cache', life: 86400 , hash: false
@@ -64,14 +65,20 @@ class CoinGecko < PluginBase
   #
   def coin_by_symbol(coin=nil)
     coin = coin.downcase
-    coin_list[coin] ? coin_list[coin]["id"] : coin
+    # Coingecko created a bug in their data, eith 'eth' now returning ethereum-wormhole, listed under 'eth' symbol...grrr.
+    # I let them know, but here is a work around.
+    if coin == 'eth'
+      'ethereum'
+    else
+      coin_list[coin] ? coin_list[coin]["id"] : coin
+    end
   end
 
   def coin_list
+    return if !@coin_hash.empty?
     @coin_cache.get "coingecko_coins" do
-      coin_hash = {}
       @client.coins_list.each{|c|
-        coin_hash[c["symbol"]] = c
+        @coin_hash[c["symbol"]] = c
       }
       coin_hash
     end
