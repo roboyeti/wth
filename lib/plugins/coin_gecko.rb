@@ -75,7 +75,7 @@ class CoinGecko < PluginBase
   end
 
   def coin_list
-    return if !@coin_hash.empty?
+#    return if !@coin_hash.empty?
     @coin_cache.get "coingecko_coins" do
       @client.coins_list.each{|c|
         @coin_hash[c["symbol"]] = c
