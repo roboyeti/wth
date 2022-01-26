@@ -481,7 +481,7 @@ class Core
 	end
 
   def has_events?
-    module_instances.any?{|k,v| !v.events.blank? }
+    module_instances.any?{|k,v| !v.events.empty? }
 #    !@log['events'].blank? && @log['events'].count > 0
   end
 

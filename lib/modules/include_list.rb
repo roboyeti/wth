@@ -12,7 +12,7 @@
 # GPU Miners
     ['Excavator','gpu_miners','excavator','nice_hash_qm','nice_hash'],
     ['Phoenix','gpu_miners','phoenix'],
-    ['TRex','gpu_miners','t_rex','trex'],
+    ['TRexMiner','gpu_miners','t_rex','trex'],
     ['GMiner','gpu_miners','gminer','g_miner'],
     ['LolMiner','gpu_miners','lol_miner','lolminer'],
     ['NanoMiner','gpu_miners','nano_miner','nanominer'],
