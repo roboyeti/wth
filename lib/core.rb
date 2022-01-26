@@ -216,6 +216,7 @@ class Core
   end
 
   def check_rotate_log?(log_file)
+    File.new(log_file,"w+") if (!File.exist?(log_file))    
     File.size(log_file) > 10000000
   end
 
