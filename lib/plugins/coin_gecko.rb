@@ -13,6 +13,11 @@ require 'concurrent'
 class CoinGecko < PluginBase
   #using IndifferentHash  
 
+  BAD_WORMHOLES = {
+    'eth' => 'ethereum',
+    'shib' => 'shiba-inu'
+  }
+
   attr :lifespan
   attr_reader :cache
 
@@ -67,8 +72,8 @@ class CoinGecko < PluginBase
     coin = coin.downcase
     # Coingecko created a bug in their data, eith 'eth' now returning ethereum-wormhole, listed under 'eth' symbol...grrr.
     # I let them know, but here is a work around.
-    if coin == 'eth'
-      'ethereum'
+    if BAD_WORMHOLES[coin]
+      BAD_WORMHOLES[coin]
     else
       coin_list[coin] ? coin_list[coin]["id"] : coin
     end
