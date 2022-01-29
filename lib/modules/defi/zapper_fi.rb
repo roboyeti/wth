@@ -26,7 +26,7 @@ class Modules::ZapperFi < Modules::Base
   def initialize(p={})
     super
     @title = p[:title] || 'Zapper.Fi (https://zapper.fi)'
-    @api_key = @config['api_key'] || "5d1237c2-3840-4733-8e92-c5a58fe81b88"
+    @api_key = @config['api_key'] || "96e0cc51-a62e-42ca-acee-910ea7d2a241"
     @lifespan = @config["lifespan"] || 300
     @lifespan = 60 if @lifespan < 60
     @frequency = 60 if @frequency < 60

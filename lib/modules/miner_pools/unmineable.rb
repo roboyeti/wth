@@ -17,7 +17,7 @@ class Modules::Unmineable < Modules::MinerPoolBase
     super
     @title = p[:title] || 'Unmineable'
     @threads = {}
-    @headers = ['Address','Status','Coin','$ Avail','Balance','Network','Algo','Fee%','Auto Pay','Combined Speed','Calculated Speed', 'Workers Up/Dwn']
+    @headers = ['Address','Status','Coin','$ Avail','Balance','Pay Min','Network','Algo','Fee%','Auto Pay','Combined Speed','Calculated Speed', 'Workers Up/Dwn']
   end
 
   def check(target,type)
@@ -66,10 +66,11 @@ class Modules::Unmineable < Modules::MinerPoolBase
     h.private_address = " #{h.address[0..2]} ... #{h.address[-3..-1]} "
     h.available_balance = data["balance_payable"]
     h.uuid = data["uuid"]
-    h.mining_fee = data["mining_fee"]
+    h.mining_fee = data["mining_fee"].to_f
     h.enabled = data["enabled"] || false
     h.auto_pay = data["auto"] || false
     h.network = data["network"]
+    h.payout_minimum = data["payment_threshold"].to_f
     h.coin = coin
     errs = 0
     h.errors = data["err_flags"].each_pair{|k,v| err = err + 1 if v} if data["err_flags"]
@@ -100,10 +101,12 @@ class Modules::Unmineable < Modules::MinerPoolBase
     tables << super(data) do |item,rows,formats|
       worker_str = colorize_workers(item)
       calc_str = colorize_speed_compare(item.speed.round,item.calc_speed.round)
-      mining_fee = colorize_simple_threshold(item.mining_fee.to_f,">",0.5,0.75)
+      mining_fee = colorize_simple_threshold(item.mining_fee,">",0.5,0.75)
+      balance = colorize_simple_threshold(item.available_balance,"<",item.payout_minimum,item.payout_minimum/2)
+
       rows << [
         colorize(item.private_address,$color_pool_id), item.status,
-        item.coin, coin_value_dollars(item.available_balance.to_f, item.coin), item.available_balance,
+        item.coin, coin_value_dollars(item.available_balance.to_f, item.coin), balance, item.payout_minimum,
         item.network, item.algo, mining_fee, item.auto_pay,
         item.speed.round,calc_str, worker_str
       ]
