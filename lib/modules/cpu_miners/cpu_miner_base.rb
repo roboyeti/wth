@@ -23,7 +23,9 @@ class Modules::CpuMinerBase < Modules::Base
   end
 
   def calc_estimated_revenue(item)
-    sprintf("$%0.2f",mine_revenue(item.coin,item.combined_speed).to_f)
+    rev = mine_revenue(item.coin,item.combined_speed).to_f
+    add_daily_income(rev)
+    sprintf("$%0.2f",rev)
   end
 
   # TODO: Add cpu gathering to a remote service version

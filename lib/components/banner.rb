@@ -29,7 +29,7 @@ class Banner
     else
       text.ljust(@width)
     end
-    colorit("⯇ #{rtext} ⯈",@color)
+    colorit("⯈ #{rtext} ⯇",@color)
   end
 
   def colorize(val,colors)
