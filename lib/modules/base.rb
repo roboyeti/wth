@@ -20,6 +20,7 @@ class Modules::Base
 
   attr_accessor :title, :store
   attr_reader :config, :last_check, :last_check_ago, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :config_options, :tor_socks, :title
+  attr_reader :in_sum, :income
 
   @api_names = []  
 
@@ -49,6 +50,7 @@ class Modules::Base
 
     @dump       = @config["dump"] || false
     @coin       = @config["coin"] || ''
+    @in_sum       = @config["in_sum"] || true
     @tor_host   = @config["tor_host"] || '127.0.0.1'
     @tor_port   = @config["tor_port"] || 9050
     @tor_socks  = @config["tor_socks"] || false
@@ -113,6 +115,26 @@ class Modules::Base
   end
 
   #----------------- Maintenance Calls ------------------------
+
+  def daily_income
+    @income ||= clear_income
+    @income[:daily]
+  end
+
+  def monthly_income
+    @income ||= clear_income
+    @income[:monthly]
+  end
+
+  def add_daily_income(inc)
+    @income ||= clear_income
+    @income[:daily] += inc
+    @income[:monthly] = @income[:daily] * 30.5
+  end
+
+  def clear_income
+    @income = { daily: 0, monthly: 0 }
+  end
 
   # Caller should collect and clear per iteration
   def clear_events
@@ -225,6 +247,7 @@ OpenStruct.new({
   #
   def check_all
     clear_events
+    clear_income
     @data[:addresses] ||= {}
 
     tchk = (Time.now - @last_check)

@@ -22,7 +22,7 @@ module IndifferentHash
 
     def []=(key, val)
       if key.respond_to?(:to_sym)
-        dig(key.to_sym) ? store(key.to_sym, value) : store(key.to_s, val)
+        dig(key.to_sym) ? store(key.to_sym, val) : store(key.to_s, val)
       else
         store(key.to_s, val)
       end

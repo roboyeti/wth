@@ -51,7 +51,7 @@ class Core
   }.freeze
 
   attr_accessor :verbose, :current_page
-  attr_reader :config_file, :cfg, :module_instances, :plugins, :console_out, :os
+  attr_reader :config_file, :cfg, :module_instances, :plugins, :console_out, :os, :show_revenue
   
   # TODO: Document
   def initialize(p={})
@@ -69,6 +69,7 @@ class Core
         @page_titles[pn.to_i - 1] = pt
       }
     end
+    @show_revenue = @cfg["revenue_banner"] || false
     @current_page = @cfg["start_page"] || 1
     @header_short = @cfg["header_short"] ? true : false
     @store = Concurrent::Hash.new()
@@ -479,6 +480,14 @@ class Core
 #    end
 		page_out
 	end
+
+  def daily_income
+    module_instances.sum{|k,v| v.daily_income }
+  end
+
+  def monthly_income
+    module_instances.sum{|k,v| v.monthly_income }
+  end
 
   def has_events?
     module_instances.any?{|k,v| !v.events.empty? }

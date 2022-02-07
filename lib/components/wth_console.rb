@@ -161,6 +161,12 @@ module WthConsole
     reposition
     cursor_hide
     console_header(page_title(@current_page)).each {|o| clear_line; puts o; }
+    if show_revenue
+      clear_line
+      rev = sprintf(" Estimated Revenue - Daily:$%0.2f Monthly:$%0.2f Yearly:$%0.2f ",daily_income,monthly_income,daily_income*365)
+      puts Banner.says(rev,nil,"center",[:blue,:dim,:on_green,:dim])
+    end
+
 # TODO: We don't have a good idea when events are clear...fix that and then revisit this
     if has_events?
 #      out.unshift("\n")
