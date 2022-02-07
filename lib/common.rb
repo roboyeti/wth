@@ -7,6 +7,7 @@ require 'optparse'
 require 'ostruct'
 require "zeitwerk"
 require 'semantic_logger'
+#require 'active_support/core_ext/object/blank'
 
 Dir["./lib/utility/ext/*.rb"].each {|file| load file }
 
