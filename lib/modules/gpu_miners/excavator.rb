@@ -39,7 +39,7 @@ class Modules::Excavator < Modules::GpuMinerBase
     h.total_shares = base["accepted_shares"].to_i
     h.rejected_shares = base["rejected_shares"].to_i
     h.coin = coin
-    h.revenue = mine_revenue(h.coin,h.combined_speed).to_f
+    h.estimated_revenue = calc_estimated_revenue(h)
 
     device_map = {}
     devices["devices"].each {|d|

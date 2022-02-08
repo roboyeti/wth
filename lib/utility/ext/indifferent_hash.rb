@@ -17,7 +17,9 @@
 module IndifferentHash
   refine Hash do
     def [](key)
-      dig(key.to_s) || dig(key.to_sym)
+      h = dig(key.to_s)
+      h = dig(key.to_sym) if h.nil?
+      h
     end
 
     def []=(key, val)
@@ -26,6 +28,11 @@ module IndifferentHash
       else
         store(key.to_s, val)
       end
+    end
+
+    alias_method :key_old?, :key?
+    def key?(key)
+      key_old?(key.to_s) || key_old?(key.to_sym)
     end
   end
 end

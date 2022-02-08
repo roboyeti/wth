@@ -34,7 +34,7 @@ class Modules::TRexMiner < Modules::GpuMinerBase
     h.total_shares = res["accepted_count"].to_i
     h.rejected_shares = res["rejected_count"].to_i
     h.coin = coin
-    h.revenue = mine_revenue(h.coin,h.combined_speed).to_f
+    h.estimated_revenue = calc_estimated_revenue(h)
 
     device_map = {}
     res["gpus"].each {|d|

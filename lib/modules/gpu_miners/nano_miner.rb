@@ -55,7 +55,7 @@ class Modules::NanoMiner < Modules::GpuMinerBase
       h.power_total += gpu.power
       h.gpu[gpu.pci] = gpu
     }
-    h.revenue = mine_revenue(h.coin,h.combined_speed).to_f
+    h.estimated_revenue = calc_estimated_revenue(h)
     h
   end
 

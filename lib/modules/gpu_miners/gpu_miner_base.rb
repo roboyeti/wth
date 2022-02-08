@@ -44,7 +44,9 @@ class Modules::GpuMinerBase < Modules::Base
   end
 
   def calc_estimated_revenue(item)
-    sprintf("$%0.2f",mine_revenue(item.coin,item.combined_speed).to_f)
+    rev = mine_revenue(item.coin,item.combined_speed).to_f
+    add_daily_income(rev) 
+    sprintf("$%0.2f",rev)
   end
 
   def tableize(data)
@@ -64,11 +66,9 @@ class Modules::GpuMinerBase < Modules::Base
 
   def tableize_normal(item,rows,formats,headers)
     reject_str = colorize_percent_of(item.total_shares,item.rejected_shares,0.10,0.50)
-    daily_rev = mine_revenue(coin,item.combined_speed).to_f
-    add_daily_income(daily_rev)
     row = [
       item.name.capitalize, item.uptime, item.version,
-      sprintf("$%0.2f",daily_rev), # h[:coin] ||  .... erg
+      item.estimated_revenue,
       item.combined_speed.round(0),
       format_power(item.power_total),
       item.total_shares,

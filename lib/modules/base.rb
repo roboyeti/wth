@@ -20,7 +20,7 @@ class Modules::Base
 
   attr_accessor :title, :store
   attr_reader :config, :last_check, :last_check_ago, :frequency, :data, :port, :events, :page, :responses, :coin, :proxy, :config_options, :tor_socks, :title
-  attr_reader :in_sum, :income
+  attr_reader :do_sum, :income
 
   @api_names = []  
 
@@ -50,7 +50,7 @@ class Modules::Base
 
     @dump       = @config["dump"] || false
     @coin       = @config["coin"] || ''
-    @in_sum       = @config["in_sum"] || true
+    @do_sum     = @config.key?("revenue_sum") ? @config["revenue_sum"] : true
     @tor_host   = @config["tor_host"] || '127.0.0.1'
     @tor_port   = @config["tor_port"] || 9050
     @tor_socks  = @config["tor_socks"] || false
@@ -67,6 +67,10 @@ class Modules::Base
     @down     = {}
     @pending  = []
     @data     = Concurrent::Hash.new()
+    @income   = Concurrent::Hash.new()
+    @temp_income = Concurrent::Hash.new()
+    clear_income
+    set_income
     @data[:addresses] = {}
     @data[:module]    = self.class.name
     @data[:last_check_ago] = @last_check_ago
@@ -117,23 +121,27 @@ class Modules::Base
   #----------------- Maintenance Calls ------------------------
 
   def daily_income
-    @income ||= clear_income
     @income[:daily]
   end
 
   def monthly_income
-    @income ||= clear_income
     @income[:monthly]
   end
 
   def add_daily_income(inc)
-    @income ||= clear_income
-    @income[:daily] += inc
-    @income[:monthly] = @income[:daily] * 30.5
+    return if !do_sum
+    @temp_income[:daily] += inc
+    @temp_income[:monthly] = @temp_income[:daily] * 30.5
   end
 
   def clear_income
-    @income = { daily: 0, monthly: 0 }
+    @temp_income[:daily] = 0
+    @temp_income[:monthly] = 0
+  end
+
+  def set_income
+    @income[:daily] = @temp_income[:daily]
+    @income[:monthly] = @temp_income[:monthly]
   end
 
   # Caller should collect and clear per iteration
@@ -246,10 +254,6 @@ OpenStruct.new({
   # ** Set timer if needed...
   #
   def check_all
-    clear_events
-    clear_income
-    @data[:addresses] ||= {}
-
     tchk = (Time.now - @last_check)
     lcl_last_check = @last_check
     lcl_last_check_ago = @last_check_ago
@@ -258,6 +262,9 @@ OpenStruct.new({
       have_pending = !@pending.empty?
       nodes = @config['nodes'].keys.sort
       node = nil
+      clear_income
+      clear_events
+      @data[:addresses] ||= {}
 
       nodes.each {|nkey|
         @request_counter = 0
@@ -291,6 +298,7 @@ OpenStruct.new({
 
       }
       @last_check = Time.now
+      set_income
     end
 
     if @pending.empty?

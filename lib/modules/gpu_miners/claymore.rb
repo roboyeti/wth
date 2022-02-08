@@ -73,6 +73,7 @@ class Modules::Claymore < Modules::GpuMinerBase
     o.invalid_shares = base[8].split(';')[0].to_i
     o.power_total = base[17].to_i
     o.revenue = mine_revenue(o.coin,o.combined_speed).to_f
+    o.estimated_revenue = calc_estimated_revenue(o)
 
     pci.each_with_index {|p,i|
       g = o.gpu[p] = gpu_structure

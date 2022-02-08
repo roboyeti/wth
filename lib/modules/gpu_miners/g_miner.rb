@@ -50,7 +50,7 @@ class Modules::GMiner < Modules::GpuMinerBase
       h.combined_speed += (d["speed"].to_f / 1000000.0)
       h.gpu[gpu.pci] = gpu
     }
-    h.revenue = mine_revenue(h.coin,h.combined_speed).to_f
+    h.estimated_revenue = calc_estimated_revenue(h)
     h
   end
 
