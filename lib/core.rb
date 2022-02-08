@@ -38,7 +38,7 @@ class Core
   include Sys
   include SemanticLogger::Loggable
   
-  VERSION = "0.19i"
+  VERSION = "0.19j"
   CONFIG_VERSION = 20211103
   @MODULES = []
 
@@ -341,7 +341,7 @@ class Core
   # @param [Hash] cfg The config section for a module
   #
   def init_wth_module(name,cfg)
-    cfg["default_module_frequency"] = config["default_module_frequency"]
+    cfg["default_frequency"] = config["default_module_frequency"] || config["default_frequency"]
     api = cfg['api']
     mod = get_module(api)
     file = mod["file"]

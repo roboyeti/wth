@@ -28,9 +28,11 @@ class Modules::SignumAssetView < Modules::Base
     @signum_api_node = @config["api_node"] || SIGNUM_API_NODE
     @title = @config["title"] || 'Signum Asset View'
     @coin = "signa"
+    @frequency  = @config["every"] || @config["default_frequency"] || 180
+    @frequency  = 60 if @frequency < 60
     @desc_len = @config["description_length"] || 50
     @lifespan = @config["lifespan"] || 120
-    @lifespan = 60 if @lifespan < 120
+    @lifespan = 60 if @lifespan < 60
     @cache = Lightly.new dir: 'tmp/signum_cache', life: @lifespan, hash: false
     @headers = [
       "Account","Token","Balance",#"Confirmed",

@@ -258,7 +258,7 @@ OpenStruct.new({
     lcl_last_check = @last_check
     lcl_last_check_ago = @last_check_ago
 
-    if !@pending.empty? || @data.empty? || tchk > @frequency
+    if !@pending.empty? || @data[:addresses].empty? || tchk > @frequency
       have_pending = !@pending.empty?
       nodes = @config['nodes'].keys.sort
       node = nil

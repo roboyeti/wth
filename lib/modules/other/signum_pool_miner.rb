@@ -17,7 +17,7 @@ class Modules::SignumPoolMiner < Modules::Base
     		"https://europe3.signum.network",
     		"https://brazil.signum.network",
     		"https://uk.signum.network",
-#    		BT.NODE_BURSTCOIN_RO,
+        "https://signawallet.notallmine.net",
     		"https://canada.signum.network",
     		"https://australia.signum.network",
   ]
@@ -28,6 +28,8 @@ class Modules::SignumPoolMiner < Modules::Base
     @signum_api_node = @config["api_node"] || SIGNUM_API_NODE
     @title = @config["title"] || 'Signum Pool Miner'
     @coin = "signa"
+    @frequency  = @config["every"] || @config["default_frequency"] || 180
+    @frequency  = 60 if @frequency < 60
     @headers = [
       "Account","Avail Bal",'Avail $',"Committed",'Commit $',"Blks","Pool%","Position",
       "Cnf","Pend Pay","Best","PoC+","PhCap","EfCap","ShCap"

@@ -28,6 +28,8 @@ class Modules::SignumPoolView < Modules::Base
     @pool_records = @config["record_count"] || 10
     @show_block_winners = @config["show_block_winners"] || true
     @highlight_nodes = @config["highlight_nodes"] || []
+    @frequency  = @config["every"] || @config["default_frequency"] || 180
+    @frequency  = 60 if @frequency < 60
   end
 
   def show_block_winners?
