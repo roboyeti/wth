@@ -38,7 +38,7 @@ class Core
   include Sys
   include SemanticLogger::Loggable
   
-  VERSION = "0.19h"
+  VERSION = "0.19i"
   CONFIG_VERSION = 20211103
   @MODULES = []
 

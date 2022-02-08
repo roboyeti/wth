@@ -66,6 +66,7 @@ class Modules::GpuMinerBase < Modules::Base
 
   def tableize_normal(item,rows,formats,headers)
     reject_str = colorize_percent_of(item.total_shares,item.rejected_shares,0.10,0.50)
+    pool = item.pool.split(':')[0] || ''
     row = [
       item.name.capitalize, item.uptime, item.version,
       item.estimated_revenue,
@@ -73,7 +74,7 @@ class Modules::GpuMinerBase < Modules::Base
       format_power(item.power_total),
       item.total_shares,
       reject_str,
-      item.pool,
+      pool[0..25],
       item.gpu.keys.count
     ]
 

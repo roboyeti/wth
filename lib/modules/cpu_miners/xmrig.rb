@@ -57,7 +57,7 @@ class Modules::Xmrig < Modules::CpuMinerBase
     tables << super(data) do |item,rows,formats|
       rows << [
         item.name.capitalize, uptime_seconds(item.uptime), item.version,
-        item.algo, item.coin, item.estimated_revenue,
+        item.algo[0..6], item.coin, item.estimated_revenue,
         item.total_shares,item.rejected_shares,item.failed_shared,
         item.combined_speed, item.max_speed,
         item.pool.split(':')[0], "#{item.cpu.threads_used}/#{item.cpu.threads}", item.cpu.name

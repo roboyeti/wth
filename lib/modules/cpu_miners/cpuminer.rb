@@ -94,7 +94,7 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n
     tables << super(data) do |item,rows,formats|
       rows << [
         item.name.capitalize, uptime_seconds(item.uptime), item.version,
-        item.algo, item.coin, item.estimated_revenue,
+        item.algo[0..6], item.coin, item.estimated_revenue,
         item.difficulty, item.total_shares,item.rejected_shares,item.failed_shared,
         item.combined_speed, item.accept_rate,
         item.pool.split(':')[0], item.cpu.threads_used, item.cpu.name
